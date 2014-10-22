@@ -24,10 +24,10 @@ D:\VC\inc\
 
 LIBS += -LE:\opencv\build\x86\vc10\lib\
 -LD:\VC\lib\
--lopencv_core249\
--lopencv_highgui249\
--lopencv_imgproc249\
--lopencv_features2d249\
+-lopencv_core249d\
+-lopencv_highgui249d\
+-lopencv_imgproc249d\
+-lopencv_features2d249d\
 -lHVDAILT\
 -lHVExtend\
 -lHVUtil\
