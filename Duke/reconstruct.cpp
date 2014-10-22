@@ -94,7 +94,7 @@ void Reconstruct::decodePaterns()
     }
 }
 
-bool Reconstruct::loadCameras()//Load calibration data
+bool Reconstruct::loadCameras()//Load calibration data into camera[i]
 {
     bool loaded;
     for(int i=0; i<numOfCams; i++)
