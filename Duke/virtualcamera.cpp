@@ -34,8 +34,8 @@ bool VirtualCamera::loadCameraMatrix(QString path)
     cv::Mat camMatrix;
     std::string str = qstringToString(path);
     loadMatrix(camMatrix,3,3,str);
-    cc.x = Utilities::matGet2D(camMatrix,2,0);//matget2d中的2,0表示取矩阵第2列，第0行
-    cc.y = Utilities::matGet2D(camMatrix,2,1);
+    cc.x = Utilities::matGet2D(camMatrix,0,2);
+    cc.y = Utilities::matGet2D(camMatrix,1,2);
     fc.x = Utilities::matGet2D(camMatrix,0,0);
     fc.y = Utilities::matGet2D(camMatrix,1,1);
     return true;
@@ -70,7 +70,7 @@ int VirtualCamera::loadMatrix(cv::Mat &matrix,int rows,int cols ,std::string fil
         {
             float val;
             in1>>val;
-            Utilities::matSet2D(matrix, j, i, val);
+            Utilities::matSet2D(matrix, i, j, val);
         }
     }
     return 1;
