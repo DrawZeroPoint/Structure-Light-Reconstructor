@@ -122,31 +122,31 @@ CvScalar Utilities::planeRayInter(CvScalar planeNormal,CvScalar planePoint, CvSc
     return point;
 }
 
-double Utilities::matGet2D(cv::Mat m, int x, int y)
+double Utilities::matGet2D(cv::Mat m, int row, int col)
 {
     int type = m.type();
     switch(type)
     {
         case CV_8U:
-            return m.at<uchar>(y,x);
+            return m.at<uchar>(row,col);
             break;
         case CV_8S:
-            return m.at<schar>(y,x);
+            return m.at<schar>(row,col);
             break;
         case CV_16U:
-            return m.at<ushort>(y,x);
+            return m.at<ushort>(row,col);
             break;
         case CV_16S:
-            return m.at<short>(y,x);
+            return m.at<short>(row,col);
             break;
         case CV_32S:
-            return m.at<int>(y,x);
+            return m.at<int>(row,col);
             break;
         case CV_32F:
-            return m.at<float>(y,x);
+            return m.at<float>(row,col);
             break;
         case CV_64F:
-            return m.at<double>(y,x);
+            return m.at<double>(row,col);
             break;
     }
 }

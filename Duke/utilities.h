@@ -25,7 +25,7 @@ public:
     static cv::Point3f		pixelToImageSpace(cv::Point2f p, VirtualCamera cam);
     static cv::Point2f		undistortPoints( cv::Point2f p, VirtualCamera cam);
     static CvScalar			planeRayInter(CvScalar planeNormal,CvScalar planePoint, CvScalar rayVector, CvScalar rayPoint );
-    static double			matGet2D(cv::Mat m, int x, int y);
+    static double			matGet2D(cv::Mat m, int row, int col);
     static double			matGet3D(cv::Mat m, int x, int y, int i);
     static cv::Vec3d		matGet3D(cv::Mat m, int x, int y);
     static void				matSet3D(cv::Mat m, int x, int y, cv::Vec3d);
