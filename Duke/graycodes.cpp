@@ -178,10 +178,10 @@ void GrayCodes::save()
 
 int GrayCodes::grayToDec(cv::vector<bool> gray)//convert a gray code sequence to a decimal number
 {
-    int dec=0;
+    int dec = 0;
     bool tmp = gray[0];
     if(tmp)
-        dec+=(int) pow((float)2,int (gray.size() -1));
+        dec += (int) pow((float)2,int (gray.size() -1));
     for(int i=1; i< gray.size(); i++)
     {
         tmp=Utilities::XOR(tmp,gray[i]);

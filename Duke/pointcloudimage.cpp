@@ -2,16 +2,16 @@
 
 PointCloudImage::PointCloudImage(int imageW,int imageH, bool colorFlag)
 {
-    w=imageW;
-    h=imageH;
-    points = cv::Mat(h,w,CV_32FC3);
-    if(colorFlag==true)
+    w = imageW;
+    h = imageH;
+    points = cv::Mat(h, w, CV_32FC3);
+    if(colorFlag == true)
     {
-        color = cv::Mat(h,w,CV_32FC3,cv::Scalar(0));
+        color = cv::Mat(h, w, CV_32FC3,cv::Scalar(0));
     }
     else
         color = NULL;
-    numOfPointsForPixel =  cv::Mat(h,w,CV_8U,cv::Scalar(0));
+    numOfPointsForPixel =  cv::Mat(h, w, CV_8U, cv::Scalar(0));
 }
 
 PointCloudImage::~PointCloudImage(void)
@@ -80,16 +80,16 @@ bool PointCloudImage::getPoint(int i_w, int j_h, cv::Point3f &pointOut)
 
 bool PointCloudImage::addPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3f colorBGR)
 {
-    if(i_w>w || j_h>h)
+    if(i_w > w || j_h > h)
         return false;
-    uchar num = numOfPointsForPixel.at<uchar>(j_h,i_w);
+    uchar num = numOfPointsForPixel.at<uchar>(j_h, i_w);
     if(num == 0)
-        return setPoint(i_w,j_h,point,colorBGR);
-    addPoint(i_w,j_h,point);
+        return setPoint(i_w, j_h, point, colorBGR);
+    addPoint(i_w, j_h, point);
     if(!color.empty())
     {
-        cv::Vec3f c = Utilities::matGet3D(color,i_w,j_h);
-        Utilities::matSet3D(color,i_w,j_h,colorBGR + c);
+        cv::Vec3f c = Utilities::matGet3D(color, i_w, j_h);
+        Utilities::matSet3D(color, i_w, j_h, colorBGR + c);
     }
     else
     {
