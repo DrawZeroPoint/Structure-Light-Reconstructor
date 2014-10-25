@@ -47,16 +47,3 @@ HEADERS += \
     utilities.h \
     virtualcamera.h
 
-OTHER_FILES += \
-    Resource/cal.png \
-    Resource/calib.png \
-    Resource/camera.png \
-    Resource/close.png \
-    Resource/new.png \
-    Resource/open.png \
-    Resource/projector.png \
-    Resource/reconstruct.png \
-    Resource/save.png \
-    Resource/scan.png \
-    Resource/set.png \
-    Resource/splash.png
