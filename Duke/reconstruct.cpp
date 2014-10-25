@@ -75,20 +75,22 @@ void Reconstruct::decodePaterns()
 {
     int w = cameraWidth;
     int h = cameraHeight;
-    cv::Point projPixel;
-    for(int i=0; i<w; i++)
+    cv::Point projPixel;//这个变量储存了相片上(h,w)点在投影区域上的坐标projPixel.x，projPixel.y
+    for(int col = 0; col < w; col++)
     {
-        for(int j=0; j<h; j++)
+        for(int row = 0; row < h; row++)
         {
-            if(mask.at<uchar>(j,i))//if the pixel is not shadow reconstruct
+            ///mask是根据相机拍摄的图片生成的，因此其大小就是w*h
+            if(mask.at<uchar>(row, col))//if the pixel is not shadow reconstruct
             {    
-                bool error = getProjPixel(i, j, projPixel);//get the projector pixel for camera (i,j) pixel
+                bool error = getProjPixel(row, col, projPixel);//get the projector pixel for camera (i,j) pixel
+                                                                        ///projPixel前是否应该加&？
                 if(error)
                 {
-                    mask.at<uchar>(j,i)=0;
+                    mask.at<uchar>(row, col) = 0;//进一步补充遮罩区域，相机视野内不属于投影区域的部分都被过滤掉
                     continue;
                 }
-                camPixels[ac(projPixel.x,projPixel.y)].push_back(cv::Point(i, j));
+                camPixels[ac(projPixel.x,projPixel.y)].push_back(cv::Point(row, col));///?
             }
         }
     }
@@ -139,7 +141,6 @@ bool Reconstruct::loadCamImgs(QString folder, QString prefix, QString suffix)//l
         //cstr = std::string((const char *)path.toLocal8Bit());
         //tmp = cv::imread(cstr);
         tmp = cvLoadImage(path.toLocal8Bit(),0);
-
         if(tmp.empty())
         {
             QMessageBox::warning(NULL,"Warning","Images not found!");
@@ -192,21 +193,21 @@ void Reconstruct::computeShadows()
     int w = camera->width;
     int h = camera->height;
     mask.release();
-    mask = cv::Mat(h,w,CV_8U,cv::Scalar(0));
-    for(int i=0; i<w; i++)
+    mask = cv::Mat(h, w, CV_8U,cv::Scalar(0));//注意h=行数rows，w=列数cols
+    for(int col = 0; col < w; col++)
     {
-        for(int j=0; j<h; j++)
+        for(int row = 0; row < h; row++)
         {
             float blackVal, whiteVal;
-            blackVal  = (float) Utilities::matGet2D( camImgs[1], i, j);
-            whiteVal  = (float) Utilities::matGet2D( camImgs[0], i, j);
-            if(whiteVal - blackVal > blackThreshold)
+            blackVal  = (float) Utilities::matGet2D( camImgs[1], row, col);//camImgs[1]表示全黑图像
+            whiteVal  = (float) Utilities::matGet2D( camImgs[0], row, col);//camImgs[0]表示全白图像
+            if(whiteVal - blackVal > blackThreshold)//同一像素点在全黑、全白投影下反差大于blackThreshold，说明该点不在阴影里
             {
-                Utilities::matSet2D(mask,i,j,1);
+                Utilities::matSet2D(mask, row, col, 1);
             }
             else
             {
-                Utilities::matSet2D(mask,i,j,0);
+                Utilities::matSet2D(mask, row, col, 0);
             }
         }
     }
@@ -218,31 +219,36 @@ bool Reconstruct::runReconstruction()
     GrayCodes grays(proj_w,proj_h);//proj_w proj_h get var getparameter
     numOfColBits = grays.getNumOfColBits();
     numOfRowBits = grays.getNumOfRowBits();
-    numberOfImgs = grays.getNumOfImgs();//以上clear
+    numberOfImgs = grays.getNumOfImgs();
 
     for(int i=0; i < numOfCams; i++)
     {
         cameras[i].position = cv::Point3f(0,0,0);//findProjectorCenter();
         cam2WorldSpace(cameras[i],cameras[i].position);
-        camera = &cameras[i];
+        camera = &cameras[i];//将position属性已转化到世界坐标系的cameras[i]赋给camera
+                                       //在此之前camera相当于一个temp，注意二者单复数有区别
         camsPixels[i] = new cv::vector<cv::Point>[proj_h*proj_w];
         camPixels = camsPixels[i];
         runSucess = loadCamImgs(scanFolder[i],imgPrefix[i],imgSuffix);
-        if(!runSucess)
+        ///截至这一步，实例camera的position、width、height属性已被赋值，camera对应cameras[i]
+
+        if(!runSucess)//如果加载图片失败，中断
             break;
+
         else{
             colorImgs.push_back(cv::Mat());
             colorImgs[i] = color;//在loadCamImgs中生成了color
+
             computeShadows();
             decodePaterns();
             unloadCamImgs();
         }
     }
     if(runSucess){
-        points3DProjView = new PointCloudImage( proj_w, proj_h , true ); //reconstruct
+        points3DProjView = new PointCloudImage( proj_w, proj_h , false ); //最后一个bool值代表是否上色，这里改为false
         for(int i = 0; i < numOfCams; i++)
         {
-            for(int j=i+1; j< numOfCams; j++)
+            for(int j = i + 1; j < numOfCams; j++)
                 triangulation(camsPixels[i],cameras[i],camsPixels[j],cameras[j], i, j);
         }
     }
@@ -271,22 +277,22 @@ bool Reconstruct::getProjPixel(int x, int y, cv::Point &p_out)//for a (x,y) pixe
     //int error_code = 0;
     int xDec,yDec;
     //prosses column images
-    for(int count=0; count<numOfColBits; count++)
+    for(int count = 0; count < numOfColBits; count++)
     {
         //get pixel intensity for regular pattern projection and it's inverse
         double val1, val2;
-        val1 = Utilities::matGet2D(camImgs[count * 2 + 2   ],x,y);
-        val2 = Utilities::matGet2D(camImgs[count * 2 + 2 +1],x,y);
+        val1 = Utilities::matGet2D(camImgs[count * 2 + 2], x, y);
+        val2 = Utilities::matGet2D(camImgs[count * 2 + 2 +1], x, y);
         //check if intensity deference is in a valid rage
-        if(abs(val1-val2) < whiteThreshold )
-            error=true;
+        if(abs(val1 - val2) < whiteThreshold )
+            error = true;
         //determine if projection pixel is on or off
-        if(val1>val2)
-            grayCol.push_back(1);
+        if(val1 > val2)
+            grayCol.push_back(1);//向量grayCol末尾添加一个1
         else
-            grayCol.push_back(0);
+            grayCol.push_back(0);//向量grayCol末尾添加一个0
     }
-    xDec = GrayCodes::grayToDec(grayCol);
+    xDec = GrayCodes::grayToDec(grayCol);//由灰度序列grayCol求解其对应的十进制数xDec
     //prosses row images
     for(int count=0; count < numOfRowBits; count++)
     {
@@ -305,12 +311,10 @@ bool Reconstruct::getProjPixel(int x, int y, cv::Point &p_out)//for a (x,y) pixe
 
     if((yDec > proj_h || xDec > proj_w))
     {
-        error = true;
+        error = true;//求出的xy坐标超出了投影范围，说明不是投影点，将其遮罩
     }
-
-    p_out.x = xDec;
+    p_out.x = xDec;//返回相机照片上像素点在投影仪投影范围内的对应十进制坐标
     p_out.y = yDec;
-
     return error;
 }
 
@@ -327,24 +331,32 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     int w = proj_w;
     int h = proj_h;
     //start reconstraction
-    int load=0;
+    //int load = 0;
     //reconstraction for every projector pixel
-    for(int i=0; i<w; i++)
+    for(int i = 0; i < w; i++)
     {
-        for(int j=0; j<h; j++)
+        for(int j = 0; j < h; j++)
         {
-            if(load != (int) (((j+(float)i*h)/((float)w*h))*100))
+            /*
+            if(load != (int) (((j + (float)i * h)/((float)w * h)) * 100))
             {
-                load =  (int) (((j+(float)i*h)/((float)w*h))*100);
+                load =  (int) (((j + (float)i * h)/((float)w * h)) * 100);
             }
+            这里在源程序中用于表示点云生成的进度，load代表进度百分数
+            */
             cv::vector<cv::Point> cam1Pixs,cam2Pixs;
-            cam1Pixs = cam1Pixels[ac(i,j)];
-            cam2Pixs = cam2Pixels[ac(i,j)];
+
+            cam1Pixs = cam1Pixels[ac(i, j)];
+            cam2Pixs = cam2Pixels[ac(i, j)];
+
             cv::Point3f reconstructedPoint(0,0,0);
+
             if( cam1Pixs.size() == 0 || cam2Pixs.size() == 0)
                 continue;
+
             cv::Vec3f color1,color2;
-            for(int c1=0; c1 < cam1Pixs.size(); c1++)
+
+            for(int c1 = 0; c1 < cam1Pixs.size(); c1++)
             {
                 cv::Point2f camPixelUD = Utilities::undistortPoints(cv::Point2f(cam1Pixs[c1].x,cam1Pixs[c1].y),camera1);//camera 3d point p for (i,j) pixel
                 cv::Point3f cam1Point = Utilities::pixelToImageSpace(camPixelUD,camera1); //convert camera pixel to image space
@@ -356,10 +368,9 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
                 //get pixel color for the first camera view
                 color1 = Utilities::matGet3D( colorImgs[cam1index], cam1Pixs[c1].x, cam1Pixs[c1].y);
 
-                for(int c2=0; c2 < cam2Pixs.size(); c2++)
+                for(int c2 = 0; c2 < cam2Pixs.size(); c2++)
                 {
                     camPixelUD = Utilities::undistortPoints(cv::Point2f(cam2Pixs[c2].x,cam2Pixs[c2].y),camera2);//camera 3d point p for (i,j) pixel
-
                     cv::Point3f cam2Point = Utilities::pixelToImageSpace(camPixelUD,camera2); //convert camera pixel to image space
                     cam2WorldSpace(camera2, cam2Point);
 
@@ -375,7 +386,8 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 
                     //get pixel color for the second camera view
                     color2 = Utilities::matGet3D( colorImgs[cam2index], cam2Pixs[c2].x, cam2Pixs[c2].y);
-                    points3DProjView->addPoint(i,j,interPoint, (color1 + color2)/2);
+
+                    points3DProjView->addPoint(i, j, interPoint, (color1 + color2)/2);
                 }
             }
         }

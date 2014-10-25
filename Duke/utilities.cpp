@@ -223,32 +223,32 @@ cv::Vec3d Utilities::matGet3D(cv::Mat m, int x, int y)
     }
 }
 
-void Utilities::matSet2D(cv::Mat m, int x, int y, double val)
+void Utilities::matSet2D(cv::Mat m, int row, int col, double val)
 {
     int type = m.type();
 
     switch(type)
     {
         case CV_8U:
-            m.at<uchar>(y,x)  = (uchar) val;
+            m.at<uchar>(row,col)  = (uchar) val;
             break;
         case CV_8S:
-            m.at<schar>(y,x)  = (schar) val;
+            m.at<schar>(row,col)  = (schar) val;
             break;
         case CV_16U:
-            m.at<ushort>(y,x) = (ushort) val;
+            m.at<ushort>(row,col) = (ushort) val;
             break;
         case CV_16S:
-            m.at<short>(y,x)  = (short) val;
+            m.at<short>(row,col)  = (short) val;
             break;
         case CV_32S:
-            m.at<int>(y,x)	  = (int) val;
+            m.at<int>(row,col)	  = (int) val;
             break;
         case CV_32F:
-            m.at<float>(y,x)  = (float) val;
+            m.at<float>(row,col)  = (float) val;
             break;
         case CV_64F:
-            m.at<double>(y,x) = (double) val;
+            m.at<double>(row,col) = (double) val;
             break;
     }
 }

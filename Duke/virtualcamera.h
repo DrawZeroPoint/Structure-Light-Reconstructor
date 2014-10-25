@@ -21,7 +21,7 @@ public:
     cv::Mat distortion;
     cv::Mat rotationMatrix;
     cv::Mat translationVector;
-    cv::Point3f position;
+    cv::Point3f position;//相机的三维坐标原点，在runReconstruction函数中赋值为(0,0,0)
     cv::Point2f fc;
     cv::Point2f cc;
     int width;

@@ -76,7 +76,7 @@ private:
     //access
     int Reconstruct::ac(int x,int y)
     {
-        return x* + y;
+        return x*proj_h + y;
     }
 
     int proj_w;
