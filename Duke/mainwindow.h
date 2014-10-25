@@ -179,6 +179,9 @@ private:
     HHV	m_hhv_1;			///< 数字摄像机句柄
     HHV	m_hhv_2;
 
+    BYTE *ppBuf_1[1];
+    BYTE *ppBuf_2[1];
+
     BYTE *m_pRawBuffer_1;		///< 采集图像原始数据缓冲区
     BYTE *m_pRawBuffer_2;
 

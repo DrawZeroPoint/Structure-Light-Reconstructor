@@ -20,10 +20,10 @@ const HV_SNAP_MODE SnapMode = CONTINUATION;
 const HV_BAYER_CONVERT_TYPE ConvertType = BAYER2RGB_NEIGHBOUR1;
 const HV_SNAP_SPEED SnapSpeed = HIGH_SPEED;
 const long ADCLevel           = ADC_LEVEL2;
-const int XStart              = 160;//图像左上角点在相机幅面1280X1024上相对于幅面左上角点坐标
-const int YStart              = 128;
-const int Width               = 960;
-const int Height              = 768;
+const int XStart              = 0;//图像左上角点在相机幅面1280X1024上相对于幅面左上角点坐标
+const int YStart              = 112;
+const int Width               = 1280;//相机视野应大于等于投影幅面1280X800
+const int Height              = 800;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -710,8 +710,6 @@ void MainWindow::OnSnapexOpen()
 void MainWindow::OnSnapexStart()
 {
     HVSTATUS status = STATUS_OK;
-    BYTE *ppBuf_1[1];
-    BYTE *ppBuf_2[1];
     ppBuf_1[0] = m_pRawBuffer_1;
     ppBuf_2[0] = m_pRawBuffer_2;
     status = HVStartSnap(m_hhv_1, ppBuf_1,1);
@@ -929,16 +927,19 @@ void MainWindow::scan()
     pj->showImg(grayCode->getNextImg());
     int grayCount = 0;
     timer->stop();
+
     while(true)
     {
+        HVSnapShot(m_hhv_1, ppBuf_1, 1);
+        HVSnapShot(m_hhv_2, ppBuf_2, 1);
         image_1 = new QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
         image_2 = new QImage(m_pRawBuffer_2, Width, Height, QImage::Format_Indexed8);
         pimage_1 = QPixmap::fromImage(*image_1);
         pimage_2 = QPixmap::fromImage(*image_2);
         delete image_1;
         delete image_2;
-        cvWaitKey(120);
         captureImage(grayCount,false);
+        cvWaitKey(120);
         grayCount++;
         //show captured result
         if(grayCount==grayCode->getNumOfImgs())
@@ -976,9 +977,11 @@ void MainWindow::reconstruct()
         reconstructor->enableRaySampling();
     else
         reconstructor->disableRaySampling();
+
     bool runSucess = reconstructor->runReconstruction();
     if(!runSucess)
         return;
+
     MeshCreator *meshCreator=new MeshCreator(reconstructor->points3DProjView);//Export mesh
     if(sWindow->exportObj)
         meshCreator->exportObjMesh(projectPath + "/reconstruction/result.obj");
