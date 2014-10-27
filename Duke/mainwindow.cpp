@@ -21,9 +21,9 @@ const HV_BAYER_CONVERT_TYPE ConvertType = BAYER2RGB_NEIGHBOUR1;
 const HV_SNAP_SPEED SnapSpeed = HIGH_SPEED;
 const long ADCLevel           = ADC_LEVEL2;
 const int XStart              = 0;//图像左上角点在相机幅面1280X1024上相对于幅面左上角点坐标
-const int YStart              = 112;
+const int YStart              = 0;
 const int Width               = 1280;//相机视野应大于等于投影幅面1280X800
-const int Height              = 800;
+const int Height              = 1024;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -81,7 +81,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     getScreenGeometry();//Get mian screen and projector screen geometry
     viewWidth = 320;//Set width that fit the view window
-    pj = new Projector(projectorWidth, projectorHeight, screenWidth);//Initialize the projector
+    pj = new Projector(NULL, projectorWidth, projectorHeight, screenWidth);//Initialize the projector
+    pj->move(screenWidth,0);//make the window displayed by the projector
+    pj->showFullScreen();
+    connect(closeAction,SIGNAL(triggered()),pj,SLOT(close()));//解决投影窗口不能关掉的问题
+    connect(closeAction,SIGNAL(triggered()),this,SLOT(close()));
     sWindow = new Set(this);//Initialize the set dialog
 
 }
@@ -99,7 +103,7 @@ MainWindow::~MainWindow()
         delete []m_pRawBuffer_1;
         delete []m_pRawBuffer_2;
     }
-        delete pj;
+    delete pj;
 }
 
 void MainWindow::newproject()
@@ -699,7 +703,6 @@ void MainWindow::opencamera()
     openCameraAction->setDisabled(true);//暂时保证不会启动两次，防止内存溢出
 }
 
-
 void MainWindow::OnSnapexOpen()
 {
     HVSTATUS status = STATUS_OK;
@@ -735,7 +738,6 @@ int CALLBACK MainWindow::SnapThreadCallback(HV_SNAP_INFO *pInfo)
     return 1;
 }
 
-
 void MainWindow::readframe()
 {
     image_1 = new QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
@@ -747,7 +749,6 @@ void MainWindow::readframe()
     leftViewLabel->setPixmap(pms_1);//use label to show the image
     rightViewLabel->setPixmap(pms_2);
 }
-
 
 void MainWindow::capturecalib()
 {
@@ -765,12 +766,11 @@ void MainWindow::capturecalib()
         QMessageBox::warning(this,"Warning","Open cameras failed.");
 }
 
-
 void MainWindow::captureImage(int saveCount,bool dispaly)
 {
     QString savecount = QString::number(saveCount);
     pimage_1.save(projChildPath + "/left/L" + savecount +".png");
-    pimage_2.save(projChildPath + "/right/L" + savecount +".png");
+    pimage_2.save(projChildPath + "/right/R" + savecount +".png");
     if(dispaly){
         QPixmap pms_1 = pimage_1.scaledToWidth(viewWidth);
         QPixmap pms_2 = pimage_2.scaledToWidth(viewWidth);
@@ -792,7 +792,6 @@ void MainWindow::generatePath(int type)
         addpath_1->mkpath(projChildPath);
 }
 
-
 void MainWindow::selectPath(int type)//decide current childpath
 {
     QString t;
@@ -810,12 +809,10 @@ void MainWindow::selectPath(int type)//decide current childpath
     projChildPath = projectPath + t;
 }
 
-
 void MainWindow::closeCamera()
 {
     timer->stop();
 }
-
 
 void MainWindow::projectorcontrol()
 {
@@ -830,7 +827,6 @@ void MainWindow::projectorcontrol()
         pj->displaySwitch(false);
     }
 }
-
 
 void MainWindow::getScreenGeometry()
 {
@@ -848,13 +844,11 @@ void MainWindow::getScreenGeometry()
     }
 }
 
-
 void MainWindow::calib()
 {
     QMessageBox::information(NULL, tr("Calibration"), tr("Calibration Actived!"));
     toolBox->setCurrentIndex(1);//go to calibration page
 }
-
 
 void MainWindow::calibration()
 {
@@ -906,7 +900,6 @@ void MainWindow::calibration()
     */
 }
 
-
 void MainWindow::scan()
 {
     if(!cameraOpened){
@@ -919,38 +912,41 @@ void MainWindow::scan()
     }
     selectPath(1);
     toolBox->setCurrentIndex(2);
-    pj->pW->hide();
+    HVCloseSnap(m_hhv_1);
+    HVCloseSnap(m_hhv_2);
+    pj->hide();
     pj->opencvWindow();
     GrayCodes *grayCode = new GrayCodes(projectorWidth,projectorHeight);
     grayCode->generateGrays();
-    cvWaitKey(10);
     pj->showImg(grayCode->getNextImg());
     int grayCount = 0;
     timer->stop();
-
     while(true)
     {
+        cvWaitKey(100);
         HVSnapShot(m_hhv_1, ppBuf_1, 1);
-        HVSnapShot(m_hhv_2, ppBuf_2, 1);
         image_1 = new QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
-        image_2 = new QImage(m_pRawBuffer_2, Width, Height, QImage::Format_Indexed8);
         pimage_1 = QPixmap::fromImage(*image_1);
-        pimage_2 = QPixmap::fromImage(*image_2);
         delete image_1;
+        HVSnapShot(m_hhv_2, ppBuf_2, 1);
+        image_2 = new QImage(m_pRawBuffer_2, Width, Height, QImage::Format_Indexed8);
+        pimage_2 = QPixmap::fromImage(*image_2);
         delete image_2;
-        captureImage(grayCount,false);
-        cvWaitKey(120);
+        captureImage(grayCount, false);
         grayCount++;
         //show captured result
-        if(grayCount==grayCode->getNumOfImgs())
+        if(grayCount == grayCode->getNumOfImgs())
             break;
         pj->showImg(grayCode->getNextImg());
     }
+    HVOpenSnap(m_hhv_1,SnapThreadCallback, this);
+    HVOpenSnap(m_hhv_2,SnapThreadCallback, this);
+    HVStartSnap(m_hhv_1,ppBuf_1,1);
+    HVStartSnap(m_hhv_2,ppBuf_2,1);
     timer->start();
     pj->destoryWindow();
-    pj->pW->showFullScreen();
+    pj->showFullScreen();
 }
-
 
 void MainWindow::reconstruct()
 {
@@ -961,19 +957,19 @@ void MainWindow::reconstruct()
     toolBox->setCurrentIndex(3);
     selectPath(2);//set current path to :/reconstruct
     Reconstruct *reconstructor= new Reconstruct(2,projectPath);
-    reconstructor->getParameters(projectorWidth,projectorHeight,cameraWidth,cameraHeight,false, false,projectPath);
+    reconstructor->getParameters(projectorWidth, projectorHeight, cameraWidth, cameraHeight, isAutoContrast, isSaveAutoContrast,projectPath);
     reconstructor->setCalibPath(projectPath+"/calib/left/","L",".png",0);
     reconstructor->setCalibPath(projectPath+"/calib/right/","R",".png",1);
     bool loaded = reconstructor->loadCameras();//load camera matrix
     if(!loaded)
         return;
-    reconstructor->setBlackThreshold(sWindow->black_threshold);
-    reconstructor->setWhiteThreshold(sWindow->white_threshold);
-    if(sWindow->saveAutoContrast)
+    reconstructor->setBlackThreshold(black_);
+    reconstructor->setWhiteThreshold(white_);
+    if(isSaveAutoContrast)
         reconstructor->enableSavingAutoContrast();
     else
         reconstructor->disableSavingAutoContrast();
-    if(sWindow->raySampling)
+    if(isRaySampling)
         reconstructor->enableRaySampling();
     else
         reconstructor->disableRaySampling();
@@ -983,22 +979,32 @@ void MainWindow::reconstruct()
         return;
 
     MeshCreator *meshCreator=new MeshCreator(reconstructor->points3DProjView);//Export mesh
-    if(sWindow->exportObj)
+    if(isExportObj)
         meshCreator->exportObjMesh(projectPath + "/reconstruction/result.obj");
-    if(sWindow->exportPly || !(sWindow->exportObj || sWindow->exportPly))
+    if(isExportPly || !(isExportObj || isExportPly))
         meshCreator->exportPlyMesh(projectPath + "/reconstruction/result.ply");
     delete meshCreator;
     delete reconstructor;
 }
-
 
 void MainWindow::set()
 {
     sWindow->show();
     sWindow->saveSetPath = projectPath;
     isConfigured = true;
+    connect(sWindow->okButton,SIGNAL(clicked()),this,SLOT(getSetInfo()));
 }
 
+void MainWindow::getSetInfo()
+{
+    black_ = sWindow->black_threshold;
+    white_ = sWindow->white_threshold;
+    isAutoContrast = sWindow->autoContrast;
+    isSaveAutoContrast = sWindow->saveAutoContrast;
+    isRaySampling = sWindow->raySampling;
+    isExportObj = sWindow->exportObj;
+    isExportPly = sWindow->exportPly;
+}
 
 void MainWindow::createActions()
 {
