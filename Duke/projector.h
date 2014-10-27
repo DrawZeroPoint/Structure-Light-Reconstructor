@@ -12,13 +12,12 @@
 class Projector : public QWidget
 {
 public:
-    Projector(int projW, int projH, int scrnW);
+    Projector(QWidget *parent, int projW, int projH, int scrnW);
     ~Projector();
     void showImg(IplImage *img);
     void showMatImg(cv::Mat img);
     QImage *IplImageToQPixmap(const IplImage *img);
     IplImage* QImageToIplImage(const QImage *qImage);
-    QWidget *pW;
     QLabel *imageLabel;//hold image.
     void displaySwitch(bool isWhite);
     void opencvWindow();
