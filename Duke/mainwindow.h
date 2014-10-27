@@ -187,6 +187,14 @@ private:
 
     static int CALLBACK SnapThreadCallback(HV_SNAP_INFO *pInfo);
     ////////////////////////////////////////////////
+    ///与set对话框有关的变量
+    int black_ ;
+    int white_;
+    bool isAutoContrast;
+    bool isSaveAutoContrast;
+    bool isRaySampling;
+    bool isExportObj;
+    bool isExportPly;
 
 private slots:
     void newproject();
@@ -202,6 +210,7 @@ private slots:
     void scan();
     void reconstruct();
     void set();
+    void getSetInfo();
 };
 
 #endif // MAINWINDOW_H
