@@ -9,14 +9,11 @@
 
 Set::Set(QMainWindow *parent) : QDialog(parent,Qt::Dialog|Qt::CustomizeWindowHint)
 {
-    this->resize(340, 261);//对set窗口的大小进行设置
-    QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(this->sizePolicy().hasHeightForWidth());
     this->setSizePolicy(sizePolicy);
-    this->setMinimumSize(QSize(340, 261));
-    this->setMaximumSize(QSize(340, 261));
 
     settingTab = new QTabWidget(this);//这里已经生成了settingTab
     settingTab->setObjectName(QStringLiteral("settingTab"));
@@ -30,24 +27,20 @@ Set::Set(QMainWindow *parent) : QDialog(parent,Qt::Dialog|Qt::CustomizeWindowHin
     formLayout_4 = new QFormLayout(cameraSizeBox);
     formLayout_3 = new QFormLayout();
     label_2 = new QLabel(cameraSizeBox);
-    label_2->setText(tr("Width"));
+    label_2->setText(tr("Grid Width(mm);"));
     formLayout_3->setWidget(1, QFormLayout::LabelRole, label_2);
     label_3 = new QLabel(cameraSizeBox);
-    label_3->setText(tr("Height"));
+    label_3->setText(tr("Grid Height(mm):"));
     formLayout_3->setWidget(2, QFormLayout::LabelRole, label_3);
     cameraWidth = new QSpinBox(cameraSizeBox);
-    cameraWidth->setObjectName(QStringLiteral("cameraWidth"));
-    cameraWidth->setMaximum(3000);
-    cameraWidth->setValue(960);
+    cameraWidth->setValue(15);
     formLayout_3->setWidget(1, QFormLayout::FieldRole, cameraWidth);
     cameraHeight = new QSpinBox(cameraSizeBox);
-    cameraHeight->setObjectName(QStringLiteral("cameraHeight"));
-    cameraHeight->setMaximum(3000);
-    cameraHeight->setValue(768);
+    cameraHeight->setValue(15);
     formLayout_3->setWidget(2, QFormLayout::FieldRole, cameraHeight);
     formLayout_4->setLayout(0, QFormLayout::LabelRole, formLayout_3);
     formLayout->setWidget(0, QFormLayout::SpanningRole, cameraSizeBox);
-    settingTab->addTab(tab, QString(tr("Camera")));
+    settingTab->addTab(tab, QString(tr("Calibration Board")));
 
     tab_2 = new QWidget();
     tab_2->setObjectName(QStringLiteral("tab_2"));
@@ -55,51 +48,51 @@ Set::Set(QMainWindow *parent) : QDialog(parent,Qt::Dialog|Qt::CustomizeWindowHin
     projSizeBox = new QGroupBox(tab_2);
     formLayout_6 = new QFormLayout(projSizeBox);
     gridLayout_3 = new QGridLayout();
+
     projWidth = new QSpinBox(projSizeBox);
-    projWidth->setObjectName(QStringLiteral("projWidth"));
-    projWidth->setMaximum(3000);
-    projWidth->setValue(1024);
+    projWidth->setValue(15);
     gridLayout_3->addWidget(projWidth, 1, 1, 1, 1);
     label_4 = new QLabel(projSizeBox);
-    label_4->setText(tr("Width"));
+    label_4->setText(tr("Grid Width(mm):"));
     gridLayout_3->addWidget(label_4, 1, 0, 1, 1);
     label_5 = new QLabel(projSizeBox);
-    label_5->setText(tr("Height"));
+    label_5->setText(tr("Grid Height(mm):"));
     gridLayout_3->addWidget(label_5, 2, 0, 1, 1);
+
     projHeight = new QSpinBox(projSizeBox);
-    projHeight->setObjectName(QStringLiteral("projHeight"));
-    projHeight->setMaximum(3000);
-    projHeight->setValue(768);
+    projHeight->setValue(15);
     gridLayout_3->addWidget(projHeight, 2, 1, 1, 1);
     formLayout_6->setLayout(0, QFormLayout::LabelRole, gridLayout_3);
     horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     formLayout_6->setItem(0, QFormLayout::FieldRole, horizontalSpacer_2);
     formLayout_8->setWidget(0, QFormLayout::SpanningRole, projSizeBox);
+
     projPositionBox = new QGroupBox(tab_2);
     formLayout_2 = new QFormLayout(projPositionBox);
     gridLayout_2 = new QGridLayout();
+
     label_6 = new QLabel(projPositionBox);
-    label_6->setText("X");
+    label_6->setText("X Grid Number:");
     gridLayout_2->addWidget(label_6, 0, 0, 1, 1);
     projXPosition = new QSpinBox(projPositionBox);
-    projXPosition->setObjectName(QStringLiteral("projXPosition"));
-    projXPosition->setMinimum(-3000);
-    projXPosition->setMaximum(3000);
-    projXPosition->setValue(1024);
+    projXPosition->setMinimum(0);
+    projXPosition->setValue(10);
     gridLayout_2->addWidget(projXPosition, 0, 1, 1, 1);
+
     label_7 = new QLabel(projPositionBox);
-    label_7->setText("Y");
+    label_7->setText("Y Grid Number:");
     gridLayout_2->addWidget(label_7, 1, 0, 1, 1);
     projYPosition = new QSpinBox(projPositionBox);
     projYPosition->setObjectName(QStringLiteral("projYPosition"));
-    projYPosition->setMinimum(-3000);
-    projYPosition->setMaximum(3000);
+    projYPosition->setMinimum(0);
+    projYPosition->setMaximum(9);
     gridLayout_2->addWidget(projYPosition, 1, 1, 1, 1);
+
     formLayout_2->setLayout(0, QFormLayout::LabelRole, gridLayout_2);
     horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     formLayout_2->setItem(0, QFormLayout::FieldRole, horizontalSpacer_3);
     formLayout_8->setWidget(1, QFormLayout::SpanningRole, projPositionBox);
-    settingTab->addTab(tab_2, QString(tr("Projector")));
+    settingTab->addTab(tab_2, QString(tr("Projected Patten")));
 
     tab_3 = new QWidget();
     gridLayout_5 = new QGridLayout(tab_3);
@@ -175,7 +168,10 @@ Set::Set(QMainWindow *parent) : QDialog(parent,Qt::Dialog|Qt::CustomizeWindowHin
     lay->addLayout(button);
     setLayout(lay);
 
+    this->setGeometry(300,300,500,300);//对set窗口的大小进行设置
+
     connect(okButton, SIGNAL(clicked()), this, SLOT(createConfigurationFile()));
+    connect(okButton,SIGNAL(clicked()),this,SLOT(hide()));
     connect(cancelButton,SIGNAL(clicked()),this,SLOT(hide()));
 }
 void Set::test(bool flag)

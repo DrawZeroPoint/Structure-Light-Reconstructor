@@ -45,6 +45,9 @@ public:
     int exportObj;
     int exportPly;
 
+    QPushButton *okButton;
+    QPushButton *cancelButton;
+
 private:
 
     QFormLayout *formLayout_7;
@@ -99,8 +102,6 @@ private:
     QSpacerItem *horizontalSpacer;
     QCheckBox *exportPlyCheck;
     QSpacerItem *horizontalSpacer_6;
-    QPushButton *okButton;
-    QPushButton *cancelButton;
 
     int boolToInt(bool input);
 
