@@ -65,7 +65,7 @@ IplImage* GrayCodes::getNextImg()
     if(currentImgNum<numOfImgs)
     {
         currentImgNum++;
-        return grayCodes[currentImgNum-1];
+        return grayCodes[currentImgNum - 1];//currentImgNum是从0开始的，++操作后变为1，所以要-1
     }
     else
         return NULL;

@@ -2,9 +2,9 @@
 
 MeshCreator::MeshCreator(PointCloudImage *in)
 {
-    cloud=in;
-    w=cloud->getWidth();
-    h=cloud->getHeight();
+    cloud = in;
+    w = cloud->getWidth();
+    h = cloud->getHeight();
     pixelNum = new int[w*h];
 }
 
@@ -22,11 +22,11 @@ void MeshCreator::exportObjMesh(QString path)
     std::string cstr = qstringToString(path);
     out1.open(cstr);
 
-    for(int i=0; i<w;i++)
+    for(int i = 0; i<w;i++)
     {
-        for(int j=0; j<h; j++)
+        for(int j = 0; j<h; j++)
         {
-            return_val = cloud->getPoint(i,j,point);
+            return_val = cloud -> getPoint(i, j, point);
             if(return_val)
             {
                 pixelNum[access(i,j)]=count;
@@ -185,9 +185,9 @@ void MeshCreator::exportPlyMesh(QString path)
     out1.close();
 }
 
-int MeshCreator::access(int i,int j)
+int MeshCreator::access(int i, int j)
 {
-    return i*h+j;
+    return i * h + j;
 }
 
 std::string MeshCreator::qstringToString(QString qstring)
