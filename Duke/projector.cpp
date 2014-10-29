@@ -1,11 +1,11 @@
 #include "projector.h"
 #include <QLayout>
-Projector::Projector(QWidget *parent, int projW, int projH, int scrnW) : QWidget(parent)
+Projector::Projector(QWidget *parent, int projW, int projH, int xos, int yos) : QWidget(parent)
 {
     width = projW;
     height = projH;
-    scrnwidth = scrnW;//main screen width
-    //imageLabel = new QLabel(pW);
+    xoffset = xos;
+    yoffset = yos;
 }
 
 Projector::~Projector()
@@ -16,8 +16,8 @@ void Projector::opencvWindow()
 {
     cvNamedWindow("Projector Window",CV_WINDOW_NORMAL);
     cvResizeWindow("Projector Window",width,height);
-    cvMoveWindow("Projector Window", scrnwidth, 0);
-    cvSetWindowProperty("Projector Window", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+    cvMoveWindow("Projector Window", xoffset, yoffset);
+    //cvSetWindowProperty("Projector Window", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 }
 
 void Projector::showImg(IplImage *img)

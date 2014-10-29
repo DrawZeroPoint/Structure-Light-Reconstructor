@@ -16,7 +16,7 @@ Reconstruct::Reconstruct(int numOfCams_,QString path)
     scanFolder = new QString[2];
     imgPrefix = new QString[2];
     pathSet = false;
-    for(int i=0; i< 2; ++i)
+    for(int i = 0; i< 2; i++)
     {
         QString pathI;
         if(i==0){
@@ -131,16 +131,16 @@ bool Reconstruct::loadCamImgs(QString folder, QString prefix, QString suffix)//l
     cv::Mat tmp;
     if(!camImgs.empty())
         unloadCamImgs();
-    for(int i=0; i<numberOfImgs; i++)
+    for(int i = 0; i < numberOfImgs; i++)
     {
         QString path;
         path = folder;//这里folder要达到left/right一层
         path += prefix + QString::number(i,10) + suffix;//图片加前后缀
         tmp.release();
-        //std::string cstr;
-        //cstr = std::string((const char *)path.toLocal8Bit());
-        //tmp = cv::imread(cstr);
-        tmp = cvLoadImage(path.toLocal8Bit(),0);
+
+        std::string cstr;
+        cstr = std::string((const char *)path.toLocal8Bit());
+        tmp = cv::imread(cstr,0);
         if(tmp.empty())
         {
             QMessageBox::warning(NULL,"Warning","Images not found!");
@@ -161,9 +161,10 @@ bool Reconstruct::loadCamImgs(QString folder, QString prefix, QString suffix)//l
             }
             if(i==0)
             {
-                color = tmp;
+                //color = tmp;//这里暂时注释掉
             }
-            //cv::cvtColor(tmp, tmp, CV_BGR2GRAY);//这里暂时注释掉，由于源程序处理彩色图像，而这里是灰度图像，cvtColor用来处理彩色图像，故直接用存在问题
+            //cv::cvtColor(tmp, tmp, CV_BGR2GRAY);//The function converts an input image from one color space to another
+            //这里暂时注释掉，由于源程序处理彩色图像，而这里是灰度图像，cvtColor用来处理彩色图像，故直接用存在问题
             camImgs.push_back(tmp);
         }
         if(camera->width == 0)
@@ -179,7 +180,7 @@ void Reconstruct::unloadCamImgs()//unload camera images
 {
     if(camImgs.size())
     {
-        for(int i=0; i<numberOfImgs; i++)
+        for(int i = 0; i<numberOfImgs; i++)
         {
             camImgs[i].release();
         }
@@ -221,7 +222,7 @@ bool Reconstruct::runReconstruction()
     numOfRowBits = grays.getNumOfRowBits();
     numberOfImgs = grays.getNumOfImgs();
 
-    for(int i=0; i < numOfCams; i++)
+    for(int i = 0; i < numOfCams; i++)
     {
         cameras[i].position = cv::Point3f(0,0,0);//findProjectorCenter();
         cam2WorldSpace(cameras[i],cameras[i].position);
@@ -234,11 +235,9 @@ bool Reconstruct::runReconstruction()
 
         if(!runSucess)//如果加载图片失败，中断
             break;
-
         else{
-            colorImgs.push_back(cv::Mat());
-            colorImgs[i] = color;//在loadCamImgs中生成了color
-
+            //colorImgs.push_back(cv::Mat());//这里暂时注释掉
+            //colorImgs[i] = color;//在loadCamImgs中生成了color
             computeShadows();
             decodePaterns();
             unloadCamImgs();
@@ -249,7 +248,7 @@ bool Reconstruct::runReconstruction()
         for(int i = 0; i < numOfCams; i++)
         {
             for(int j = i + 1; j < numOfCams; j++)
-                triangulation(camsPixels[i],cameras[i],camsPixels[j],cameras[j], i, j);
+                triangulation(camsPixels[i],cameras[i],camsPixels[j],cameras[j], i, j);//这里有问题
         }
     }
     return runSucess;
@@ -354,7 +353,8 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
             if( cam1Pixs.size() == 0 || cam2Pixs.size() == 0)
                 continue;
 
-            cv::Vec3f color1,color2;
+            //cv::Vec3f color1;
+            //cv::Vec3f color2;
 
             for(int c1 = 0; c1 < cam1Pixs.size(); c1++)
             {
@@ -366,7 +366,7 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
                 Utilities::normalize(ray1Vector);
 
                 //get pixel color for the first camera view
-                color1 = Utilities::matGet3D( colorImgs[cam1index], cam1Pixs[c1].x, cam1Pixs[c1].y);
+                //color1 = Utilities::matGet3D( colorImgs[cam1index], cam1Pixs[c1].x, cam1Pixs[c1].y);//这里有问题
 
                 for(int c2 = 0; c2 < cam2Pixs.size(); c2++)
                 {
@@ -385,9 +385,9 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
                         continue;
 
                     //get pixel color for the second camera view
-                    color2 = Utilities::matGet3D( colorImgs[cam2index], cam2Pixs[c2].x, cam2Pixs[c2].y);
+                    //color2 = Utilities::matGet3D( colorImgs[cam2index], cam2Pixs[c2].x, cam2Pixs[c2].y);//这里有问题
 
-                    points3DProjView->addPoint(i, j, interPoint, (color1 + color2)/2);
+                    points3DProjView->addPoint(i, j, interPoint);//这里有问题, (color1 + color2)/2暂时去掉
                 }
             }
         }

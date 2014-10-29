@@ -23,7 +23,7 @@ bool PointCloudImage::setPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3f co
     if(i_w>w || j_h>h)
         return false;
     setPoint(i_w,j_h,point);
-    Utilities::matSet3D(color,i_w,j_h,colorBGR);
+    //Utilities::matSet3D(color,i_w,j_h,colorBGR);//这里暂时注释掉
     return true;
 }
 

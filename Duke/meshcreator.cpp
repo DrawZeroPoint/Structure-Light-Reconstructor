@@ -29,36 +29,36 @@ void MeshCreator::exportObjMesh(QString path)
             return_val = cloud -> getPoint(i, j, point);
             if(return_val)
             {
-                pixelNum[access(i,j)]=count;
+                pixelNum[access(i, j)]=count;
                 out1<<"v "<< point.x<< " "<< point.y<< " "<<point.z<< "\n";
                 count++;
             }
             else
-                pixelNum[access(i,j)]=0;
+                pixelNum[access(i, j)]=0;
         }
     }
 
-    for(int i=0; i<w;i++)
+    for(int i = 0; i < w;i++)
     {
-        for(int j=0; j<h; j++)
+        for(int j = 0; j < h; j++)
         {
-            int v1=pixelNum[access(i,j)],v2,v3;
+            int v1 = pixelNum[access(i, j)],v2,v3;
 
-            if(i<w-1)
-                v2=pixelNum[access(i+1,j)];
+            if(i < w - 1)
+                v2 = pixelNum[access(i + 1, j)];
             else
                 v2=0;
 
-            if(j<h-1)
-                v3=pixelNum[access(i,j+1)];
+            if(j < h - 1)
+                v3 = pixelNum[access(i, j + 1)];
             else
-                v3=0;
+                v3 = 0;
 
-            if(v1!=0 && v2!=0 && v3!=0)
+            if(v1 != 0 && v2 != 0 && v3 != 0)
                 out1<<"f "<< v1<<"/"<<v1<< " "<< v2<<"/"<<v2<< " "<<v3<<"/"<<v3<<"\n";
 
-            if(j>0&&i<w-1)
-                v3=pixelNum[access(i+1,j-1)];
+            if(j > 0&&i < w - 1)
+                v3 = pixelNum[access(i+1,j-1)];
             else
                 v3=0;
 
@@ -78,35 +78,30 @@ void MeshCreator::exportPlyMesh(QString path)
     std::ofstream out1;
     std::string cstr = qstringToString(path);
     out1.open(cstr);
-
     int vertexCount = 0;//find vertex num
-
     for(int i=0; i<w;i++)
     {
         for(int j=0; j<h; j++)
         {
-            if(cloud->getPoint(i,j,point))
+            if(cloud->getPoint(i, j, point))
             {
-                pixelNum[access(i,j)]=vertexCount;
+                pixelNum[access(i, j)] = vertexCount;
                 vertexCount++;
             }
             else
-                pixelNum[access(i,j)]=0;
+                pixelNum[access(i, j)]=0;
         }
     }
-
     int facesCount = 0;//find faces num
-
     for(int i=0; i<w;i++)
     {
         for(int j=0; j<h; j++)
         {
-            int v1=pixelNum[access(i,j)],v2,v3;
-
-            if(i < w-1)
-                v2=pixelNum[access(i+1,j)];
+            int v1 = pixelNum[access(i,j)],v2,v3;
+            if(i < w - 1)
+                v2 = pixelNum[access(i+1,j)];
             else
-                v2=0;
+                v2 = 0;
 
             if(j < h-1)
                 v3=pixelNum[access(i,j+1)];
@@ -144,39 +139,41 @@ void MeshCreator::exportPlyMesh(QString path)
     {
         for(int j=0; j<h; j++)
         {
-            return_val = cloud->getPoint(i,j,point,color);
+            return_val = cloud->getPoint(i, j, point);
             if(return_val)
             {
-                out1<< point.x << " " << point.y << " " << point.z << " "<< (int) color[2] << " " << (int) color[1] << " " << (int) color[0] << "\n";
+                out1<< point.x << " " << point.y << " " << point.z << " "<< 10 << " " << 10 << " " << 10 << "\n";
+                //这里去掉了表示颜色的项，统一赋值为10
+                //out1<< point.x << " " << point.y << " " << point.z << " "<< (int) color[2] << " " << (int) color[1] << " " << (int) color[0] << "\n";
             }
             else
-                pixelNum[access(i,j)]=0;
+                pixelNum[access(i, j)]=0;
         }
     }
 
-    for(int i=0; i<w;i++)
+    for(int i = 0; i < w;i++)
     {
-        for(int j=0; j<h; j++)
+        for(int j = 0; j < h; j++)
         {
-            int v1=pixelNum[access(i,j)],v2,v3;
+            int v1 = pixelNum[access(i, j)], v2, v3;
 
-            if(i<w-1)
-                v2=pixelNum[access(i+1,j)];
+            if(i < w - 1)
+                v2 = pixelNum[access(i + 1, j)];
             else
-                v2=0;
+                v2 = 0;
 
             if(j<h-1)
-                v3=pixelNum[access(i,j+1)];
+                v3 = pixelNum[access(i, j + 1)];
             else
-                v3=0;
+                v3 = 0;
 
-            if(v1!=0 && v2!=0 && v3!=0)
+            if(v1 != 0 && v2 != 0 && v3 != 0)
                 out1 << "3 " << v1 << " " << v2 << " " << v3 << "\n";
 
-            if(j>0&&i<w-1)
-                v3=pixelNum[access(i+1,j-1)];
+            if(j > 0 && i< w - 1)
+                v3 = pixelNum[access(i + 1, j - 1)];
             else
-                v3=0;
+                v3 = 0;
 
             if(v1!=0 && v2!=0 && v3!=0)
                 out1 << "3 " << v1 << " " << v3 << " " << v2 << "\n";

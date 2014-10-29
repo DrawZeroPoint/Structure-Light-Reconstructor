@@ -337,12 +337,11 @@ bool direction(cv::Point p1, cv::Point p2,cv::Point p3)
         return true;
 }
 
-
-void Utilities::autoContrast(cv::Mat img_in, cv::Mat &img_out)
+void Utilities::autoContrast(cv::Mat img_in, cv::Mat &img_out)//自动对比度调整
 {
     double min=0,max=0;
     std::vector<cv::Mat> bgr;
-    cv::split(img_in,bgr);
+    cv::split(img_in,bgr);//The functions split split a multi-channel array into separate single-channel arrays
     for(int i=0; i<3; i++)
     {
         cv::minMaxIdx(bgr[i],&min,&max);
@@ -352,7 +351,7 @@ void Utilities::autoContrast(cv::Mat img_in, cv::Mat &img_out)
         bgr[i]-=min;
         bgr[i]*=a;
     }
-    cv::merge(bgr,img_out);
+    cv::merge(bgr,img_out);//The functions merge merge several arrays to make a single multi-channel array
 }
 
 void Utilities::autoContrast(IplImage *img_in, IplImage *img_out)
