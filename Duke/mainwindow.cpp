@@ -592,8 +592,6 @@ void MainWindow::getScreenGeometry()
         QRect screenRect = desktopWidget->screenGeometry(0);
         screenWidth = screenRect.width();
         screenHeight = screenRect.height();
-        projectorWidth = 800;//保证投影区域完全被拍到,这里采用了手动设置，也可以考虑加入set对话框
-        projectorHeight = 600;
     }
 }
 
