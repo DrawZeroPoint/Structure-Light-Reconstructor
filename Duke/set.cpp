@@ -21,78 +21,107 @@ Set::Set(QMainWindow *parent) : QDialog(parent,Qt::Dialog|Qt::CustomizeWindowHin
 
     tab = new QWidget();
     formLayout = new QFormLayout(tab);
-    formLayout->setObjectName(QStringLiteral("formLayout"));
     formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-    cameraSizeBox = new QGroupBox(tab);
-    formLayout_4 = new QFormLayout(cameraSizeBox);
+    boardSizeBox = new QGroupBox(tab);
+    formLayout_4 = new QFormLayout(boardSizeBox);
     formLayout_3 = new QFormLayout();
-    label_2 = new QLabel(cameraSizeBox);
+    label_2 = new QLabel(boardSizeBox);
     label_2->setText(tr("Grid Width(mm);"));
     formLayout_3->setWidget(1, QFormLayout::LabelRole, label_2);
-    label_3 = new QLabel(cameraSizeBox);
+    label_3 = new QLabel(boardSizeBox);
     label_3->setText(tr("Grid Height(mm):"));
     formLayout_3->setWidget(2, QFormLayout::LabelRole, label_3);
-    cameraWidth = new QSpinBox(cameraSizeBox);
-    cameraWidth->setValue(15);
-    formLayout_3->setWidget(1, QFormLayout::FieldRole, cameraWidth);
-    cameraHeight = new QSpinBox(cameraSizeBox);
-    cameraHeight->setValue(15);
-    formLayout_3->setWidget(2, QFormLayout::FieldRole, cameraHeight);
+
+    boardWidth = new QSpinBox(boardSizeBox);
+    boardWidth->setValue(15);
+    formLayout_3->setWidget(1, QFormLayout::FieldRole, boardWidth);
+    boardHeight = new QSpinBox(boardSizeBox);
+    boardHeight->setValue(15);
+    formLayout_3->setWidget(2, QFormLayout::FieldRole, boardHeight);
     formLayout_4->setLayout(0, QFormLayout::LabelRole, formLayout_3);
-    formLayout->setWidget(0, QFormLayout::SpanningRole, cameraSizeBox);
+    formLayout->setWidget(0, QFormLayout::SpanningRole, boardSizeBox);
     settingTab->addTab(tab, QString(tr("Calibration Board")));
 
     tab_2 = new QWidget();
-    tab_2->setObjectName(QStringLiteral("tab_2"));
     formLayout_8 = new QFormLayout(tab_2);
-    projSizeBox = new QGroupBox(tab_2);
-    formLayout_6 = new QFormLayout(projSizeBox);
+    gridSizeBox = new QGroupBox(tab_2);
+    gridSizeBox->setTitle("Grid width and height");
+    formLayout_6 = new QFormLayout(gridSizeBox);
     gridLayout_3 = new QGridLayout();
 
-    projWidth = new QSpinBox(projSizeBox);
-    projWidth->setValue(15);
-    gridLayout_3->addWidget(projWidth, 1, 1, 1, 1);
-    label_4 = new QLabel(projSizeBox);
+    projGridWidth = new QSpinBox(gridSizeBox);
+    projGridWidth->setValue(15);
+    gridLayout_3->addWidget(projGridWidth, 1, 1, 1, 1);
+    label_4 = new QLabel(gridSizeBox);
     label_4->setText(tr("Grid Width(mm):"));
     gridLayout_3->addWidget(label_4, 1, 0, 1, 1);
-    label_5 = new QLabel(projSizeBox);
+    label_5 = new QLabel(gridSizeBox);
     label_5->setText(tr("Grid Height(mm):"));
     gridLayout_3->addWidget(label_5, 2, 0, 1, 1);
 
-    projHeight = new QSpinBox(projSizeBox);
-    projHeight->setValue(15);
-    gridLayout_3->addWidget(projHeight, 2, 1, 1, 1);
+    projGridHeight = new QSpinBox(gridSizeBox);
+    projGridHeight->setValue(15);
+    gridLayout_3->addWidget(projGridHeight, 2, 1, 1, 1);
     formLayout_6->setLayout(0, QFormLayout::LabelRole, gridLayout_3);
     horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     formLayout_6->setItem(0, QFormLayout::FieldRole, horizontalSpacer_2);
-    formLayout_8->setWidget(0, QFormLayout::SpanningRole, projSizeBox);
+    formLayout_8->setWidget(0, QFormLayout::SpanningRole, gridSizeBox);
 
-    projPositionBox = new QGroupBox(tab_2);
-    formLayout_2 = new QFormLayout(projPositionBox);
+    pattenNumBox = new QGroupBox(tab_2);
+    pattenNumBox->setTitle("Grid number in X and Y direction");
+    formLayout_2 = new QFormLayout(pattenNumBox);
     gridLayout_2 = new QGridLayout();
 
-    label_6 = new QLabel(projPositionBox);
+    label_6 = new QLabel(pattenNumBox);
     label_6->setText("X Grid Number:");
     gridLayout_2->addWidget(label_6, 0, 0, 1, 1);
-    projXPosition = new QSpinBox(projPositionBox);
-    projXPosition->setMinimum(0);
-    projXPosition->setValue(10);
-    gridLayout_2->addWidget(projXPosition, 0, 1, 1, 1);
+    xGridNum = new QSpinBox(pattenNumBox);
+    xGridNum->setMinimum(3);
+    xGridNum->setValue(10);
+    gridLayout_2->addWidget(xGridNum, 0, 1, 1, 1);
 
-    label_7 = new QLabel(projPositionBox);
+    label_7 = new QLabel(pattenNumBox);
     label_7->setText("Y Grid Number:");
     gridLayout_2->addWidget(label_7, 1, 0, 1, 1);
-    projYPosition = new QSpinBox(projPositionBox);
-    projYPosition->setObjectName(QStringLiteral("projYPosition"));
-    projYPosition->setMinimum(0);
-    projYPosition->setMaximum(9);
-    gridLayout_2->addWidget(projYPosition, 1, 1, 1, 1);
+    yGridNum = new QSpinBox(pattenNumBox);
+    yGridNum->setMinimum(3);
+    yGridNum->setValue(9);
+    gridLayout_2->addWidget(yGridNum, 1, 1, 1, 1);
 
     formLayout_2->setLayout(0, QFormLayout::LabelRole, gridLayout_2);
     horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     formLayout_2->setItem(0, QFormLayout::FieldRole, horizontalSpacer_3);
-    formLayout_8->setWidget(1, QFormLayout::SpanningRole, projPositionBox);
-    settingTab->addTab(tab_2, QString(tr("Projected Patten")));
+    formLayout_8->setWidget(1, QFormLayout::SpanningRole, pattenNumBox);
+
+    projGeomBox = new QGroupBox(tab_2);
+    projGeomBox->setTitle("Width and height of projected patten");
+    geomFormLayout = new QFormLayout(projGeomBox);
+    geomGridLayout = new QGridLayout();
+
+    widthLabel = new QLabel(projGeomBox);
+    widthLabel->setText("Width of project window(pixel):");
+    geomGridLayout->addWidget(widthLabel, 0, 0, 1, 1);
+    widthSpinBox = new QSpinBox(projGeomBox);
+    widthSpinBox->setMinimum(0);
+    widthSpinBox->setMaximum(1024);
+    widthSpinBox->setValue(800);
+    geomGridLayout->addWidget(widthSpinBox, 0, 1, 1, 1);
+
+    heightLabel = new QLabel(projGeomBox);
+    heightLabel->setText("Height of project window(pixel):");
+    geomGridLayout->addWidget(heightLabel, 1, 0, 1, 1);
+    heightSpinBox = new QSpinBox(projGeomBox);
+    heightSpinBox->setMinimum(0);
+    heightSpinBox->setMaximum(800);
+    heightSpinBox->setValue(600);
+    geomGridLayout->addWidget(heightSpinBox, 1, 1, 1, 1);
+
+    geomFormLayout->setLayout(0, QFormLayout::LabelRole, geomGridLayout);
+    geomSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    geomFormLayout->setItem(0, QFormLayout::FieldRole, geomSpacer);
+    formLayout_8->setWidget(2, QFormLayout::SpanningRole, projGeomBox);
+
+    settingTab->addTab(tab_2, QString(tr("Projector")));
 
     tab_3 = new QWidget();
     gridLayout_5 = new QGridLayout(tab_3);
@@ -184,12 +213,14 @@ void Set::test(bool flag)
 
 void Set::createConfigurationFile()//如果是槽函数，那么void声明不可少
 {
-    cam_w = cameraWidth->value();
-    cam_h = cameraHeight->value();
-    proj_w = projWidth->value();
-    proj_h = projHeight->value();
-    projectorWinPos_x = projXPosition->value();
-    projectorWinPos_y = projYPosition->value();
+    board_w = boardWidth->value();
+    board_h = boardHeight->value();
+    proj_w = widthSpinBox->value();
+    proj_h = heightSpinBox->value();
+    projGrid_w = projGridWidth->value();
+    projGrid_h = projGridHeight->value();
+    projectorWinPos_x = xGridNum->value();
+    projectorWinPos_y = yGridNum->value();
     black_threshold = blackThresholdEdit->value();
     white_threshold = whiteThresholdEdit->value();
     if(autoContrastCheck->isChecked() == true)
@@ -228,13 +259,13 @@ void Set::createSetFile()
     xmlWriter.setAutoFormatting(true);
     xmlWriter.writeStartDocument();//写入<?xml version="1.0" encoding="UTF-8"?>
     xmlWriter.writeStartElement("Settings");
-    xmlWriter.writeStartElement("Projector");
-    xmlWriter.writeTextElement("Width",QString::number(proj_w, 10));
-    xmlWriter.writeTextElement("Height",QString::number(proj_h, 10));
+    xmlWriter.writeStartElement("ProjectedPatten");
+    xmlWriter.writeTextElement("GridWidth",QString::number(proj_w, 10));
+    xmlWriter.writeTextElement("GridHeight",QString::number(proj_h, 10));
     xmlWriter.writeEndElement();
-    xmlWriter.writeStartElement("Camera");
-    xmlWriter.writeTextElement("Width",QString::number(cam_w, 10));
-    xmlWriter.writeTextElement("Height",QString::number(cam_h, 10));
+    xmlWriter.writeStartElement("CalibrationBoard");
+    xmlWriter.writeTextElement("GridWidth",QString::number(board_w, 10));
+    xmlWriter.writeTextElement("GridHeight",QString::number(board_h, 10));
     xmlWriter.writeEndElement();
     xmlWriter.writeStartElement("ProjectorWindow");
     xmlWriter.writeStartElement("Position");

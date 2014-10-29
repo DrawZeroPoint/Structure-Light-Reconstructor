@@ -33,10 +33,12 @@ public:
     QString saveSetPath;
     int proj_h;
     int proj_w;
+    int projGrid_w;
+    int projGrid_h;
     int black_threshold;
     int white_threshold;
-    int cam_w;
-    int cam_h;
+    int board_w;
+    int board_h;
     int projectorWinPos_x;
     int projectorWinPos_y;
     bool autoContrast;
@@ -54,31 +56,43 @@ private:
     QTabWidget *settingTab;
     QWidget *tab;
     QFormLayout *formLayout;
-    QGroupBox *cameraSizeBox;
+    QGroupBox *boardSizeBox;
     QFormLayout *formLayout_4;
     QFormLayout *formLayout_3;
     QLabel *label_2;
     QLabel *label_3;
-    QSpinBox *cameraWidth;
-    QSpinBox *cameraHeight;
+    QSpinBox *boardWidth;
+    QSpinBox *boardHeight;
     QWidget *tab_2;
     QFormLayout *formLayout_8;
-    QGroupBox *projSizeBox;
+
+    QGroupBox *gridSizeBox;
     QFormLayout *formLayout_6;
     QGridLayout *gridLayout_3;
-    QSpinBox *projWidth;
+    QSpinBox *projGridWidth;
     QLabel *label_4;
     QLabel *label_5;
-    QSpinBox *projHeight;
+    QSpinBox *projGridHeight;
     QSpacerItem *horizontalSpacer_2;
-    QGroupBox *projPositionBox;
+
+    QGroupBox *pattenNumBox;
     QFormLayout *formLayout_2;
     QGridLayout *gridLayout_2;
     QLabel *label_6;
-    QSpinBox *projXPosition;
+    QSpinBox *xGridNum;
     QLabel *label_7;
-    QSpinBox *projYPosition;
+    QSpinBox *yGridNum;
     QSpacerItem *horizontalSpacer_3;
+
+    QGroupBox *projGeomBox;
+    QFormLayout *geomFormLayout;
+    QGridLayout *geomGridLayout;
+    QLabel *widthLabel;
+    QSpinBox *widthSpinBox;
+    QLabel *heightLabel;
+    QSpinBox *heightSpinBox;
+    QSpacerItem *geomSpacer;
+
     QWidget *tab_3;
     QGridLayout *gridLayout_5;
     QGroupBox *groupBox_2;
