@@ -22,7 +22,7 @@ const HV_SNAP_SPEED SnapSpeed = HIGH_SPEED;
 const long ADCLevel           = ADC_LEVEL2;
 const int XStart              = 0;//图像左上角点在相机幅面1280X1024上相对于幅面左上角点坐标
 const int YStart              = 0;
-const int Width               = 1280;//相机视野应大于等于投影幅面1280X800
+const int Width               = 1280;//相机视野应大于等于投影幅面
 const int Height              = 1024;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -62,31 +62,35 @@ MainWindow::MainWindow(QWidget *parent)
     msgLabel = new QLabel;
     msgLabel->setMinimumSize(msgLabel->sizeHint());
     msgLabel->setAlignment(Qt::AlignHCenter);
-
     statusBar()->addWidget(msgLabel);
     statusBar()->setStyleSheet(QString("QStatusBar::item{border: 0px}"));
 
     createCentralWindow(this);
 
     saveCon = 1;//Save calib images start with 1
-
     cameraOpened = false;
     isConfigured = false;
     isProjectorOpened = true;
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(readframe()));
+    viewWidth = 320;//Set width that fit the view window
     cameraWidth = Width;
     cameraHeight = Height;
 
+    sWindow = new Set(this);//Initialize the set dialog
+    getSetInfo();
     getScreenGeometry();//Get mian screen and projector screen geometry
-    viewWidth = 320;//Set width that fit the view window
-    pj = new Projector(NULL, projectorWidth, projectorHeight, screenWidth);//Initialize the projector
+    QDesktopWidget* desktopWidget = QApplication::desktop();
+    QRect projRect = desktopWidget->screenGeometry(1);//1 represent projector
+    int xOffSet = (projRect.width()-projectorWidth)/2 + screenWidth;
+    int yOffSet = (projRect.height()-projectorHeight)/2;
+
+    pj = new Projector(NULL, projectorWidth, projectorHeight, xOffSet, yOffSet);//Initialize the projector
     pj->move(screenWidth,0);//make the window displayed by the projector
     pj->showFullScreen();
     connect(closeAction,SIGNAL(triggered()),pj,SLOT(close()));//解决投影窗口不能关掉的问题
     connect(closeAction,SIGNAL(triggered()),this,SLOT(close()));
-    sWindow = new Set(this);//Initialize the set dialog
 
 }
 
@@ -149,7 +153,7 @@ void MainWindow::createCentralWindow(QWidget *parent)
     toolBox->setMinimumSize(QSize(240, 470));
     toolBox->setMaximumSize(QSize(240, 470));
     toolBox->setAutoFillBackground(false);
-    toolBox->setStyleSheet(QStringLiteral("background-color: rgb(233, 230, 255);"));
+    toolBox->setStyleSheet(QStringLiteral("background-color:lavender;"));
 
     cameraAdjustPage = new QWidget();
     cameraAdjustPage->setObjectName(QStringLiteral("cameraAdjustPage"));
@@ -269,68 +273,12 @@ void MainWindow::createCentralWindow(QWidget *parent)
     lVsizePolicy.setHeightForWidth(leftView->sizePolicy().hasHeightForWidth());
     leftView->setSizePolicy(lVsizePolicy);
     leftView->setMinimumSize(QSize(240, 240));
+    leftView->setStyleSheet("QWidget {border:1px solid deepskyblue;border-style: outset;}");
+
     QPalette palette;
     QBrush brush(QColor(0, 0, 0, 255));
     brush.setStyle(Qt::SolidPattern);
     palette.setBrush(QPalette::Active, QPalette::WindowText, brush);
-    QBrush brush1(QColor(0, 255, 0, 255));
-    brush1.setStyle(Qt::SolidPattern);
-    palette.setBrush(QPalette::Active, QPalette::Button, brush1);
-    QBrush brush2(QColor(127, 255, 127, 255));
-    brush2.setStyle(Qt::SolidPattern);
-    palette.setBrush(QPalette::Active, QPalette::Light, brush2);
-    QBrush brush3(QColor(63, 255, 63, 255));
-    brush3.setStyle(Qt::SolidPattern);
-    palette.setBrush(QPalette::Active, QPalette::Midlight, brush3);
-    QBrush brush4(QColor(0, 127, 0, 255));
-    brush4.setStyle(Qt::SolidPattern);
-    palette.setBrush(QPalette::Active, QPalette::Dark, brush4);
-    QBrush brush5(QColor(0, 170, 0, 255));
-    brush5.setStyle(Qt::SolidPattern);
-    palette.setBrush(QPalette::Active, QPalette::Mid, brush5);
-    palette.setBrush(QPalette::Active, QPalette::Text, brush);
-    QBrush brush6(QColor(255, 255, 255, 255));
-    brush6.setStyle(Qt::SolidPattern);
-    palette.setBrush(QPalette::Active, QPalette::BrightText, brush6);
-    palette.setBrush(QPalette::Active, QPalette::ButtonText, brush);
-    palette.setBrush(QPalette::Active, QPalette::Base, brush6);
-    palette.setBrush(QPalette::Active, QPalette::Window, brush1);
-    palette.setBrush(QPalette::Active, QPalette::Shadow, brush);
-    palette.setBrush(QPalette::Active, QPalette::AlternateBase, brush2);
-    QBrush brush7(QColor(255, 255, 220, 255));
-    brush7.setStyle(Qt::SolidPattern);
-    palette.setBrush(QPalette::Active, QPalette::ToolTipBase, brush7);
-    palette.setBrush(QPalette::Active, QPalette::ToolTipText, brush);
-    palette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-    palette.setBrush(QPalette::Inactive, QPalette::Button, brush1);
-    palette.setBrush(QPalette::Inactive, QPalette::Light, brush2);
-    palette.setBrush(QPalette::Inactive, QPalette::Midlight, brush3);
-    palette.setBrush(QPalette::Inactive, QPalette::Dark, brush4);
-    palette.setBrush(QPalette::Inactive, QPalette::Mid, brush5);
-    palette.setBrush(QPalette::Inactive, QPalette::Text, brush);
-    palette.setBrush(QPalette::Inactive, QPalette::BrightText, brush6);
-    palette.setBrush(QPalette::Inactive, QPalette::ButtonText, brush);
-    palette.setBrush(QPalette::Inactive, QPalette::Base, brush6);
-    palette.setBrush(QPalette::Inactive, QPalette::Window, brush1);
-    palette.setBrush(QPalette::Inactive, QPalette::Shadow, brush);
-    palette.setBrush(QPalette::Inactive, QPalette::AlternateBase, brush2);
-    palette.setBrush(QPalette::Inactive, QPalette::ToolTipBase, brush7);
-    palette.setBrush(QPalette::Inactive, QPalette::ToolTipText, brush);
-    palette.setBrush(QPalette::Disabled, QPalette::WindowText, brush4);
-    palette.setBrush(QPalette::Disabled, QPalette::Button, brush1);
-    palette.setBrush(QPalette::Disabled, QPalette::Light, brush2);
-    palette.setBrush(QPalette::Disabled, QPalette::Midlight, brush3);
-    palette.setBrush(QPalette::Disabled, QPalette::Dark, brush4);
-    palette.setBrush(QPalette::Disabled, QPalette::Mid, brush5);
-    palette.setBrush(QPalette::Disabled, QPalette::Text, brush4);
-    palette.setBrush(QPalette::Disabled, QPalette::BrightText, brush6);
-    palette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush4);
-    palette.setBrush(QPalette::Disabled, QPalette::Base, brush1);
-    palette.setBrush(QPalette::Disabled, QPalette::Window, brush1);
-    palette.setBrush(QPalette::Disabled, QPalette::Shadow, brush);
-    palette.setBrush(QPalette::Disabled, QPalette::AlternateBase, brush1);
-    palette.setBrush(QPalette::Disabled, QPalette::ToolTipBase, brush7);
-    palette.setBrush(QPalette::Disabled, QPalette::ToolTipText, brush);
     leftView->setPalette(palette);
     leftView->setAutoFillBackground(true);
     gridLayout_2 = new QGridLayout(leftView);
@@ -355,60 +303,9 @@ void MainWindow::createCentralWindow(QWidget *parent)
     lCsizePolicy.setHeightForWidth(leftCapture->sizePolicy().hasHeightForWidth());
     leftCapture->setSizePolicy(lCsizePolicy);
     leftCapture->setMinimumSize(QSize(240, 240));
+    leftCapture->setStyleSheet("QWidget {border:1px solid deepskyblue;border-style:outset;}");
     QPalette palette1;
     palette1.setBrush(QPalette::Active, QPalette::WindowText, brush);
-    QBrush brush8(QColor(170, 255, 127, 255));
-    brush8.setStyle(Qt::SolidPattern);
-    palette1.setBrush(QPalette::Active, QPalette::Button, brush8);
-    palette1.setBrush(QPalette::Active, QPalette::Light, brush6);
-    QBrush brush9(QColor(212, 255, 191, 255));
-    brush9.setStyle(Qt::SolidPattern);
-    palette1.setBrush(QPalette::Active, QPalette::Midlight, brush9);
-    QBrush brush10(QColor(85, 127, 63, 255));
-    brush10.setStyle(Qt::SolidPattern);
-    palette1.setBrush(QPalette::Active, QPalette::Dark, brush10);
-    QBrush brush11(QColor(113, 170, 84, 255));
-    brush11.setStyle(Qt::SolidPattern);
-    palette1.setBrush(QPalette::Active, QPalette::Mid, brush11);
-    palette1.setBrush(QPalette::Active, QPalette::Text, brush);
-    palette1.setBrush(QPalette::Active, QPalette::BrightText, brush6);
-    palette1.setBrush(QPalette::Active, QPalette::ButtonText, brush);
-    palette1.setBrush(QPalette::Active, QPalette::Base, brush6);
-    palette1.setBrush(QPalette::Active, QPalette::Window, brush8);
-    palette1.setBrush(QPalette::Active, QPalette::Shadow, brush);
-    palette1.setBrush(QPalette::Active, QPalette::AlternateBase, brush9);
-    palette1.setBrush(QPalette::Active, QPalette::ToolTipBase, brush7);
-    palette1.setBrush(QPalette::Active, QPalette::ToolTipText, brush);
-    palette1.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-    palette1.setBrush(QPalette::Inactive, QPalette::Button, brush8);
-    palette1.setBrush(QPalette::Inactive, QPalette::Light, brush6);
-    palette1.setBrush(QPalette::Inactive, QPalette::Midlight, brush9);
-    palette1.setBrush(QPalette::Inactive, QPalette::Dark, brush10);
-    palette1.setBrush(QPalette::Inactive, QPalette::Mid, brush11);
-    palette1.setBrush(QPalette::Inactive, QPalette::Text, brush);
-    palette1.setBrush(QPalette::Inactive, QPalette::BrightText, brush6);
-    palette1.setBrush(QPalette::Inactive, QPalette::ButtonText, brush);
-    palette1.setBrush(QPalette::Inactive, QPalette::Base, brush6);
-    palette1.setBrush(QPalette::Inactive, QPalette::Window, brush8);
-    palette1.setBrush(QPalette::Inactive, QPalette::Shadow, brush);
-    palette1.setBrush(QPalette::Inactive, QPalette::AlternateBase, brush9);
-    palette1.setBrush(QPalette::Inactive, QPalette::ToolTipBase, brush7);
-    palette1.setBrush(QPalette::Inactive, QPalette::ToolTipText, brush);
-    palette1.setBrush(QPalette::Disabled, QPalette::WindowText, brush10);
-    palette1.setBrush(QPalette::Disabled, QPalette::Button, brush8);
-    palette1.setBrush(QPalette::Disabled, QPalette::Light, brush6);
-    palette1.setBrush(QPalette::Disabled, QPalette::Midlight, brush9);
-    palette1.setBrush(QPalette::Disabled, QPalette::Dark, brush10);
-    palette1.setBrush(QPalette::Disabled, QPalette::Mid, brush11);
-    palette1.setBrush(QPalette::Disabled, QPalette::Text, brush10);
-    palette1.setBrush(QPalette::Disabled, QPalette::BrightText, brush6);
-    palette1.setBrush(QPalette::Disabled, QPalette::ButtonText, brush10);
-    palette1.setBrush(QPalette::Disabled, QPalette::Base, brush8);
-    palette1.setBrush(QPalette::Disabled, QPalette::Window, brush8);
-    palette1.setBrush(QPalette::Disabled, QPalette::Shadow, brush);
-    palette1.setBrush(QPalette::Disabled, QPalette::AlternateBase, brush8);
-    palette1.setBrush(QPalette::Disabled, QPalette::ToolTipBase, brush7);
-    palette1.setBrush(QPalette::Disabled, QPalette::ToolTipText, brush);
     leftCapture->setPalette(palette1);
     leftCapture->setAutoFillBackground(true);
     gridLayout_3 = new QGridLayout(leftCapture);
@@ -433,60 +330,9 @@ void MainWindow::createCentralWindow(QWidget *parent)
     rCsizePolicy.setHeightForWidth(rightCapture->sizePolicy().hasHeightForWidth());
     rightCapture->setSizePolicy(rCsizePolicy);
     rightCapture->setMinimumSize(QSize(240, 240));
+    rightCapture->setStyleSheet("QWidget {border:1px solid deepskyblue;border-style: outset;}");
     QPalette palette2;
     palette2.setBrush(QPalette::Active, QPalette::WindowText, brush);
-    QBrush brush12(QColor(170, 255, 255, 255));
-    brush12.setStyle(Qt::SolidPattern);
-    palette2.setBrush(QPalette::Active, QPalette::Button, brush12);
-    palette2.setBrush(QPalette::Active, QPalette::Light, brush6);
-    QBrush brush13(QColor(212, 255, 255, 255));
-    brush13.setStyle(Qt::SolidPattern);
-    palette2.setBrush(QPalette::Active, QPalette::Midlight, brush13);
-    QBrush brush14(QColor(85, 127, 127, 255));
-    brush14.setStyle(Qt::SolidPattern);
-    palette2.setBrush(QPalette::Active, QPalette::Dark, brush14);
-    QBrush brush15(QColor(113, 170, 170, 255));
-    brush15.setStyle(Qt::SolidPattern);
-    palette2.setBrush(QPalette::Active, QPalette::Mid, brush15);
-    palette2.setBrush(QPalette::Active, QPalette::Text, brush);
-    palette2.setBrush(QPalette::Active, QPalette::BrightText, brush6);
-    palette2.setBrush(QPalette::Active, QPalette::ButtonText, brush);
-    palette2.setBrush(QPalette::Active, QPalette::Base, brush6);
-    palette2.setBrush(QPalette::Active, QPalette::Window, brush12);
-    palette2.setBrush(QPalette::Active, QPalette::Shadow, brush);
-    palette2.setBrush(QPalette::Active, QPalette::AlternateBase, brush13);
-    palette2.setBrush(QPalette::Active, QPalette::ToolTipBase, brush7);
-    palette2.setBrush(QPalette::Active, QPalette::ToolTipText, brush);
-    palette2.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-    palette2.setBrush(QPalette::Inactive, QPalette::Button, brush12);
-    palette2.setBrush(QPalette::Inactive, QPalette::Light, brush6);
-    palette2.setBrush(QPalette::Inactive, QPalette::Midlight, brush13);
-    palette2.setBrush(QPalette::Inactive, QPalette::Dark, brush14);
-    palette2.setBrush(QPalette::Inactive, QPalette::Mid, brush15);
-    palette2.setBrush(QPalette::Inactive, QPalette::Text, brush);
-    palette2.setBrush(QPalette::Inactive, QPalette::BrightText, brush6);
-    palette2.setBrush(QPalette::Inactive, QPalette::ButtonText, brush);
-    palette2.setBrush(QPalette::Inactive, QPalette::Base, brush6);
-    palette2.setBrush(QPalette::Inactive, QPalette::Window, brush12);
-    palette2.setBrush(QPalette::Inactive, QPalette::Shadow, brush);
-    palette2.setBrush(QPalette::Inactive, QPalette::AlternateBase, brush13);
-    palette2.setBrush(QPalette::Inactive, QPalette::ToolTipBase, brush7);
-    palette2.setBrush(QPalette::Inactive, QPalette::ToolTipText, brush);
-    palette2.setBrush(QPalette::Disabled, QPalette::WindowText, brush14);
-    palette2.setBrush(QPalette::Disabled, QPalette::Button, brush12);
-    palette2.setBrush(QPalette::Disabled, QPalette::Light, brush6);
-    palette2.setBrush(QPalette::Disabled, QPalette::Midlight, brush13);
-    palette2.setBrush(QPalette::Disabled, QPalette::Dark, brush14);
-    palette2.setBrush(QPalette::Disabled, QPalette::Mid, brush15);
-    palette2.setBrush(QPalette::Disabled, QPalette::Text, brush14);
-    palette2.setBrush(QPalette::Disabled, QPalette::BrightText, brush6);
-    palette2.setBrush(QPalette::Disabled, QPalette::ButtonText, brush14);
-    palette2.setBrush(QPalette::Disabled, QPalette::Base, brush12);
-    palette2.setBrush(QPalette::Disabled, QPalette::Window, brush12);
-    palette2.setBrush(QPalette::Disabled, QPalette::Shadow, brush);
-    palette2.setBrush(QPalette::Disabled, QPalette::AlternateBase, brush12);
-    palette2.setBrush(QPalette::Disabled, QPalette::ToolTipBase, brush7);
-    palette2.setBrush(QPalette::Disabled, QPalette::ToolTipText, brush);
     rightCapture->setPalette(palette2);
     rightCapture->setAutoFillBackground(true);
     gridLayout_4 = new QGridLayout(rightCapture);
@@ -511,64 +357,9 @@ void MainWindow::createCentralWindow(QWidget *parent)
     rVsizePolicy.setHeightForWidth(rightView->sizePolicy().hasHeightForWidth());
     rightView->setSizePolicy(rVsizePolicy);
     rightView->setMinimumSize(QSize(240, 240));
+    rightView->setStyleSheet("QWidget {border:1px solid deepskyblue}");
     QPalette palette3;
     palette3.setBrush(QPalette::Active, QPalette::WindowText, brush);
-    QBrush brush16(QColor(0, 170, 255, 255));
-    brush16.setStyle(Qt::SolidPattern);
-    palette3.setBrush(QPalette::Active, QPalette::Button, brush16);
-    QBrush brush17(QColor(127, 213, 255, 255));
-    brush17.setStyle(Qt::SolidPattern);
-    palette3.setBrush(QPalette::Active, QPalette::Light, brush17);
-    QBrush brush18(QColor(63, 191, 255, 255));
-    brush18.setStyle(Qt::SolidPattern);
-    palette3.setBrush(QPalette::Active, QPalette::Midlight, brush18);
-    QBrush brush19(QColor(0, 85, 127, 255));
-    brush19.setStyle(Qt::SolidPattern);
-    palette3.setBrush(QPalette::Active, QPalette::Dark, brush19);
-    QBrush brush20(QColor(0, 113, 170, 255));
-    brush20.setStyle(Qt::SolidPattern);
-    palette3.setBrush(QPalette::Active, QPalette::Mid, brush20);
-    palette3.setBrush(QPalette::Active, QPalette::Text, brush);
-    palette3.setBrush(QPalette::Active, QPalette::BrightText, brush6);
-    palette3.setBrush(QPalette::Active, QPalette::ButtonText, brush);
-    palette3.setBrush(QPalette::Active, QPalette::Base, brush6);
-    palette3.setBrush(QPalette::Active, QPalette::Window, brush16);
-    palette3.setBrush(QPalette::Active, QPalette::Shadow, brush);
-    QBrush brush21(QColor(127, 212, 255, 255));
-    brush21.setStyle(Qt::SolidPattern);
-    palette3.setBrush(QPalette::Active, QPalette::AlternateBase, brush21);
-    palette3.setBrush(QPalette::Active, QPalette::ToolTipBase, brush7);
-    palette3.setBrush(QPalette::Active, QPalette::ToolTipText, brush);
-    palette3.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-    palette3.setBrush(QPalette::Inactive, QPalette::Button, brush16);
-    palette3.setBrush(QPalette::Inactive, QPalette::Light, brush17);
-    palette3.setBrush(QPalette::Inactive, QPalette::Midlight, brush18);
-    palette3.setBrush(QPalette::Inactive, QPalette::Dark, brush19);
-    palette3.setBrush(QPalette::Inactive, QPalette::Mid, brush20);
-    palette3.setBrush(QPalette::Inactive, QPalette::Text, brush);
-    palette3.setBrush(QPalette::Inactive, QPalette::BrightText, brush6);
-    palette3.setBrush(QPalette::Inactive, QPalette::ButtonText, brush);
-    palette3.setBrush(QPalette::Inactive, QPalette::Base, brush6);
-    palette3.setBrush(QPalette::Inactive, QPalette::Window, brush16);
-    palette3.setBrush(QPalette::Inactive, QPalette::Shadow, brush);
-    palette3.setBrush(QPalette::Inactive, QPalette::AlternateBase, brush21);
-    palette3.setBrush(QPalette::Inactive, QPalette::ToolTipBase, brush7);
-    palette3.setBrush(QPalette::Inactive, QPalette::ToolTipText, brush);
-    palette3.setBrush(QPalette::Disabled, QPalette::WindowText, brush19);
-    palette3.setBrush(QPalette::Disabled, QPalette::Button, brush16);
-    palette3.setBrush(QPalette::Disabled, QPalette::Light, brush17);
-    palette3.setBrush(QPalette::Disabled, QPalette::Midlight, brush18);
-    palette3.setBrush(QPalette::Disabled, QPalette::Dark, brush19);
-    palette3.setBrush(QPalette::Disabled, QPalette::Mid, brush20);
-    palette3.setBrush(QPalette::Disabled, QPalette::Text, brush19);
-    palette3.setBrush(QPalette::Disabled, QPalette::BrightText, brush6);
-    palette3.setBrush(QPalette::Disabled, QPalette::ButtonText, brush19);
-    palette3.setBrush(QPalette::Disabled, QPalette::Base, brush16);
-    palette3.setBrush(QPalette::Disabled, QPalette::Window, brush16);
-    palette3.setBrush(QPalette::Disabled, QPalette::Shadow, brush);
-    palette3.setBrush(QPalette::Disabled, QPalette::AlternateBase, brush16);
-    palette3.setBrush(QPalette::Disabled, QPalette::ToolTipBase, brush7);
-    palette3.setBrush(QPalette::Disabled, QPalette::ToolTipText, brush);
     rightView->setPalette(palette3);
     rightView->setAutoFillBackground(true);
     gridLayout_5 = new QGridLayout(rightView);
@@ -594,6 +385,7 @@ void MainWindow::createCentralWindow(QWidget *parent)
     tdPolicy.setHeightForWidth(threeDView->sizePolicy().hasHeightForWidth());
     threeDView->setSizePolicy(tdPolicy);
     threeDView->setMinimumSize(QSize(730, 470));
+    threeDView->setStyleSheet("QWidget {border:1px solid mediumpurple;}");
     QPalette palette4;
     palette4.setBrush(QPalette::Active, QPalette::WindowText, brush);
     QBrush brush22(QColor(0, 255, 255, 255));
@@ -610,46 +402,6 @@ void MainWindow::createCentralWindow(QWidget *parent)
     palette4.setBrush(QPalette::Active, QPalette::Dark, brush25);
     QBrush brush26(QColor(0, 170, 170, 255));
     brush26.setStyle(Qt::SolidPattern);
-    palette4.setBrush(QPalette::Active, QPalette::Mid, brush26);
-    palette4.setBrush(QPalette::Active, QPalette::Text, brush);
-    palette4.setBrush(QPalette::Active, QPalette::BrightText, brush6);
-    palette4.setBrush(QPalette::Active, QPalette::ButtonText, brush);
-    palette4.setBrush(QPalette::Active, QPalette::Base, brush6);
-    palette4.setBrush(QPalette::Active, QPalette::Window, brush22);
-    palette4.setBrush(QPalette::Active, QPalette::Shadow, brush);
-    palette4.setBrush(QPalette::Active, QPalette::AlternateBase, brush23);
-    palette4.setBrush(QPalette::Active, QPalette::ToolTipBase, brush7);
-    palette4.setBrush(QPalette::Active, QPalette::ToolTipText, brush);
-    palette4.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-    palette4.setBrush(QPalette::Inactive, QPalette::Button, brush22);
-    palette4.setBrush(QPalette::Inactive, QPalette::Light, brush23);
-    palette4.setBrush(QPalette::Inactive, QPalette::Midlight, brush24);
-    palette4.setBrush(QPalette::Inactive, QPalette::Dark, brush25);
-    palette4.setBrush(QPalette::Inactive, QPalette::Mid, brush26);
-    palette4.setBrush(QPalette::Inactive, QPalette::Text, brush);
-    palette4.setBrush(QPalette::Inactive, QPalette::BrightText, brush6);
-    palette4.setBrush(QPalette::Inactive, QPalette::ButtonText, brush);
-    palette4.setBrush(QPalette::Inactive, QPalette::Base, brush6);
-    palette4.setBrush(QPalette::Inactive, QPalette::Window, brush22);
-    palette4.setBrush(QPalette::Inactive, QPalette::Shadow, brush);
-    palette4.setBrush(QPalette::Inactive, QPalette::AlternateBase, brush23);
-    palette4.setBrush(QPalette::Inactive, QPalette::ToolTipBase, brush7);
-    palette4.setBrush(QPalette::Inactive, QPalette::ToolTipText, brush);
-    palette4.setBrush(QPalette::Disabled, QPalette::WindowText, brush25);
-    palette4.setBrush(QPalette::Disabled, QPalette::Button, brush22);
-    palette4.setBrush(QPalette::Disabled, QPalette::Light, brush23);
-    palette4.setBrush(QPalette::Disabled, QPalette::Midlight, brush24);
-    palette4.setBrush(QPalette::Disabled, QPalette::Dark, brush25);
-    palette4.setBrush(QPalette::Disabled, QPalette::Mid, brush26);
-    palette4.setBrush(QPalette::Disabled, QPalette::Text, brush25);
-    palette4.setBrush(QPalette::Disabled, QPalette::BrightText, brush6);
-    palette4.setBrush(QPalette::Disabled, QPalette::ButtonText, brush25);
-    palette4.setBrush(QPalette::Disabled, QPalette::Base, brush22);
-    palette4.setBrush(QPalette::Disabled, QPalette::Window, brush22);
-    palette4.setBrush(QPalette::Disabled, QPalette::Shadow, brush);
-    palette4.setBrush(QPalette::Disabled, QPalette::AlternateBase, brush22);
-    palette4.setBrush(QPalette::Disabled, QPalette::ToolTipBase, brush7);
-    palette4.setBrush(QPalette::Disabled, QPalette::ToolTipText, brush);
     threeDView->setPalette(palette4);
     threeDView->setAutoFillBackground(true);
     toolBox->raise();
@@ -812,6 +564,8 @@ void MainWindow::selectPath(int type)//decide current childpath
 void MainWindow::closeCamera()
 {
     timer->stop();
+    OnSnapexStop();
+    OnSnapexClose();
 }
 
 void MainWindow::projectorcontrol()
@@ -836,11 +590,10 @@ void MainWindow::getScreenGeometry()
     }
     else{
         QRect screenRect = desktopWidget->screenGeometry(0);
-        QRect projRect = desktopWidget->screenGeometry(1);//1 represent projector
         screenWidth = screenRect.width();
         screenHeight = screenRect.height();
-        projectorWidth = projRect.width();
-        projectorHeight = projRect.height();
+        projectorWidth = 800;//保证投影区域完全被拍到,这里采用了手动设置，也可以考虑加入set对话框
+        projectorHeight = 600;
     }
 }
 
@@ -912,15 +665,14 @@ void MainWindow::scan()
     }
     selectPath(1);
     toolBox->setCurrentIndex(2);
-    HVCloseSnap(m_hhv_1);
-    HVCloseSnap(m_hhv_2);
-    pj->hide();
+    closeCamera();
+    pj->displaySwitch(false);
     pj->opencvWindow();
     GrayCodes *grayCode = new GrayCodes(projectorWidth,projectorHeight);
     grayCode->generateGrays();
     pj->showImg(grayCode->getNextImg());
     int grayCount = 0;
-    timer->stop();
+
     while(true)
     {
         cvWaitKey(100);
@@ -945,12 +697,14 @@ void MainWindow::scan()
     HVStartSnap(m_hhv_2,ppBuf_2,1);
     timer->start();
     pj->destoryWindow();
-    pj->showFullScreen();
+    pj->displaySwitch(true);
 }
 
 void MainWindow::reconstruct()
 {
-    if(isConfigured==false){
+    if(cameraOpened)
+        closeCamera();
+    if(isConfigured == false){
         QMessageBox::warning(this,"Warning","Press 'Set' button to configure the settings.");
         return;
     }
@@ -985,6 +739,13 @@ void MainWindow::reconstruct()
         meshCreator->exportPlyMesh(projectPath + "/reconstruction/result.ply");
     delete meshCreator;
     delete reconstructor;
+    /*
+    HVOpenSnap(m_hhv_1,SnapThreadCallback, this);
+    HVOpenSnap(m_hhv_2,SnapThreadCallback, this);
+    HVStartSnap(m_hhv_1,ppBuf_1,1);
+    HVStartSnap(m_hhv_2,ppBuf_2,1);
+    timer->start();
+    */
 }
 
 void MainWindow::set()
@@ -997,6 +758,8 @@ void MainWindow::set()
 
 void MainWindow::getSetInfo()
 {
+    projectorWidth = sWindow->proj_w;
+    projectorHeight = sWindow->proj_h;
     black_ = sWindow->black_threshold;
     white_ = sWindow->white_threshold;
     isAutoContrast = sWindow->autoContrast;
