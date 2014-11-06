@@ -47,3 +47,6 @@ HEADERS += \
     utilities.h \
     virtualcamera.h
 
+FORMS += \
+    mainwindow.ui
+
