@@ -48,5 +48,10 @@ HEADERS += \
     virtualcamera.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    Set.ui
+
+TRANSLATIONS += en.ts zh.ts
+
+OTHER_FILES +=
 

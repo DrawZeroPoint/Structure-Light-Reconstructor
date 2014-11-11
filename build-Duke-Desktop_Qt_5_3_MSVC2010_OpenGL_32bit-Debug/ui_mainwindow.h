@@ -177,7 +177,8 @@ public:
         actionProjector->setObjectName(QStringLiteral("actionProjector"));
         actionProjector->setCheckable(true);
         QIcon icon5;
-        icon5.addFile(QStringLiteral(":/projector.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon5.addFile(QStringLiteral(":/projon.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon5.addFile(QStringLiteral(":/projoff.png"), QSize(), QIcon::Normal, QIcon::On);
         actionProjector->setIcon(icon5);
         actionProjector->setFont(font);
         actionCalib = new QAction(MainWindow);
@@ -211,6 +212,7 @@ public:
         actionSet->setFont(font);
         actionEnglish = new QAction(MainWindow);
         actionEnglish->setObjectName(QStringLiteral("actionEnglish"));
+        actionEnglish->setEnabled(false);
         QIcon icon10;
         icon10.addFile(QStringLiteral(":/english.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionEnglish->setIcon(icon10);
@@ -785,6 +787,12 @@ public:
 
         dockWidget_2->setWidget(dockWidgetContents_3);
         MainWindow->addDockWidget(static_cast<Qt::DockWidgetArea>(2), dockWidget_2);
+#ifndef QT_NO_SHORTCUT
+        label_5->setBuddy(snapSpeedBox);
+        label_6->setBuddy(horizontalSlider);
+        label_7->setBuddy(spinBox);
+        label_8->setBuddy(horizontalSlider_2);
+#endif // QT_NO_SHORTCUT
 
         menubar->addAction(menuFile->menuAction());
         menubar->addAction(menuCustomize->menuAction());
@@ -889,7 +897,13 @@ public:
         actionSet->setStatusTip(QApplication::translate("MainWindow", "Set the parameters of the project.", 0));
 #endif // QT_NO_STATUSTIP
         actionEnglish->setText(QApplication::translate("MainWindow", "English", 0));
+#ifndef QT_NO_TOOLTIP
+        actionEnglish->setToolTip(QApplication::translate("MainWindow", "en", 0));
+#endif // QT_NO_TOOLTIP
         actionChinese->setText(QApplication::translate("MainWindow", "\347\256\200\344\275\223\344\270\255\346\226\207", 0));
+#ifndef QT_NO_TOOLTIP
+        actionChinese->setToolTip(QApplication::translate("MainWindow", "zh", 0));
+#endif // QT_NO_TOOLTIP
         label_9->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Capture images as displayed:</p></body></html>", 0));
         currentPhotoLabel->setText(QApplication::translate("MainWindow", "0", 0));
         label_11->setText(QApplication::translate("MainWindow", "<html><head/><body><p>/12 images have been captured.</p></body></html>", 0));

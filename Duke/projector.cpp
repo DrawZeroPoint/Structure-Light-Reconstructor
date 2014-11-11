@@ -1,15 +1,30 @@
 #include "projector.h"
 #include <QLayout>
-Projector::Projector(QWidget *parent, int projW, int projH, int xos, int yos) : QWidget(parent)
+#include <QPainter>
+
+int proj_w;
+int proj_h;
+
+Projector::Projector(QWidget *parent, int scanW, int scanH, int projW, int projH, int xos, int yos) : QWidget(parent)
 {
-    width = projW;
-    height = projH;
+    width = scanW;
+    height = scanH;
+    proj_w = projW;
+    proj_h = projH;
     xoffset = xos;
     yoffset = yos;
 }
 
 Projector::~Projector()
 {
+}
+
+void Projector::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    painter.setPen(QPen(Qt::green, 5));
+    painter.drawLine(proj_w/2 - 60, proj_h/2, proj_w/2 + 60, proj_h/2);
+    painter.drawLine(proj_w/2, proj_h/2 - 60, proj_w/2, proj_h/2 + 60);
 }
 
 void Projector::opencvWindow()

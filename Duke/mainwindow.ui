@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1005</width>
-    <height>652</height>
+    <width>994</width>
+    <height>670</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,6 +16,9 @@
   <property name="windowIcon">
    <iconset resource="Resource/res.qrc">
     <normaloff>:/splash.png</normaloff>:/splash.png</iconset>
+  </property>
+  <property name="documentMode">
+   <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -67,7 +70,7 @@
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true"/>
+       <string notr="true">border-bottom:1px solid deepskyblue;</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="leftMargin">
@@ -82,8 +85,11 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <property name="spacing">
+       <property name="horizontalSpacing">
         <number>0</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>1</number>
        </property>
        <item row="0" column="0">
         <widget class="QWidget" name="widget_2" native="true">
@@ -120,7 +126,7 @@ border: 1px solid deepskyblue;</string>
           <enum>Qt::LeftToRight</enum>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(218, 246, 253);
+          <string notr="true">background-color: rgb(111, 215, 253);
 font: 9pt &quot;Calibri&quot;;</string>
          </property>
          <property name="tabPosition">
@@ -152,6 +158,21 @@ font: 9pt &quot;Calibri&quot;;</string>
            <string>Calibrate</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_11">
+           <property name="leftMargin">
+            <number>3</number>
+           </property>
+           <property name="topMargin">
+            <number>3</number>
+           </property>
+           <property name="rightMargin">
+            <number>3</number>
+           </property>
+           <property name="bottomMargin">
+            <number>3</number>
+           </property>
+           <property name="spacing">
+            <number>3</number>
+           </property>
            <item row="0" column="0" colspan="4">
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
@@ -162,18 +183,18 @@ font: 9pt &quot;Calibri&quot;;</string>
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="label_10">
+              <widget class="QLabel" name="currentPhotoLabel">
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
                </property>
                <property name="styleSheet">
-                <string notr="true">background-color: rgb(230, 230, 230);</string>
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
                </property>
                <property name="text">
                 <string>0</string>
                </property>
                <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                <set>Qt::AlignCenter</set>
                </property>
               </widget>
              </item>
@@ -200,7 +221,7 @@ font: 9pt &quot;Calibri&quot;;</string>
             </spacer>
            </item>
            <item row="1" column="0" rowspan="3">
-            <widget class="QLabel" name="label_12">
+            <widget class="QLabel" name="explainLabel">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>0</horstretch>
@@ -215,18 +236,21 @@ font: 9pt &quot;Calibri&quot;;</string>
              </property>
              <property name="maximumSize">
               <size>
-               <width>500</width>
+               <width>400</width>
                <height>300</height>
               </size>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: rgb(199, 224, 230);</string>
+              <string notr="true">background-color: rgbrgbrgb(238, 238, 238);</string>
              </property>
              <property name="frameShape">
               <enum>QFrame::NoFrame</enum>
              </property>
              <property name="text">
               <string>Illustration</string>
+             </property>
+             <property name="scaledContents">
+              <bool>true</bool>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -296,17 +320,20 @@ font: 9pt &quot;Calibri&quot;;</string>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
-             <widget class="QPushButton" name="pushButton">
+             <widget class="QPushButton" name="captureButton">
               <property name="text">
                <string>Capture</string>
               </property>
              </widget>
-             <widget class="QPushButton" name="pushButton_2">
+             <widget class="QPushButton" name="redoButton">
               <property name="text">
                <string>Redo</string>
               </property>
              </widget>
-             <widget class="QPushButton" name="pushButton_3">
+             <widget class="QPushButton" name="calibButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Calibrate</string>
               </property>
@@ -337,7 +364,7 @@ font: 9pt &quot;Calibri&quot;;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1005</width>
+     <width>994</width>
      <height>23</height>
     </rect>
    </property>
@@ -631,16 +658,41 @@ background-color: rgb(130, 197, 255);
 selection-background-color: rgb(255, 255, 255);</string>
     </property>
     <property name="title">
-     <string>File</string>
+     <string>Project</string>
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuCustomize">
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(130, 197, 255);
+selection-background-color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="title">
+     <string>Customize</string>
+    </property>
+    <widget class="QMenu" name="menuLanguage">
+     <property name="font">
+      <font>
+       <family>Calibri</family>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="title">
+      <string>Language</string>
+     </property>
+     <addaction name="actionEnglish"/>
+     <addaction name="actionChinese"/>
+    </widget>
+    <addaction name="menuLanguage"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuCustomize"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar">
+  <widget class="QStatusBar" name="statusBar">
    <property name="contextMenuPolicy">
     <enum>Qt::DefaultContextMenu</enum>
    </property>
@@ -659,10 +711,16 @@ selection-background-color: rgb(255, 255, 255);</string>
     <string notr="true">background-color: qlineargradient(spread:pad, x1:0.522409, y1:0.244, x2:0.5, y2:1, stop:0 rgba(71, 166, 255, 255), stop:0.977273 rgba(115, 217, 255, 255));</string>
    </property>
    <property name="movable">
-    <bool>false</bool>
+    <bool>true</bool>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftToolBarArea|Qt::TopToolBarArea</set>
    </property>
    <property name="toolButtonStyle">
     <enum>Qt::ToolButtonTextUnderIcon</enum>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -670,6 +728,8 @@ selection-background-color: rgb(255, 255, 255);</string>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNew"/>
+   <addaction name="separator"/>
    <addaction name="actionOpenCamera"/>
    <addaction name="separator"/>
    <addaction name="actionProjector"/>
@@ -682,18 +742,18 @@ selection-background-color: rgb(255, 255, 255);</string>
    <addaction name="separator"/>
    <addaction name="actionSet"/>
    <addaction name="separator"/>
+   <addaction name="actionExit"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="minimumSize">
     <size>
      <width>312</width>
-     <height>500</height>
+     <height>528</height>
     </size>
    </property>
    <property name="styleSheet">
-    <string notr="true">border-style: outset;
-font: 9pt &quot;Calibri&quot;;
-border:1px solid deepskyblue;</string>
+    <string notr="true">font: 9pt &quot;Calibri&quot;;</string>
    </property>
    <property name="features">
     <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable</set>
@@ -756,10 +816,13 @@ border:1px solid deepskyblue;</string>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>100</height>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -769,10 +832,13 @@ border:1px solid deepskyblue;</string>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>100</height>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -782,18 +848,45 @@ border:1px solid deepskyblue;</string>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>136</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
         <item row="1" column="1">
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="leftViewLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>400</width>
+            <height>320</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">border:1px solid deepskyblue;</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
           <property name="text">
            <string>View</string>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -802,9 +895,12 @@ border:1px solid deepskyblue;</string>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>136</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
@@ -842,10 +938,13 @@ border:1px solid deepskyblue;</string>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>100</height>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -855,18 +954,42 @@ border:1px solid deepskyblue;</string>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>129</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
         <item row="1" column="1">
-         <widget class="QLabel" name="label_2">
+         <widget class="QLabel" name="leftCaptureLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>400</width>
+            <height>320</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">border:1px solid deepskyblue;</string>
+          </property>
           <property name="text">
            <string>Capture</string>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -875,9 +998,12 @@ border:1px solid deepskyblue;</string>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>128</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
@@ -888,10 +1014,13 @@ border:1px solid deepskyblue;</string>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>100</height>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -914,7 +1043,8 @@ border:1px solid deepskyblue;</string>
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 9pt &quot;Calibri&quot;;</string>
+        <string notr="true">font: 9pt &quot;Calibri&quot;;
+background-color: rgbrgb(111, 215, 253)</string>
        </property>
        <property name="title">
         <string>Camera Adjust</string>
@@ -929,6 +1059,21 @@ border:1px solid deepskyblue;</string>
         <bool>false</bool>
        </property>
        <layout class="QGridLayout" name="gridLayout_8">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item row="0" column="1">
          <spacer name="verticalSpacer_9">
           <property name="orientation">
@@ -964,8 +1109,14 @@ border:1px solid deepskyblue;</string>
            <property name="text">
             <string>Snap Speed(ms)</string>
            </property>
+           <property name="buddy">
+            <cstring>snapSpeedBox</cstring>
+           </property>
           </widget>
-          <widget class="QSpinBox" name="spinBox">
+          <widget class="QSpinBox" name="snapSpeedBox">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 255, 255);</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -979,6 +1130,9 @@ border:1px solid deepskyblue;</string>
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>Exposure</string>
+           </property>
+           <property name="buddy">
+            <cstring>horizontalSlider</cstring>
            </property>
           </widget>
           <widget class="QSlider" name="horizontalSlider">
@@ -1040,8 +1194,7 @@ border:1px solid deepskyblue;</string>
     </size>
    </property>
    <property name="styleSheet">
-    <string notr="true">border:1px solid deepskyblue;
-font: 9pt &quot;Calibri&quot;;</string>
+    <string notr="true">font: 9pt &quot;Calibri&quot;;</string>
    </property>
    <property name="features">
     <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable</set>
@@ -1104,10 +1257,13 @@ font: 9pt &quot;Calibri&quot;;</string>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>100</height>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -1117,18 +1273,42 @@ font: 9pt &quot;Calibri&quot;;</string>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>135</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
         <item row="1" column="1">
-         <widget class="QLabel" name="label_3">
+         <widget class="QLabel" name="rightViewLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>400</width>
+            <height>320</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">border:1px solid deepskyblue;</string>
+          </property>
           <property name="text">
            <string>View</string>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1137,9 +1317,12 @@ font: 9pt &quot;Calibri&quot;;</string>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>135</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
@@ -1150,10 +1333,13 @@ font: 9pt &quot;Calibri&quot;;</string>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>100</height>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -1176,12 +1362,28 @@ font: 9pt &quot;Calibri&quot;;</string>
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 9pt &quot;Calibri&quot;;</string>
+        <string notr="true">font: 9pt &quot;Calibri&quot;;
+background-color: rgbrgb(111, 215, 253)</string>
        </property>
        <property name="title">
         <string>Camera Adjust</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_9">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item row="0" column="1">
          <spacer name="verticalSpacer_11">
           <property name="orientation">
@@ -1217,8 +1419,14 @@ font: 9pt &quot;Calibri&quot;;</string>
            <property name="text">
             <string>Snap Speed(ms)</string>
            </property>
+           <property name="buddy">
+            <cstring>spinBox</cstring>
+           </property>
           </widget>
-          <widget class="QSpinBox" name="spinBox_2">
+          <widget class="QSpinBox" name="spinBox">
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 255, 255);</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -1229,6 +1437,9 @@ font: 9pt &quot;Calibri&quot;;</string>
           <widget class="QLabel" name="label_8">
            <property name="text">
             <string>Exposure</string>
+           </property>
+           <property name="buddy">
+            <cstring>horizontalSlider_2</cstring>
            </property>
           </widget>
           <widget class="QSlider" name="horizontalSlider_2">
@@ -1308,10 +1519,13 @@ font: 9pt &quot;Calibri&quot;;</string>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>100</height>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -1321,18 +1535,42 @@ font: 9pt &quot;Calibri&quot;;</string>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>128</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
         <item row="1" column="1">
-         <widget class="QLabel" name="label_4">
+         <widget class="QLabel" name="rightCaptureLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>400</width>
+            <height>320</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">border:1px solid deepskyblue;</string>
+          </property>
           <property name="text">
            <string>Capture</string>
+          </property>
+          <property name="scaledContents">
+           <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -1341,9 +1579,12 @@ font: 9pt &quot;Calibri&quot;;</string>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>127</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
@@ -1354,10 +1595,13 @@ font: 9pt &quot;Calibri&quot;;</string>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>100</height>
+            <height>0</height>
            </size>
           </property>
          </spacer>
@@ -1369,9 +1613,6 @@ font: 9pt &quot;Calibri&quot;;</string>
    </widget>
   </widget>
   <action name="actionNew">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="Resource/res.qrc">
      <normaloff>:/new.png</normaloff>:/new.png</iconset>
@@ -1379,17 +1620,30 @@ font: 9pt &quot;Calibri&quot;;</string>
    <property name="text">
     <string>New Project</string>
    </property>
+   <property name="iconText">
+    <string>  New  </string>
+   </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create a new project&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="statusTip">
+    <string>Create a new folder to contain project.</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Calibri</family>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
+   </property>
   </action>
   <action name="actionOpen">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="Resource/res.qrc">
      <normaloff>:/open.png</normaloff>:/open.png</iconset>
@@ -1400,14 +1654,18 @@ font: 9pt &quot;Calibri&quot;;</string>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open project&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="font">
+    <font>
+     <family>Calibri</family>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionExit">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="Resource/res.qrc">
      <normaloff>:/close.png</normaloff>:/close.png</iconset>
@@ -1415,17 +1673,27 @@ font: 9pt &quot;Calibri&quot;;</string>
    <property name="text">
     <string>Exit</string>
    </property>
+   <property name="iconText">
+    <string>  Exit  </string>
+   </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exit&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>Exit</string>
+   </property>
+   <property name="statusTip">
+    <string>Close the program.</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Calibri</family>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
    </property>
   </action>
   <action name="actionOpenCamera">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="Resource/res.qrc">
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
@@ -1435,6 +1703,9 @@ font: 9pt &quot;Calibri&quot;;</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open cameras&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="statusTip">
+    <string>Open Cameras.</string>
    </property>
    <property name="font">
     <font>
@@ -1450,12 +1721,13 @@ font: 9pt &quot;Calibri&quot;;</string>
    </property>
    <property name="icon">
     <iconset resource="Resource/res.qrc">
-     <normaloff>:/projector.png</normaloff>:/projector.png</iconset>
+     <normaloff>:/projon.png</normaloff>
+     <normalon>:/projoff.png</normalon>:/projon.png</iconset>
    </property>
    <property name="text">
     <string>Projector</string>
    </property>
-   <property name="toolTip">
+   <property name="statusTip">
     <string>Turn on/off the projector</string>
    </property>
    <property name="font">
@@ -1467,9 +1739,6 @@ font: 9pt &quot;Calibri&quot;;</string>
    </property>
   </action>
   <action name="actionCalib">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset theme="Calibration" resource="Resource/res.qrc">
      <normaloff>:/calib.png</normaloff>:/calib.png</iconset>
@@ -1478,7 +1747,10 @@ font: 9pt &quot;Calibri&quot;;</string>
     <string>Calibrate</string>
    </property>
    <property name="toolTip">
-    <string>Active calibration</string>
+    <string>Calibrate</string>
+   </property>
+   <property name="statusTip">
+    <string>Active calibration.</string>
    </property>
    <property name="font">
     <font>
@@ -1489,9 +1761,6 @@ font: 9pt &quot;Calibri&quot;;</string>
    </property>
   </action>
   <action name="actionScan">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="Resource/res.qrc">
      <normaloff>:/scan.png</normaloff>:/scan.png</iconset>
@@ -1499,8 +1768,14 @@ font: 9pt &quot;Calibri&quot;;</string>
    <property name="text">
     <string>Scan</string>
    </property>
+   <property name="iconText">
+    <string>  Scan  </string>
+   </property>
    <property name="toolTip">
-    <string>Active Scan</string>
+    <string>Scan</string>
+   </property>
+   <property name="statusTip">
+    <string>Start scan process.</string>
    </property>
    <property name="font">
     <font>
@@ -1511,9 +1786,6 @@ font: 9pt &quot;Calibri&quot;;</string>
    </property>
   </action>
   <action name="actionReconstruct">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="Resource/res.qrc">
      <normaloff>:/reconstruct.png</normaloff>:/reconstruct.png</iconset>
@@ -1522,7 +1794,10 @@ font: 9pt &quot;Calibri&quot;;</string>
     <string>Reconstruct</string>
    </property>
    <property name="toolTip">
-    <string>Active reconstruction</string>
+    <string>Reconstruct</string>
+   </property>
+   <property name="statusTip">
+    <string>Start reconstruction.</string>
    </property>
    <property name="font">
     <font>
@@ -1533,9 +1808,6 @@ font: 9pt &quot;Calibri&quot;;</string>
    </property>
   </action>
   <action name="actionSet">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="Resource/res.qrc">
      <normaloff>:/set.png</normaloff>:/set.png</iconset>
@@ -1545,6 +1817,50 @@ font: 9pt &quot;Calibri&quot;;</string>
    </property>
    <property name="toolTip">
     <string>Settings</string>
+   </property>
+   <property name="statusTip">
+    <string>Set the parameters of the project.</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Calibri</family>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+  </action>
+  <action name="actionEnglish">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Resource/res.qrc">
+     <normaloff>:/english.png</normaloff>:/english.png</iconset>
+   </property>
+   <property name="text">
+    <string>English</string>
+   </property>
+   <property name="toolTip">
+    <string>en</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Calibri</family>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+  </action>
+  <action name="actionChinese">
+   <property name="icon">
+    <iconset resource="Resource/res.qrc">
+     <normaloff>:/china.png</normaloff>:/china.png</iconset>
+   </property>
+   <property name="text">
+    <string>简体中文</string>
+   </property>
+   <property name="toolTip">
+    <string>zh</string>
    </property>
    <property name="font">
     <font>
@@ -1558,5 +1874,38 @@ font: 9pt &quot;Calibri&quot;;</string>
  <resources>
   <include location="Resource/res.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>snapSpeedBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>381</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>821</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>snapSpeedBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>821</x>
+     <y>381</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>138</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

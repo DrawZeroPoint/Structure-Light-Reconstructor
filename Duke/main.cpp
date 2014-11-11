@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     QSplashScreen *splash = new QSplashScreen;
     splash->setPixmap(QPixmap(":/splash.png"));
     splash->show();
+
     MainWindow w;
     w.showMaximized();
     w.show();
