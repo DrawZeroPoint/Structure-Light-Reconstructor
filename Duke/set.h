@@ -40,6 +40,8 @@ public:
     int exportObj;
     int exportPly;
 
+    void switchLang();
+
 private:
     Ui::SetDialog *set;
     int boolToInt(bool input);

@@ -121,3 +121,7 @@ int Set::boolToInt(bool input)
         return 0;
 }
 
+void Set::switchLang()
+{
+    set->retranslateUi(this);
+}

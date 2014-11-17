@@ -1,373 +1,429 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1">
+<TS version="2.1" language="en">
 <context>
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="14"/>
         <source>MainWindow</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="158"/>
-        <location filename="mainwindow.ui" line="338"/>
-        <location filename="mainwindow.ui" line="1734"/>
-        <location filename="mainwindow.ui" line="1737"/>
-        <source>Calibrate</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="181"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Capture images as displayed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="194"/>
-        <source>0</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="204"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;/12 images have been captured.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="250"/>
-        <source>Illustration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="325"/>
-        <location filename="mainwindow.ui" line="986"/>
-        <location filename="mainwindow.ui" line="1555"/>
-        <source>Capture</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="330"/>
-        <source>Redo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="347"/>
+        <location filename="mainwindow.ui" line="164"/>
+        <location filename="mainwindow.ui" line="344"/>
+        <location filename="mainwindow.ui" line="1753"/>
         <location filename="mainwindow.ui" line="1756"/>
-        <location filename="mainwindow.ui" line="1762"/>
-        <source>Scan</source>
-        <translation type="unfinished"></translation>
+        <source>Calibrate</source>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="352"/>
+        <location filename="mainwindow.ui" line="187"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Capture images as displayed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="200"/>
+        <source>0</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="210"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;/12 images have been captured.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="256"/>
+        <source>Illustration</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="331"/>
+        <location filename="mainwindow.ui" line="992"/>
+        <location filename="mainwindow.ui" line="1573"/>
+        <source>Capture</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="336"/>
+        <source>Redo</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="353"/>
+        <location filename="mainwindow.ui" line="1775"/>
         <location filename="mainwindow.ui" line="1781"/>
-        <location filename="mainwindow.ui" line="1784"/>
+        <source>Scan</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="358"/>
+        <location filename="mainwindow.ui" line="1800"/>
+        <location filename="mainwindow.ui" line="1803"/>
         <source>Reconstruct</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="661"/>
+        <location filename="mainwindow.ui" line="667"/>
         <source>Project</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="674"/>
+        <location filename="mainwindow.ui" line="680"/>
         <source>Customize</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="685"/>
+        <location filename="mainwindow.ui" line="691"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="708"/>
+        <location filename="mainwindow.ui" line="714"/>
         <source>toolBar</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="765"/>
+        <location filename="mainwindow.ui" line="771"/>
         <source>Left Camera</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="883"/>
-        <location filename="mainwindow.ui" line="1299"/>
+        <location filename="mainwindow.ui" line="889"/>
+        <location filename="mainwindow.ui" line="1311"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1050"/>
-        <location filename="mainwindow.ui" line="1363"/>
+        <location filename="mainwindow.ui" line="1056"/>
+        <location filename="mainwindow.ui" line="1375"/>
         <source>Camera Adjust</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1110"/>
-        <location filename="mainwindow.ui" line="1414"/>
+        <location filename="mainwindow.ui" line="1116"/>
+        <location filename="mainwindow.ui" line="1426"/>
         <source>Snap Speed(ms)</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1129"/>
-        <location filename="mainwindow.ui" line="1430"/>
+        <location filename="mainwindow.ui" line="1138"/>
+        <location filename="mainwindow.ui" line="1445"/>
         <source>Exposure</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1200"/>
+        <location filename="mainwindow.ui" line="1212"/>
         <source>Right Camera</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1609"/>
+        <location filename="mainwindow.ui" line="1627"/>
         <source>New Project</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1612"/>
+        <location filename="mainwindow.ui" line="1630"/>
         <source>  New  </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1615"/>
+        <location filename="mainwindow.ui" line="1633"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create a new project&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1618"/>
+        <location filename="mainwindow.ui" line="1636"/>
         <source>Create a new folder to contain project.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1628"/>
+        <location filename="mainwindow.ui" line="1646"/>
         <source>Ctrl+N</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1640"/>
+        <location filename="mainwindow.ui" line="1658"/>
         <source>Open Project</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1643"/>
+        <location filename="mainwindow.ui" line="1661"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open project&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1653"/>
-        <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1662"/>
-        <location filename="mainwindow.ui" line="1668"/>
-        <source>Exit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1665"/>
-        <source>  Exit  </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1671"/>
+        <source>Ctrl+O</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="1680"/>
+        <location filename="mainwindow.ui" line="1686"/>
+        <source>Exit</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="1683"/>
+        <source>  Exit  </source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="1689"/>
         <source>Close the program.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1681"/>
+        <location filename="mainwindow.ui" line="1699"/>
         <source>Ctrl+W</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1690"/>
+        <location filename="mainwindow.ui" line="1708"/>
         <source>Camera</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1693"/>
+        <location filename="mainwindow.ui" line="1711"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open cameras&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1696"/>
+        <location filename="mainwindow.ui" line="1714"/>
         <source>Open Cameras.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1715"/>
+        <location filename="mainwindow.ui" line="1734"/>
         <source>Projector</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1718"/>
+        <location filename="mainwindow.ui" line="1737"/>
         <source>Turn on/off the projector</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1740"/>
-        <source>Active calibration.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1759"/>
+        <source>Active calibration.</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="1778"/>
         <source>  Scan  </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1765"/>
+        <location filename="mainwindow.ui" line="1784"/>
         <source>Start scan process.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1787"/>
-        <source>Start reconstruction.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1803"/>
         <location filename="mainwindow.ui" line="1806"/>
-        <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <source>Start reconstruction.</source>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1809"/>
-        <source>Set the parameters of the project.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
+        <location filename="mainwindow.ui" line="1822"/>
         <location filename="mainwindow.ui" line="1825"/>
-        <source>English</source>
-        <translation type="unfinished"></translation>
+        <source>Settings</source>
+        <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1828"/>
-        <source>en</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1844"/>
-        <source>简体中文</source>
-        <translation type="unfinished"></translation>
+        <source>Set the parameters of the project.</source>
+        <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1847"/>
+        <source>English</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="1850"/>
+        <source>en</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="1866"/>
+        <source>简体中文</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="1869"/>
         <source>zh</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="79"/>
         <location filename="mainwindow.cpp" line="90"/>
+        <location filename="mainwindow.cpp" line="101"/>
         <source>Open Directory</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="293"/>
+        <location filename="mainwindow.cpp" line="297"/>
         <source>Calibration</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="293"/>
+        <location filename="mainwindow.cpp" line="297"/>
         <source>Calibration Actived!</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
     <name>Set</name>
     <message>
-        <location filename="set.cpp" line="29"/>
-        <source>Grid Width(mm);</source>
-        <translation type="unfinished"></translation>
+        <location filename="set.cpp" line="30"/>
+        <location filename="set.cpp" line="32"/>
+        <source>Test</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="set.cpp" line="30"/>
+        <source>Successed!</source>
+        <translation></translation>
     </message>
     <message>
         <location filename="set.cpp" line="32"/>
-        <location filename="set.cpp" line="59"/>
-        <source>Grid Height(mm):</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="43"/>
-        <source>Calibration Board</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="56"/>
-        <source>Grid Width(mm):</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="124"/>
-        <source>Projector</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="133"/>
-        <source>Black Threshold</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="141"/>
-        <source>White Threshold</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="154"/>
-        <source>Auto Contrast</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="158"/>
-        <source>Save Auto Contrast Images</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="161"/>
-        <source>Ray Sampling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="165"/>
-        <source>Reconstruction</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="173"/>
-        <source>Export Obj</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="179"/>
-        <source>Export Ply</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="185"/>
-        <source>Export</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="187"/>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="190"/>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="210"/>
-        <location filename="set.cpp" line="212"/>
-        <source>Test</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="210"/>
-        <source>Successed!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="set.cpp" line="212"/>
         <source>Failed!</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>SetDialog</name>
+    <message>
+        <location filename="Set.ui" line="14"/>
+        <source>Settings</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="66"/>
+        <source>Calibration Board</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="84"/>
+        <source>Geometry</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="95"/>
+        <source>Cell Width(mm):</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="109"/>
+        <source>Cell Height(mm):</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="127"/>
+        <source>Cell Number(Horizontal):</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="141"/>
+        <source>Cell Number(Vertical):</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="175"/>
+        <source>Board Width(mm):</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="198"/>
+        <source>Board Height(mm):</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="225"/>
+        <source>Camera</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="243"/>
+        <source>Camera Resolution</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="251"/>
+        <location filename="Set.ui" line="340"/>
+        <location filename="Set.ui" line="399"/>
+        <source>Horizontal(pixel):</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="268"/>
+        <location filename="Set.ui" line="357"/>
+        <location filename="Set.ui" line="416"/>
+        <source>Vertical(pixel):</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="302"/>
+        <source>Projector</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="314"/>
+        <source>Project Region</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="332"/>
+        <source>Projector Resolution</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="391"/>
+        <source>Scan Resolution</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="438"/>
+        <source>Reconstruction</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="450"/>
+        <source>Threshold</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="461"/>
+        <source>Black Threshold</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="475"/>
+        <source>White Threshold</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="520"/>
+        <source>Auto Contrast</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="527"/>
+        <source>Save Auto Contrast Image</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="534"/>
+        <source>Ray Sampling</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="541"/>
+        <source>Export Obj</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="Set.ui" line="554"/>
+        <source>Export Ply</source>
+        <translation></translation>
     </message>
 </context>
 </TS>
