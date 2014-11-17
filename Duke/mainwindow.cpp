@@ -41,6 +41,12 @@ MainWindow::MainWindow(QWidget *parent)
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(readframe()));
 
+    displayModel = new GLWidget(ui->displayWidget);
+    QHBoxLayout *displayLayout = new QHBoxLayout(ui->displayWidget);
+    displayLayout->setMargin(1);
+    displayLayout->addWidget(displayModel);
+    ui->displayWidget->setLayout(displayLayout);
+
     sWindow = new Set(this);//Initialize the set dialog
     getSetInfo();
 
@@ -502,4 +508,5 @@ void MainWindow::switchlanguage()
     trans.load(local, qmPath);
     qApp->installTranslator(&trans);
     ui->retranslateUi(this);
+    sWindow->switchLang();
 }

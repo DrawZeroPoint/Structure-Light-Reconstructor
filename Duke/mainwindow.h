@@ -14,6 +14,7 @@
 #include "projector.h"
 #include "reconstruct.h"
 #include "meshcreator.h"
+#include "glwidget.h"
 //#include "cameracalibration.h"
 
 #include "Windows.h"//加载此头文件以解决大恒相机头文件类型未定义问题
@@ -34,6 +35,7 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
     Set *sWindow;
+    GLWidget *displayModel;
 
     QString projectPath;
     QString projChildPath;

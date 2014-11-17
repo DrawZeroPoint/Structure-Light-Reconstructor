@@ -2,7 +2,7 @@ TEMPLATE = app
 
 TARGET = Duke
 
-QT += qml quick widgets
+QT += qml quick widgets opengl
 
 SOURCES += \
     graycodes.cpp \
@@ -14,7 +14,9 @@ SOURCES += \
     reconstruct.cpp \
     set.cpp \
     utilities.cpp \
-    virtualcamera.cpp
+    virtualcamera.cpp \
+    plyloader.cpp \
+    glwidget.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -45,13 +47,13 @@ HEADERS += \
     reconstruct.h \
     set.h \
     utilities.h \
-    virtualcamera.h
+    virtualcamera.h \
+    plyloader.h \
+    glwidget.h
 
 FORMS += \
     mainwindow.ui \
     Set.ui
 
 TRANSLATIONS += en.ts zh.ts
-
-OTHER_FILES +=
 

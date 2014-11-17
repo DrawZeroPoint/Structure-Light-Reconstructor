@@ -92,12 +92,18 @@
         <number>1</number>
        </property>
        <item row="0" column="0">
-        <widget class="QWidget" name="widget_2" native="true">
+        <widget class="QWidget" name="displayWidget" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="contextMenuPolicy">
+          <enum>Qt::NoContextMenu</enum>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
          </property>
          <property name="styleSheet">
           <string notr="true">border-style: outset;

@@ -52,7 +52,7 @@ public:
     QGridLayout *gridLayout;
     QWidget *widget;
     QGridLayout *gridLayout_2;
-    QWidget *widget_2;
+    QWidget *displayWidget;
     QTabWidget *tabWidget;
     QWidget *tab;
     QGridLayout *gridLayout_11;
@@ -250,17 +250,19 @@ public:
         gridLayout_2->setHorizontalSpacing(0);
         gridLayout_2->setVerticalSpacing(1);
         gridLayout_2->setContentsMargins(0, 0, 0, 0);
-        widget_2 = new QWidget(widget);
-        widget_2->setObjectName(QStringLiteral("widget_2"));
+        displayWidget = new QWidget(widget);
+        displayWidget->setObjectName(QStringLiteral("displayWidget"));
         QSizePolicy sizePolicy2(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         sizePolicy2.setHorizontalStretch(0);
         sizePolicy2.setVerticalStretch(0);
-        sizePolicy2.setHeightForWidth(widget_2->sizePolicy().hasHeightForWidth());
-        widget_2->setSizePolicy(sizePolicy2);
-        widget_2->setStyleSheet(QLatin1String("border-style: outset;\n"
+        sizePolicy2.setHeightForWidth(displayWidget->sizePolicy().hasHeightForWidth());
+        displayWidget->setSizePolicy(sizePolicy2);
+        displayWidget->setContextMenuPolicy(Qt::NoContextMenu);
+        displayWidget->setAutoFillBackground(false);
+        displayWidget->setStyleSheet(QLatin1String("border-style: outset;\n"
 "border: 1px solid deepskyblue;"));
 
-        gridLayout_2->addWidget(widget_2, 0, 0, 1, 1);
+        gridLayout_2->addWidget(displayWidget, 0, 0, 1, 1);
 
         tabWidget = new QTabWidget(widget);
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
