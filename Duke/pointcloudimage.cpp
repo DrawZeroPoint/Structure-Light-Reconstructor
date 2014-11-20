@@ -32,8 +32,8 @@ bool PointCloudImage::setPoint(int i_w, int j_h, cv::Point3f point)
     if(i_w>w || j_h>h)
         return false;
 
-    Utilities::matSet3D(points,i_w,j_h,(cv::Vec3f)point);
-    Utilities::matSet2D(numOfPointsForPixel,i_w,j_h,1);
+    Utilities::matSet3D(points, i_w, j_h, (cv::Vec3f)point);
+    Utilities::matSet2D(numOfPointsForPixel, j_h, i_w, 1);
 
     return true;
 }
@@ -69,7 +69,7 @@ bool PointCloudImage::getPoint(int i_w, int j_h, cv::Point3f &pointOut)
     uchar num = numOfPointsForPixel.at<uchar>(j_h,i_w);
     if(num > 0)
     {
-        pointOut = (cv::Point3f) (Utilities::matGet3D(points,i_w,j_h) / (float) num);
+        pointOut = (cv::Point3f) (Utilities::matGet3D(points, i_w, j_h) / (float) num);
         return true;
     }
     else
@@ -169,7 +169,7 @@ void PointCloudImage::exportNumOfPointsPerPixelImg(char path[])
         for(int j=0; j<h; j++)
         {
             uchar num = numOfPointsForPixel.at<uchar>(j,i);
-            Utilities::matSet2D(projToCamRays,i,j, num/(float)(max*255.0));
+            Utilities::matSet2D(projToCamRays, j, i, num/(float)(max * 255.0));
         }
     }
     cv::imwrite("reconstruction/projToCamRays.png",projToCamRays);

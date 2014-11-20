@@ -4,6 +4,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <QString>
+
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
@@ -26,7 +27,7 @@ public:
     cv::Point2f cc;
     int width;
     int height;
-    std::string qstringToString(QString qstring);
+
 private:
     int loadMatrix(cv::Mat &matrix, int s1, int s2 , std::string file);
 };

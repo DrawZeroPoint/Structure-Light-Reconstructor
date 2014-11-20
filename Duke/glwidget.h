@@ -11,6 +11,9 @@ public:
     explicit GLWidget(QWidget *parent = 0);
     ~GLWidget();
 
+    int pointSize;
+    void setPoint(int psize);
+
 protected:
     void initializeGL();
     void resizeGL(int width = 300, int height =300);
@@ -36,6 +39,7 @@ private:
 
     QRadialGradient gradient;
     QColor backColor;
+
 
 };
 

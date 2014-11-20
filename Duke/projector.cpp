@@ -1,6 +1,5 @@
 #include "projector.h"
 #include <QLayout>
-#include <QPainter>
 
 int proj_w;
 int proj_h;
@@ -19,10 +18,9 @@ Projector::~Projector()
 {
 }
 
-void Projector::paintEvent(QPaintEvent *event)
+void Projector::paintEvent(QPaintEvent */*event*/)
 {
-    QPainter painter(this);
-    painter.setPen(QPen(Qt::green, 5));
+    painter.setPen(QPen(Qt::black, 5));
     painter.drawLine(proj_w/2 - 60, proj_h/2, proj_w/2 + 60, proj_h/2);
     painter.drawLine(proj_w/2, proj_h/2 - 60, proj_w/2, proj_h/2 + 60);
 }
@@ -55,7 +53,9 @@ void Projector::displaySwitch(bool isWhite)
     if(isWhite)
         this->setPalette(Qt::white);
     else
+    {
         this->setPalette(Qt::black);
+    }
 }
 
 QImage* Projector::IplImageToQPixmap(const IplImage *img)

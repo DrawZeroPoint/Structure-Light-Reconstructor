@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPicture>
+#include <QPainter>
 #include <QMainWindow>
 
 class Projector : public QWidget
@@ -27,6 +28,7 @@ protected:
         void paintEvent(QPaintEvent *event);
 
 private:
+    QPainter painter;
     int xoffset;
     int yoffset;
     int height;

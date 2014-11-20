@@ -28,7 +28,7 @@ public:
     PointCloudImage *points3DProjView;
     void setBlackThreshold(int val);
     void setWhiteThreshold(int val);
-    void setCalibPath(QString path1st,QString path2nd,QString extension, int cam_no );
+    void setCalibPath(QString path1st, int cam_no );
     void saveShadowImg(const char path[]);
     void saveDecodedRowImg(const char path[]);
     void saveDecodedColImg(const char path[]);
@@ -38,7 +38,7 @@ public:
     void enableRaySampling();
     void disableRaySampling();
 
-    void getParameters(int projw, int projh,  int camw, int camh, bool autocontrast, bool saveautocontrast, QString savePath);
+    void getParameters(int scanw, int scanh,  int camw, int camh, bool autocontrast, bool saveautocontrast, QString savePath);
     QString savePath_;//same as projectPath
 private:
     int numOfCams;
@@ -49,7 +49,7 @@ private:
     void unloadCamImgs();
     void computeShadows();
     void Reconstruct::cam2WorldSpace(VirtualCamera cam, cv::Point3f &p);
-    bool Reconstruct::getProjPixel(int x, int y, cv::Point &p_out);
+    bool Reconstruct::getProjPixel(int row, int col, cv::Point &p_out);
     void decodePaterns();
     void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera cameras1, cv::vector<cv::Point> *cam2Pixels, VirtualCamera cameras2, int cam1index, int cam2index);
     QString *calibFolder;

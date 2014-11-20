@@ -19,7 +19,7 @@ void MeshCreator::exportObjMesh(QString path)
     bool return_val;
     cv::Point3f point;
     std::ofstream out1;
-    std::string cstr = qstringToString(path);
+    std::string cstr = path.toStdString();
     out1.open(cstr);
 
     for(int i = 0; i<w;i++)
@@ -76,12 +76,12 @@ void MeshCreator::exportPlyMesh(QString path)
     cv::Point3f point;
     cv::Vec3f color;
     std::ofstream out1;
-    std::string cstr = qstringToString(path);
-    out1.open(cstr);
-    int vertexCount = 0;//find vertex num
-    for(int i=0; i<w;i++)
+
+    out1.open(path.toStdString());
+    int vertexCount = 0;//顶点数目
+    for(int i=0; i < w; i++)
     {
-        for(int j=0; j<h; j++)
+        for(int j=0; j < h; j++)
         {
             if(cloud->getPoint(i, j, point))
             {
@@ -187,9 +187,3 @@ int MeshCreator::access(int i, int j)
     return i * h + j;
 }
 
-std::string MeshCreator::qstringToString(QString qstring)
-{
-    std::string cstr;
-    cstr = std::string((const char *)qstring.toLocal8Bit());
-    return cstr;
-}

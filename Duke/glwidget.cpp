@@ -5,7 +5,7 @@
 #include <QColorDialog>
 #include <qmath.h>
 
-#define F_PATH "d:\\Qt\\Mesh.PLY"
+#define F_PATH "D:\fini\reconstruction\result.PLY"
 
 GLfloat scale = 1.0;
 GLfloat percent = 0.1;
@@ -22,6 +22,8 @@ GLWidget::GLWidget(QWidget *parent) :
     rotationX = 0.0;
     rotationY = 0.0;
     rotationZ = 0.0;
+
+    pointSize = 5;
 
     backColor = QColor::fromCmykF(0.5, 0.4, 0.4, 0.2);
     createGradient();
@@ -96,7 +98,7 @@ void GLWidget::draw()
     long int total = plyloader->m_totalConnectedPoints;
     for(int p = 0; p < total; ++p)
     {
-        glPointSize(5.0);
+        glPointSize(pointSize);
         glBegin(GL_POINTS);
         qglColor(QColor::fromCmyk(255,0,255,0));
         glVertex3f((plyloader->mp_vertexXYZ[p*3] - offsetX) * percent,
@@ -227,3 +229,8 @@ void GLWidget::drawBackground(QPainter *painter)
     painter->drawRect(rect());
 }
 
+void GLWidget::setPoint(int psize)
+{
+    pointSize = psize;
+    updateGL();
+}

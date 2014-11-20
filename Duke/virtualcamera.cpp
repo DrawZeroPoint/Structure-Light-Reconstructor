@@ -1,6 +1,7 @@
 #include "virtualcamera.h"
 #include "utilities.h"
 #include <QFile>
+#include <QObject>
 #include <QMessageBox>
 
 VirtualCamera::VirtualCamera()
@@ -20,40 +21,37 @@ VirtualCamera::~VirtualCamera()
 
 void VirtualCamera::loadDistortion(QString path)
 {
-    std::string str = qstringToString(path);
-    loadMatrix(distortion,5,1,str);
+    loadMatrix(distortion, 5, 1, path.toStdString());
 }
 
 bool VirtualCamera::loadCameraMatrix(QString path)
 {
     bool existPath = QFile::exists(path);
     if(!existPath){
-        QMessageBox::warning(NULL,"Matrix not found","File: '"+path+"' need to be added.");
+        QMessageBox::warning(NULL, QObject::tr("Matrix not found"), QObject::tr("File: '") + path + QObject::tr("' need to be added."));
         return false;//Imply that the matrix didn't loaded successfully.
     }
+
     cv::Mat camMatrix;
-    std::string str = qstringToString(path);
-    loadMatrix(camMatrix,3,3,str);
-    cc.x = Utilities::matGet2D(camMatrix,0,2);
-    cc.y = Utilities::matGet2D(camMatrix,1,2);
-    fc.x = Utilities::matGet2D(camMatrix,0,0);
-    fc.y = Utilities::matGet2D(camMatrix,1,1);
+    loadMatrix(camMatrix, 3, 3, path.toStdString());
+    cc.x = Utilities::matGet2D(camMatrix, 0, 2);//0, 2表示第0行，第2列
+    cc.y = Utilities::matGet2D(camMatrix, 1, 2);
+    fc.x = Utilities::matGet2D(camMatrix, 0, 0);
+    fc.y = Utilities::matGet2D(camMatrix, 1, 1);
     return true;
 }
 
 void VirtualCamera::loadRotationMatrix(QString path)
 {
-    std::string str = qstringToString(path);
-    loadMatrix(rotationMatrix,3,3,str);
+    loadMatrix(rotationMatrix, 3, 3, path.toStdString());
 }
 
 void VirtualCamera::loadTranslationVector(QString path)
 {
-    std::string str = qstringToString(path);
-    loadMatrix(translationVector,3,1,str);
+    loadMatrix(translationVector, 3, 1, path.toStdString());
 }
 
-int VirtualCamera::loadMatrix(cv::Mat &matrix,int rows,int cols ,std::string file)
+int VirtualCamera::loadMatrix(cv::Mat &matrix, int rows, int cols, std::string file)
 {
     std:: ifstream in1;
     in1.open(file);
@@ -63,10 +61,10 @@ int VirtualCamera::loadMatrix(cv::Mat &matrix,int rows,int cols ,std::string fil
     }
     if(!matrix.empty())
         matrix.release();
-    matrix=cv::Mat(rows, cols, CV_32F);//cv_32f表示数据精度32-bit ﬂoating-point numbers ( -FLT_MAX..FLT_MAX, INF, NAN )
-    for(int i=0; i<rows; i++)
+    matrix = cv::Mat(rows, cols, CV_32F);//cv_32f表示数据精度32-bit ﬂoating-point numbers ( -FLT_MAX..FLT_MAX, INF, NAN )
+    for(int i = 0; i < rows; i++)
     {
-        for(int j=0; j<cols; j++)
+        for(int j = 0; j < cols; j++)
         {
             float val;
             in1>>val;
@@ -74,11 +72,4 @@ int VirtualCamera::loadMatrix(cv::Mat &matrix,int rows,int cols ,std::string fil
         }
     }
     return 1;
-}
-
-std::string VirtualCamera::qstringToString(QString qstring)
-{
-    std::string cstr;
-    cstr = std::string((const char *)qstring.toLocal8Bit());
-    return cstr;
 }

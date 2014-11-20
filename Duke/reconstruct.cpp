@@ -75,7 +75,7 @@ void Reconstruct::decodePaterns()
 {
     int w = cameraWidth;
     int h = cameraHeight;
-    cv::Point projPixel;//这个变量储存了相片上(h,w)点在投影区域上的坐标projPixel.x，projPixel.y
+    cv::Point projPixel;//这个变量储存了相片上(w,h)点在投影区域上的坐标projPixel.x，projPixel.y
     for(int col = 0; col < w; col++)
     {
         for(int row = 0; row < h; row++)
@@ -90,7 +90,7 @@ void Reconstruct::decodePaterns()
                     mask.at<uchar>(row, col) = 0;//进一步补充遮罩区域，相机视野内不属于投影区域的部分都被过滤掉
                     continue;
                 }
-                camPixels[ac(projPixel.x,projPixel.y)].push_back(cv::Point(row, col));///?
+                camPixels[ac(projPixel.x, projPixel.y)].push_back(cv::Point(col, row));
             }
         }
     }
@@ -138,9 +138,7 @@ bool Reconstruct::loadCamImgs(QString folder, QString prefix, QString suffix)//l
         path += prefix + QString::number(i,10) + suffix;//图片加前后缀
         tmp.release();
 
-        std::string cstr;
-        cstr = std::string((const char *)path.toLocal8Bit());
-        tmp = cv::imread(cstr,0);
+        tmp = cv::imread(path.toStdString(),0);
         if(tmp.empty())
         {
             QMessageBox::warning(NULL,"Warning","Images not found!");
@@ -217,7 +215,7 @@ void Reconstruct::computeShadows()
 bool Reconstruct::runReconstruction()
 {
     bool runSucess = false;
-    GrayCodes grays(proj_w,proj_h);//proj_w proj_h get var getparameter
+    GrayCodes grays(proj_w, proj_h);//proj_w proj_h get var getparameter
     numOfColBits = grays.getNumOfColBits();
     numOfRowBits = grays.getNumOfRowBits();
     numberOfImgs = grays.getNumOfImgs();
@@ -268,20 +266,20 @@ void Reconstruct::cam2WorldSpace(VirtualCamera cam, cv::Point3f &p)//convert a p
     p.z = tmp.at<float>(2) + tmpPoint.at<float>(2);
 }
 
-bool Reconstruct::getProjPixel(int x, int y, cv::Point &p_out)//for a (x,y) pixel of the camera returns the corresponding projector pixel
+bool Reconstruct::getProjPixel(int row, int col, cv::Point &p_out)//for a (x,y) pixel of the camera returns the corresponding projector pixel
 {
     cv::vector<bool> grayCol;
     cv::vector<bool> grayRow;
     bool error = false;
     //int error_code = 0;
-    int xDec,yDec;
+    int xDec, yDec;
     //prosses column images
     for(int count = 0; count < numOfColBits; count++)
     {
         //get pixel intensity for regular pattern projection and it's inverse
         double val1, val2;
-        val1 = Utilities::matGet2D(camImgs[count * 2 + 2], x, y);
-        val2 = Utilities::matGet2D(camImgs[count * 2 + 2 +1], x, y);
+        val1 = Utilities::matGet2D(camImgs[count * 2 + 2], row, col);
+        val2 = Utilities::matGet2D(camImgs[count * 2 + 2 +1], row, col);
         //check if intensity deference is in a valid rage
         if(abs(val1 - val2) < whiteThreshold )
             error = true;
@@ -296,8 +294,8 @@ bool Reconstruct::getProjPixel(int x, int y, cv::Point &p_out)//for a (x,y) pixe
     for(int count=0; count < numOfRowBits; count++)
     {
         double val1, val2;
-        val1 = Utilities::matGet2D(camImgs[count*2+2+numOfColBits*2],x,y);
-        val2 = Utilities::matGet2D(camImgs[count*2+2+numOfColBits*2+1],x,y);
+        val1 = Utilities::matGet2D(camImgs[count*2+2+numOfColBits*2], row, col);
+        val2 = Utilities::matGet2D(camImgs[count*2+2+numOfColBits*2+1], row, col);
         if(abs(val1-val2) < whiteThreshold )  //check if the difference between the values of the normal and it's inverce projection image is valid
             error = true;
         if(val1 > val2)
@@ -317,11 +315,9 @@ bool Reconstruct::getProjPixel(int x, int y, cv::Point &p_out)//for a (x,y) pixe
     return error;
 }
 
-void Reconstruct::setCalibPath(QString folder,QString prefix,QString suffix, int cam_no )
+void Reconstruct::setCalibPath(QString folder, int cam_no )
 {
     calibFolder[cam_no] = folder;//projectPath+"/calib/left/"或projectPath+"/calib/right/"
-    imgPrefix[cam_no] = prefix;//前缀，分别为L和R
-    imgSuffix = suffix;//后缀，暂定为.png
     pathSet = true;
 }
 
@@ -394,10 +390,10 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     }
 }
 
-void Reconstruct::getParameters(int projw, int projh, int camw, int camh, bool autocontrast, bool saveautocontrast, QString savePath)
+void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, bool autocontrast, bool saveautocontrast, QString savePath)
 {
-    proj_w = projw;
-    proj_h = projh;
+    proj_w = scanw;
+    proj_h = scanh;
     cameraWidth = camw;
     cameraHeight = camh;
     autoContrast_ = autocontrast;

@@ -122,13 +122,13 @@ CvScalar Utilities::planeRayInter(CvScalar planeNormal,CvScalar planePoint, CvSc
     return point;
 }
 
-double Utilities::matGet2D(cv::Mat m, int row, int col)
+double Utilities::matGet2D(cv::Mat m, int row, int col)//输入量先行后列，即先y后x，先h后w
 {
     int type = m.type();
     switch(type)
     {
         case CV_8U:
-            return m.at<uchar>(row,col);
+            return m.at<uchar>(row,col);//opencv中的at函数是先行后列，即按照矩阵的一般顺序取值的
             break;
         case CV_8S:
             return m.at<schar>(row,col);
@@ -230,30 +230,30 @@ void Utilities::matSet2D(cv::Mat m, int row, int col, double val)
     switch(type)
     {
         case CV_8U:
-            m.at<uchar>(row,col)  = (uchar) val;
+            m.at<uchar>(row, col)  = (uchar) val;
             break;
         case CV_8S:
-            m.at<schar>(row,col)  = (schar) val;
+            m.at<schar>(row, col)  = (schar) val;
             break;
         case CV_16U:
-            m.at<ushort>(row,col) = (ushort) val;
+            m.at<ushort>(row, col) = (ushort) val;
             break;
         case CV_16S:
-            m.at<short>(row,col)  = (short) val;
+            m.at<short>(row, col)  = (short) val;
             break;
         case CV_32S:
-            m.at<int>(row,col)	  = (int) val;
+            m.at<int>(row, col)	  = (int) val;
             break;
         case CV_32F:
-            m.at<float>(row,col)  = (float) val;
+            m.at<float>(row, col)  = (float) val;
             break;
         case CV_64F:
-            m.at<double>(row,col) = (double) val;
+            m.at<double>(row, col) = (double) val;
             break;
     }
 }
 
-void Utilities::matSet3D(cv::Mat m, int x, int y,int i, double val)
+void Utilities::matSet3D(cv::Mat m, int col, int row, int i, double val)
 {
     int type = m.type();
 
@@ -261,36 +261,36 @@ void Utilities::matSet3D(cv::Mat m, int x, int y,int i, double val)
     {
         case CV_8U:
         case CV_MAKETYPE(CV_8U,3):
-            m.at<uchar>(y,x,i) = (uchar) val;
+            m.at<uchar>(row, col, i) = (uchar) val;
             break;
         case CV_8S:
         case CV_MAKETYPE(CV_8S,3):
-            m.at<schar>(y,x,i) = (schar) val;
+            m.at<schar>(row, col, i) = (schar) val;
             break;
         case CV_16U:
         case CV_MAKETYPE(CV_16U,3):
-            m.at<ushort>(y,x,i) = (ushort) val;
+            m.at<ushort>(row, col, i) = (ushort) val;
             break;
         case CV_16S:
         case CV_MAKETYPE(CV_16S,3):
-            m.at<short>(y,x,i) = (short) val;
+            m.at<short>(row, col, i) = (short) val;
             break;
         case CV_32S:
         case CV_MAKETYPE(CV_32S,3):
-            m.at<int>(y,x,i) = (int) val;
+            m.at<int>(row, col, i) = (int) val;
             break;
         case CV_32F:
         case CV_MAKETYPE(CV_32F,3):
-            m.at<float>(y,x,i) = (float) val;
+            m.at<float>(row, col, i) = (float) val;
             break;
         case CV_64F:
         case CV_MAKETYPE(CV_64F,3):
-            m.at<double>(y,x) = (double) val;
+            m.at<double>(row, col, i) = (double) val;
             break;
     }
 }
 
-void Utilities::matSet3D(cv::Mat m, int x, int y, cv::Vec3d val)
+void Utilities::matSet3D(cv::Mat m, int col, int row, cv::Vec3d val)
 {
     int type = m.type();
 
@@ -298,31 +298,31 @@ void Utilities::matSet3D(cv::Mat m, int x, int y, cv::Vec3d val)
     {
         case CV_8U:
         case CV_MAKETYPE(CV_8U,3):
-            m.at<cv::Vec3b>(y,x) =  val;
+            m.at<cv::Vec3b>(row, col) =  val;
             break;
         case CV_8S:
         case CV_MAKETYPE(CV_8S,3):
-            m.at<cv::Vec3b>(y,x) =  val;
+            m.at<cv::Vec3b>(row, col) =  val;
             break;
         case CV_16U:
         case CV_MAKETYPE(CV_16U,3):
-            m.at<cv::Vec3w>(y,x) = val;
+            m.at<cv::Vec3w>(row, col) = val;
             break;
         case CV_16S:
         case CV_MAKETYPE(CV_16S,3):
-            m.at<cv::Vec3s>(y,x) = val;
+            m.at<cv::Vec3s>(row, col) = val;
             break;
         case CV_32S:
         case CV_MAKETYPE(CV_32S,3):
-            m.at<cv::Vec3i>(y,x) = val;
+            m.at<cv::Vec3i>(row, col) = val;
             break;
         case CV_32F:
         case CV_MAKETYPE(CV_32F,3):
-            m.at<cv::Vec3f>(y,x) = val;
+            m.at<cv::Vec3f>(row, col) = val;
             break;
         case CV_64F:
         case CV_MAKETYPE(CV_64F,3):
-            m.at<cv::Vec3d>(y,x) = val;
+            m.at<cv::Vec3d>(row, col) = val;
             break;
     }
 }
@@ -366,11 +366,11 @@ void Utilities::exportMat(const char *path, cv::Mat m)
     std:: ofstream out;
     out.open(path);
 
-    for(int i =0; i < m.rows; i++)
+    for(int row = 0; row < m.rows; row++)
     {
-        for(int j = 0; j < m.cols; j++)
+        for(int col = 0; col < m.cols; col++)
         {
-            out<< Utilities::matGet2D(m,j,i)<<"\t";
+            out<< Utilities::matGet2D(m, row, col)<<"\t";
         }
         out<<"\n";
     }
@@ -407,12 +407,12 @@ bool Utilities::line_lineIntersection(cv::Point3f p1, cv::Vec3f v1, cv::Point3f 
 
 int Utilities::accessMat(cv::Mat m, int x, int y, int i)
 {
-    return y*m.cols*m.channels() + x*m.channels() + i;
+    return y * m.cols * m.channels() + x * m.channels() + i;
 }
 
 int Utilities::accessMat(cv::Mat m, int x, int y)
 {
-    return y*m.cols*m.channels() + x*m.channels();
+    return y * m.cols * m.channels() + x * m.channels();
 }
 
 void Utilities::folderScan(const char *path)

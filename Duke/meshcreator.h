@@ -16,7 +16,7 @@ private:
     PointCloudImage *cloud;
     int MeshCreator::access(int i,int j);
     int MeshCreator::access(int i,int j, int z);
-    std::string qstringToString(QString qstring);
+
     int w;
     int h;
 };
