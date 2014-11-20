@@ -16,7 +16,8 @@ SOURCES += \
     utilities.cpp \
     virtualcamera.cpp \
     plyloader.cpp \
-    glwidget.cpp
+    glwidget.cpp \
+    cameracalibration.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -30,10 +31,11 @@ LIBS += -LE:\opencv\build\x86\vc10\lib\
 -lopencv_highgui249d\
 -lopencv_imgproc249d\
 -lopencv_features2d249d\
+-lopencv_calib3d249d\
 -lHVDAILT\
 -lHVExtend\
 -lHVUtil\
--lRaw2Rgb
+-lRaw2Rgb\
 
 # Default rules for deployment.
 include(deployment.pri)
@@ -49,7 +51,8 @@ HEADERS += \
     utilities.h \
     virtualcamera.h \
     plyloader.h \
-    glwidget.h
+    glwidget.h \
+    cameracalibration.h
 
 FORMS += \
     mainwindow.ui \

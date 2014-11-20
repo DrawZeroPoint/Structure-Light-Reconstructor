@@ -15,7 +15,8 @@
 #include "reconstruct.h"
 #include "meshcreator.h"
 #include "glwidget.h"
-//#include "cameracalibration.h"
+#include "cameracalibration.h"
+
 
 #include "Windows.h"//加载此头文件以解决大恒相机头文件类型未定义问题
 #include <HVDAILT.h>
@@ -34,7 +35,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    Set *sWindow;
+    Set *setDialog;
     GLWidget *displayModel;
 
     QString projectPath;
@@ -49,6 +50,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    CameraCalibration *calibrator;
 
     void createConnections();
     void createCentralWindow(QWidget *parent);
@@ -64,11 +66,14 @@ private:
     void OnSnapexClose();
     int OnSnapChange();
 
+    void progressPop(int up);
+
     QLabel *msgLabel;//show message in the bottom of the window
 
     QTimer *timer;
 
-    QImage *image_1;//由rawbuffer得到的图像指针
+    //QImage *image_1;//由rawbuffer得到的图像指针
+    QImage image_1;
     QImage *image_2;
     QPixmap pimage_1;//由图像指针得到的.png格式图像
     QPixmap pimage_2;
@@ -122,7 +127,9 @@ private slots:
     void set();
     void getSetInfo();
 
+    void changePointSize(int psize);
     void switchlanguage();
+
 };
 
 #endif // MAINWINDOW_H

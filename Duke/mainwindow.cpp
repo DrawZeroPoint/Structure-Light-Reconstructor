@@ -2,7 +2,8 @@
 #include "graycodes.h"
 #include "set.h"
 #include "ui_mainwindow.h"
-//#include "cameracalibration.h"
+
+
 
 #include <QMenu>
 #include <QImage>
@@ -26,6 +27,8 @@ int scanWidth;//扫描区域
 int scanHeight;
 bool inEnglish = true;
 
+int nowProgress = 0;//进度条初始化
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
@@ -42,12 +45,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timer, SIGNAL(timeout()), this, SLOT(readframe()));
 
     displayModel = new GLWidget(ui->displayWidget);
-    QHBoxLayout *displayLayout = new QHBoxLayout(ui->displayWidget);
-    displayLayout->setMargin(1);
-    displayLayout->addWidget(displayModel);
-    ui->displayWidget->setLayout(displayLayout);
+    ui->displayLayout->addWidget(displayModel);
 
-    sWindow = new Set(this);//Initialize the set dialog
+    setDialog = new Set(this);//Initialize the set dialog
     getSetInfo();
 
     cameraWidth = Width;
@@ -56,8 +56,8 @@ MainWindow::MainWindow(QWidget *parent)
     getScreenGeometry();//Get mian screen and projector screen geometry
     QDesktopWidget* desktopWidget = QApplication::desktop();
     QRect projRect = desktopWidget->screenGeometry(1);//1 represent projector
-    int xOffSet = (projRect.width()-projectorWidth)/2 + screenWidth;
-    int yOffSet = (projRect.height()-projectorHeight)/2;
+    int xOffSet = (projRect.width() - scanWidth)/2 + screenWidth;
+    int yOffSet = (projRect.height() - scanHeight)/2;
 
     pj = new Projector(NULL, scanWidth, scanHeight, projectorWidth, projectorHeight, xOffSet, yOffSet);//Initialize the projector
     pj->move(screenWidth,0);//make the window displayed by the projector
@@ -116,7 +116,7 @@ void MainWindow::opencamera()
     }
     else{
         cameraOpened = false;
-        QMessageBox::warning(NULL,"Cameras not found","Make sure two Daheng cameras have connected to the computer.");
+        QMessageBox::warning(NULL, tr("Cameras not found"), tr("Make sure two Daheng cameras have connected to the computer."));
         return;
     }
     HVSetResolution(m_hhv_1, Resolution);//Set the resolution of cameras
@@ -185,9 +185,11 @@ int CALLBACK MainWindow::SnapThreadCallback(HV_SNAP_INFO *pInfo)
 
 void MainWindow::readframe()
 {
-    image_1 = new QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
+    //image_1 = new QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
+    image_1 = QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
     image_2 = new QImage(m_pRawBuffer_2, Width, Height, QImage::Format_Indexed8);
-    pimage_1 = QPixmap::fromImage(*image_1);
+    //pimage_1 = QPixmap::fromImage(*image_1);
+    pimage_1 = QPixmap::fromImage(image_1);
     pimage_2 = QPixmap::fromImage(*image_2);
     ui->leftViewLabel->setPixmap(pimage_1);//use label to show the image
     ui->rightViewLabel->setPixmap(pimage_2);
@@ -208,7 +210,7 @@ void MainWindow::capturecalib()
         }
     }
     else
-        QMessageBox::warning(this,"Warning","Open cameras failed.");
+        QMessageBox::warning(this, tr("Warning"), tr("Open cameras failed."));
 }
 
 void MainWindow::redocapture()
@@ -217,7 +219,7 @@ void MainWindow::redocapture()
         captureImage(saveCon - 1, true);
         }
     else
-        QMessageBox::warning(this,"Warning","Open cameras failed.");
+        QMessageBox::warning(this,tr("Warning"), tr("Open cameras failed."));
 }
 
 void MainWindow::captureImage(int saveCount,bool dispaly)
@@ -301,62 +303,70 @@ void MainWindow::calib()
 
 void MainWindow::calibration()
 {
-    /*
-    for(int i=1; i<=2; i++)
+    ui->progressBar->reset();
+    nowProgress = 0;
+
+    QString path;
+    for(int i = 1; i <= 2; i++)
     {
+        path = projectPath + "/calib/";
         calibrator = new CameraCalibration();
-        std::string path = "camera";
-        path += '0' + i;
-        path += '/';
+        if(i == 1)
+            path += "left/L";
+        else
+            path += "right/R";
 
         //load images
-        calibrator->loadCameraImgs(path.c_str());
+        calibrator->loadCameraImgs(path);
+        progressPop(5);
+
         calibrator->extractImageCorners();
+        progressPop(15);
+
         calibrator->calibrateCamera();
+        progressPop(10);
+
         calibrator->findCameraExtrisics();
+        progressPop(10);
+
         //export txt files
-        std::string file_name;
+        QString file_name;
+        if(i == 1)
+            path = projectPath + "/calib/left/";
+        else
+            path = projectPath + "/calib/right/";
 
-        path += "output/";
-
-        file_name =  path.c_str();
+        file_name =  path;
         file_name += "cam_matrix.txt";
+        calibrator->exportTxtFiles(file_name.toLocal8Bit(),CAMCALIB_OUT_MATRIX);
 
-        calibrator->exportTxtFiles(file_name.c_str(),CAMCALIB_OUT_MATRIX);
-
-        file_name =  path.c_str();
+        file_name =  path;
         file_name += "cam_distortion.txt";
+        calibrator->exportTxtFiles(file_name.toLocal8Bit(),CAMCALIB_OUT_DISTORTION);
 
-        calibrator->exportTxtFiles(file_name.c_str(),CAMCALIB_OUT_DISTORTION);
-
-        file_name =  path.c_str();
+        file_name =  path;
         file_name += "cam_rotation_matrix.txt";
+        calibrator->exportTxtFiles(file_name.toLocal8Bit(),CAMCALIB_OUT_ROTATION);
 
-        calibrator->exportTxtFiles(file_name.c_str(),CAMCALIB_OUT_ROTATION);
-
-        file_name =  path.c_str();
+        file_name =  path;
         file_name += "cam_trans_vectror.txt";
-
-        calibrator->exportTxtFiles(file_name.c_str(),CAMCALIB_OUT_TRANSLATION);
-
-        file_name =  path.c_str();
-        file_name += "calib.xml";
-        calibrator->saveCalibData(file_name.c_str());
-
-        // show data on consol
-        calibrator->printData();
+        calibrator->exportTxtFiles(file_name.toLocal8Bit(),CAMCALIB_OUT_TRANSLATION);
+        progressPop(10);
     }
-    */
+    ui->progressBar->setValue(100);
 }
 
 void MainWindow::scan()
 {
+    ui->progressBar->reset();
+    nowProgress = 0;
+
     if(!cameraOpened){
-        QMessageBox::warning(this,"Cameras not opened","Cameras are not opened.");
+        QMessageBox::warning(this, tr("Cameras not opened"), tr("Cameras are not opened."));
         return;
     }
     if(projectPath==""){
-        QMessageBox::warning(this,"Save path not set","You need create a project first.");
+        QMessageBox::warning(this,tr("Save path not set"), tr("You need create a project first."));
         return;
     }
     selectPath(1);
@@ -366,6 +376,8 @@ void MainWindow::scan()
     pj->opencvWindow();
     GrayCodes *grayCode = new GrayCodes(projectorWidth,projectorHeight);
     grayCode->generateGrays();
+    progressPop(10);
+
     pj->showImg(grayCode->getNextImg());
     int grayCount = 0;
 
@@ -373,9 +385,11 @@ void MainWindow::scan()
     {
         cvWaitKey(100);
         HVSnapShot(m_hhv_1, ppBuf_1, 1);
-        image_1 = new QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
-        pimage_1 = QPixmap::fromImage(*image_1);
-        delete image_1;
+        //image_1 = new QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
+        image_1 = QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
+        //pimage_1 = QPixmap::fromImage(*image_1);
+        pimage_1 = QPixmap::fromImage(image_1);
+        //delete image_1;
         HVSnapShot(m_hhv_2, ppBuf_2, 1);
         image_2 = new QImage(m_pRawBuffer_2, Width, Height, QImage::Format_Indexed8);
         pimage_2 = QPixmap::fromImage(*image_2);
@@ -386,6 +400,7 @@ void MainWindow::scan()
         if(grayCount == grayCode->getNumOfImgs())
             break;
         pj->showImg(grayCode->getNextImg());
+        progressPop(2);
     }
     HVOpenSnap(m_hhv_1,SnapThreadCallback, this);
     HVOpenSnap(m_hhv_2,SnapThreadCallback, this);
@@ -394,25 +409,33 @@ void MainWindow::scan()
     timer->start();
     pj->destoryWindow();
     pj->displaySwitch(true);
+
+    ui->progressBar->setValue(100);
 }
 
 void MainWindow::reconstruct()
 {
+    ui->progressBar->reset();
+    nowProgress = 0;
+
     if(cameraOpened)
         closeCamera();
     if(isConfigured == false){
-        QMessageBox::warning(this,"Warning","Press 'Set' button to configure the settings.");
+        QMessageBox::warning(this,tr("Warning"), tr("Press 'Set' button to configure the settings."));
         return;
     }
     ui->tabWidget->setCurrentIndex(2);
     selectPath(2);//set current path to :/reconstruct
     Reconstruct *reconstructor= new Reconstruct(2,projectPath);
-    reconstructor->getParameters(projectorWidth, projectorHeight, cameraWidth, cameraHeight, isAutoContrast, isSaveAutoContrast,projectPath);
-    reconstructor->setCalibPath(projectPath+"/calib/left/","L",".png",0);
-    reconstructor->setCalibPath(projectPath+"/calib/right/","R",".png",1);
+    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, isAutoContrast, isSaveAutoContrast,projectPath);
+
+    reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
+    reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
     bool loaded = reconstructor->loadCameras();//load camera matrix
     if(!loaded)
         return;
+    progressPop(10);
+
     reconstructor->setBlackThreshold(black_);
     reconstructor->setWhiteThreshold(white_);
     if(isSaveAutoContrast)
@@ -423,12 +446,16 @@ void MainWindow::reconstruct()
         reconstructor->enableRaySampling();
     else
         reconstructor->disableRaySampling();
+    progressPop(10);
 
     bool runSucess = reconstructor->runReconstruction();
     if(!runSucess)
         return;
+    progressPop(50);
 
     MeshCreator *meshCreator=new MeshCreator(reconstructor->points3DProjView);//Export mesh
+    progressPop(10);
+
     if(isExportObj)
         meshCreator->exportObjMesh(projectPath + "/reconstruction/result.obj");
     if(isExportPly || !(isExportObj || isExportPly))
@@ -442,31 +469,32 @@ void MainWindow::reconstruct()
     HVStartSnap(m_hhv_2,ppBuf_2,1);
     timer->start();
     */
+    ui->progressBar->setValue(100);
 }
 
 void MainWindow::set()
 {
-    sWindow->show();
-    sWindow->saveSetPath = projectPath;
+    setDialog->show();
+    setDialog->saveSetPath = projectPath;
     isConfigured = true;
-    connect(sWindow,SIGNAL(outputSet()),this,SLOT(getSetInfo()));
+    connect(setDialog,SIGNAL(outputSet()),this,SLOT(getSetInfo()));
 }
 
 void MainWindow::getSetInfo()
 {
-    Width = sWindow->cam_w;
-    Height = sWindow->cam_h;
-    projectorWidth = sWindow->proj_w;
-    projectorHeight = sWindow->proj_h;
-    scanWidth = sWindow->scan_w;
-    scanHeight = sWindow->scan_h;
-    black_ = sWindow->black_threshold;
-    white_ = sWindow->white_threshold;
-    isAutoContrast = sWindow->autoContrast;
-    isSaveAutoContrast = sWindow->saveAutoContrast;
-    isRaySampling = sWindow->raySampling;
-    isExportObj = sWindow->exportObj;
-    isExportPly = sWindow->exportPly;
+    Width = setDialog->cam_w;
+    Height = setDialog->cam_h;
+    projectorWidth = setDialog->proj_w;
+    projectorHeight = setDialog->proj_h;
+    scanWidth = setDialog->scan_w;
+    scanHeight = setDialog->scan_h;
+    black_ = setDialog->black_threshold;
+    white_ = setDialog->white_threshold;
+    isAutoContrast = setDialog->autoContrast;
+    isSaveAutoContrast = setDialog->saveAutoContrast;
+    isRaySampling = setDialog->raySampling;
+    isExportObj = setDialog->exportObj;
+    isExportPly = setDialog->exportPly;
 }
 
 void MainWindow::createConnections()
@@ -484,6 +512,7 @@ void MainWindow::createConnections()
     connect(ui->actionSet, SIGNAL(triggered()), this, SLOT(set()));
     connect(ui->actionChinese, SIGNAL(triggered()), this, SLOT(switchlanguage()));
     connect(ui->actionEnglish, SIGNAL(triggered()), this, SLOT(switchlanguage()));
+    connect(ui->pSizeValue, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
 }
 
 void MainWindow::switchlanguage()
@@ -508,5 +537,16 @@ void MainWindow::switchlanguage()
     trans.load(local, qmPath);
     qApp->installTranslator(&trans);
     ui->retranslateUi(this);
-    sWindow->switchLang();
+    setDialog->switchLang();
+}
+
+void MainWindow::changePointSize(int psize)
+{
+    displayModel->setPoint(psize);
+}
+
+void MainWindow::progressPop(int up)
+{
+    nowProgress += up;
+    ui->progressBar->setValue(nowProgress);
 }
