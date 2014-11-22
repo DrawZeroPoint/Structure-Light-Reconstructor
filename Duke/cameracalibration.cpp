@@ -285,7 +285,7 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img,cv::vector<cv::Point2f>
 
         cv::namedWindow("Calibration",CV_WINDOW_NORMAL);
         cv::resizeWindow("Calibration",800,600);
-        */
+*/
 
         ///这里尝试采用opencv自带的找圆心功能
         cv::Size patternsize(numOfCornersX, numOfCornersY);
@@ -298,7 +298,7 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img,cv::vector<cv::Point2f>
             break;
         //QMessageBox::information(NULL, NULL, QObject::tr("Press 'Enter' to continue or 'ESC' to repeat the procedure."));
         ///要实现全自动可以屏蔽下面的while循环
-        /*
+/*
         while(found)
         {
             cv::imshow("Calibration", img_copy );

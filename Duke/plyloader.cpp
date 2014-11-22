@@ -19,7 +19,7 @@ int PlyLoader::LoadModel(char* filename)
             return -1;
         }
         fseek(file, 0, SEEK_END);//获取文件全部数据
-        mp_vertexXYZ = (float*)malloc(100000);//long int ftell (FILE *stream); Returns the current value of the position indicator of the stream.
+        mp_vertexXYZ = (float*)malloc(2000000);//long int ftell (FILE *stream); Returns the current value of the position indicator of the stream.
 
         fseek(file, 0, SEEK_SET);//操作符指向文件流开头
         if (file)

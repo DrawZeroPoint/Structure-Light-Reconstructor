@@ -5,7 +5,7 @@
 #include <QColorDialog>
 #include <qmath.h>
 
-#define F_PATH "D:\fini\reconstruction\result.PLY"
+#define F_PATH "D:\\result.PLY"
 
 GLfloat scale = 1.0;
 GLfloat percent = 0.1;
