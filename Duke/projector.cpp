@@ -1,11 +1,13 @@
 #include "projector.h"
 #include <QLayout>
-#include <QPainter>
+#include <QEvent>
+#include <QPaintEvent>
 
 int proj_w;
 int proj_h;
 
-Projector::Projector(QWidget *parent, int scanW, int scanH, int projW, int projH, int xos, int yos) : QWidget(parent)
+Projector::Projector(QWidget *parent, int scanW, int scanH, int projW, int projH, int xos, int yos)
+    : QWidget(parent)
 {
     width = scanW;
     height = scanH;
@@ -13,6 +15,7 @@ Projector::Projector(QWidget *parent, int scanW, int scanH, int projW, int projH
     proj_h = projH;
     xoffset = xos;
     yoffset = yos;
+    crossVisible = true;
 }
 
 Projector::~Projector()
@@ -22,9 +25,14 @@ Projector::~Projector()
 void Projector::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    painter.setPen(QPen(Qt::black, 5));
-    painter.drawLine(proj_w/2 - 60, proj_h/2, proj_w/2 + 60, proj_h/2);
-    painter.drawLine(proj_w/2, proj_h/2 - 60, proj_w/2, proj_h/2 + 60);
+    if(crossVisible)//QEvent::User 1000
+    {
+        painter.setPen(QPen(Qt::yellow, 5));
+    //else
+        //painter.setPen(QPen(Qt::white, 5));
+        painter.drawLine(proj_w/2 - 60, proj_h/2, proj_w/2 + 60, proj_h/2);
+        painter.drawLine(proj_w/2, proj_h/2 - 60, proj_w/2, proj_h/2 + 60);
+    }
 }
 
 void Projector::opencvWindow()
