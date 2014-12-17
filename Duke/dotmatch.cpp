@@ -24,6 +24,26 @@ vector<vector<float>> DotMatch::findDot(Mat image ,int cam)//cam表示相机编�
 {
     vector<vector<Point> > contours;//声明存储轮廓点的向量，本身是存储轮廓的向量
     Mat bimage = image >= bwThreshold;//这种生成二值图像的方法很简洁
+
+	/*自创方法*/
+	//bool initial;
+	Point2i temp
+	for (int i = 0; i < bimage.rows; i++)
+	{
+		for (int j = 0; j < bimage.cols - 1; j++)
+		{
+			//initial = bimage.at(i, 0);
+			if (bimage.at(i, j + 1) - bimage.at(i, j) = 1)//说明发生了状态跳变（由白到黑）
+			{
+				temp.x = j;
+				temp.y = i;
+			}
+			if (temp.size() != 0)
+			{
+
+			}
+		}
+	}
     //Mat bsmooth = bimage;
     //medianBlur(bimage, bsmooth, 5);
     //bimage = bsmooth;
