@@ -61,6 +61,9 @@ public:
     QSpinBox *pSizeValue;
     QSpacerItem *verticalSpacer_15;
     QHBoxLayout *displayLayout;
+    QHBoxLayout *horizontalLayout_2;
+    QLabel *label_2;
+    QProgressBar *progressBar;
     QTabWidget *tabWidget;
     QWidget *tab;
     QGridLayout *gridLayout_11;
@@ -79,10 +82,13 @@ public:
     QPushButton *redoButton;
     QPushButton *calibButton;
     QWidget *tab_2;
+    QPushButton *startScanButton;
+    QWidget *widget;
+    QHBoxLayout *horizontalLayout_3;
+    QPushButton *findPointButton;
+    QLabel *label_3;
+    QSpinBox *thresholdBox;
     QWidget *tab_3;
-    QHBoxLayout *horizontalLayout_2;
-    QLabel *label_2;
-    QProgressBar *progressBar;
     QMenuBar *menubar;
     QMenu *menuFile;
     QMenu *menuCustomize;
@@ -114,7 +120,7 @@ public:
     QLabel *label_5;
     QSpinBox *snapSpeedBox;
     QLabel *label_6;
-    QSlider *horizontalSlider;
+    QSlider *leftExSlider;
     QSpacerItem *horizontalSpacer_10;
     QSpacerItem *verticalSpacer_10;
     QDockWidget *dockWidget_2;
@@ -135,7 +141,7 @@ public:
     QLabel *label_7;
     QSpinBox *spinBox;
     QLabel *label_8;
-    QSlider *horizontalSlider_2;
+    QSlider *rightExSlider;
     QSpacerItem *horizontalSpacer_12;
     QSpacerItem *verticalSpacer_12;
     QWidget *widget_5;
@@ -243,9 +249,9 @@ public:
         centralwidget->setSizePolicy(sizePolicy);
         centralwidget->setMinimumSize(QSize(290, 500));
         gridLayout = new QGridLayout(centralwidget);
-        gridLayout->setSpacing(0);
+        gridLayout->setSpacing(1);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        gridLayout->setContentsMargins(0, 0, 0, 0);
+        gridLayout->setContentsMargins(1, 1, 1, 1);
         centralWidget = new QWidget(centralwidget);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -321,6 +327,26 @@ public:
 
 
         gridLayout_2->addWidget(displayWidget, 0, 0, 1, 1);
+
+        horizontalLayout_2 = new QHBoxLayout();
+        horizontalLayout_2->setSpacing(10);
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        label_2 = new QLabel(centralWidget);
+        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setStyleSheet(QStringLiteral("font: 75 9pt \"Calibri\";"));
+
+        horizontalLayout_2->addWidget(label_2);
+
+        progressBar = new QProgressBar(centralWidget);
+        progressBar->setObjectName(QStringLiteral("progressBar"));
+        progressBar->setStyleSheet(QStringLiteral("font: 75 9pt \"Calibri\";"));
+        progressBar->setValue(0);
+        progressBar->setInvertedAppearance(false);
+
+        horizontalLayout_2->addWidget(progressBar);
+
+
+        gridLayout_2->addLayout(horizontalLayout_2, 2, 0, 1, 1);
 
         tabWidget = new QTabWidget(centralWidget);
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
@@ -422,32 +448,45 @@ public:
         tabWidget->addTab(tab, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QStringLiteral("tab_2"));
+        startScanButton = new QPushButton(tab_2);
+        startScanButton->setObjectName(QStringLiteral("startScanButton"));
+        startScanButton->setEnabled(false);
+        startScanButton->setGeometry(QRect(10, 60, 75, 23));
+        widget = new QWidget(tab_2);
+        widget->setObjectName(QStringLiteral("widget"));
+        widget->setGeometry(QRect(10, 20, 222, 25));
+        horizontalLayout_3 = new QHBoxLayout(widget);
+        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        horizontalLayout_3->setContentsMargins(0, 0, 0, 0);
+        findPointButton = new QPushButton(widget);
+        findPointButton->setObjectName(QStringLiteral("findPointButton"));
+        findPointButton->setEnabled(false);
+
+        horizontalLayout_3->addWidget(findPointButton);
+
+        label_3 = new QLabel(widget);
+        label_3->setObjectName(QStringLiteral("label_3"));
+
+        horizontalLayout_3->addWidget(label_3);
+
+        thresholdBox = new QSpinBox(widget);
+        thresholdBox->setObjectName(QStringLiteral("thresholdBox"));
+        QSizePolicy sizePolicy6(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        sizePolicy6.setHorizontalStretch(0);
+        sizePolicy6.setVerticalStretch(0);
+        sizePolicy6.setHeightForWidth(thresholdBox->sizePolicy().hasHeightForWidth());
+        thresholdBox->setSizePolicy(sizePolicy6);
+        thresholdBox->setMaximum(255);
+        thresholdBox->setValue(60);
+
+        horizontalLayout_3->addWidget(thresholdBox);
+
         tabWidget->addTab(tab_2, QString());
         tab_3 = new QWidget();
         tab_3->setObjectName(QStringLiteral("tab_3"));
         tabWidget->addTab(tab_3, QString());
 
         gridLayout_2->addWidget(tabWidget, 1, 0, 1, 1);
-
-        horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setSpacing(10);
-        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
-        label_2 = new QLabel(centralWidget);
-        label_2->setObjectName(QStringLiteral("label_2"));
-        label_2->setStyleSheet(QStringLiteral("font: 75 9pt \"Calibri\";"));
-
-        horizontalLayout_2->addWidget(label_2);
-
-        progressBar = new QProgressBar(centralWidget);
-        progressBar->setObjectName(QStringLiteral("progressBar"));
-        progressBar->setStyleSheet(QStringLiteral("font: 75 9pt \"Calibri\";"));
-        progressBar->setValue(0);
-        progressBar->setInvertedAppearance(false);
-
-        horizontalLayout_2->addWidget(progressBar);
-
-
-        gridLayout_2->addLayout(horizontalLayout_2, 2, 0, 1, 1);
 
 
         gridLayout->addWidget(centralWidget, 0, 0, 1, 1);
@@ -580,11 +619,11 @@ public:
         gridLayout_7->setContentsMargins(0, 0, 0, 0);
         widget_3 = new QWidget(dockWidgetContents);
         widget_3->setObjectName(QStringLiteral("widget_3"));
-        QSizePolicy sizePolicy6(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        sizePolicy6.setHorizontalStretch(0);
-        sizePolicy6.setVerticalStretch(0);
-        sizePolicy6.setHeightForWidth(widget_3->sizePolicy().hasHeightForWidth());
-        widget_3->setSizePolicy(sizePolicy6);
+        QSizePolicy sizePolicy7(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        sizePolicy7.setHorizontalStretch(0);
+        sizePolicy7.setVerticalStretch(0);
+        sizePolicy7.setHeightForWidth(widget_3->sizePolicy().hasHeightForWidth());
+        widget_3->setSizePolicy(sizePolicy7);
         gridLayout_3 = new QGridLayout(widget_3);
         gridLayout_3->setSpacing(0);
         gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
@@ -622,8 +661,8 @@ public:
 
         widget_4 = new QWidget(dockWidgetContents);
         widget_4->setObjectName(QStringLiteral("widget_4"));
-        sizePolicy6.setHeightForWidth(widget_4->sizePolicy().hasHeightForWidth());
-        widget_4->setSizePolicy(sizePolicy6);
+        sizePolicy7.setHeightForWidth(widget_4->sizePolicy().hasHeightForWidth());
+        widget_4->setSizePolicy(sizePolicy7);
         gridLayout_4 = new QGridLayout(widget_4);
         gridLayout_4->setSpacing(0);
         gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
@@ -660,8 +699,8 @@ public:
 
         groupBox = new QGroupBox(dockWidgetContents);
         groupBox->setObjectName(QStringLiteral("groupBox"));
-        sizePolicy6.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
-        groupBox->setSizePolicy(sizePolicy6);
+        sizePolicy7.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
+        groupBox->setSizePolicy(sizePolicy7);
         groupBox->setMaximumSize(QSize(111111, 70));
         groupBox->setStyleSheet(QLatin1String("font: 9pt \"Calibri\";\n"
 "background-color: rgbrgb(111, 215, 253)"));
@@ -696,14 +735,17 @@ public:
         label_6 = new QLabel(splitter);
         label_6->setObjectName(QStringLiteral("label_6"));
         splitter->addWidget(label_6);
-        horizontalSlider = new QSlider(splitter);
-        horizontalSlider->setObjectName(QStringLiteral("horizontalSlider"));
-        horizontalSlider->setMinimum(1);
-        horizontalSlider->setMaximum(5);
-        horizontalSlider->setPageStep(1);
-        horizontalSlider->setValue(3);
-        horizontalSlider->setOrientation(Qt::Horizontal);
-        splitter->addWidget(horizontalSlider);
+        leftExSlider = new QSlider(splitter);
+        leftExSlider->setObjectName(QStringLiteral("leftExSlider"));
+        leftExSlider->setEnabled(false);
+        leftExSlider->setMinimum(0);
+        leftExSlider->setMaximum(3);
+        leftExSlider->setPageStep(1);
+        leftExSlider->setValue(1);
+        leftExSlider->setOrientation(Qt::Horizontal);
+        leftExSlider->setTickPosition(QSlider::TicksBothSides);
+        leftExSlider->setTickInterval(0);
+        splitter->addWidget(leftExSlider);
 
         gridLayout_8->addWidget(splitter, 1, 1, 1, 1);
 
@@ -773,8 +815,8 @@ public:
 
         groupBox_2 = new QGroupBox(dockWidgetContents_3);
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
-        sizePolicy6.setHeightForWidth(groupBox_2->sizePolicy().hasHeightForWidth());
-        groupBox_2->setSizePolicy(sizePolicy6);
+        sizePolicy7.setHeightForWidth(groupBox_2->sizePolicy().hasHeightForWidth());
+        groupBox_2->setSizePolicy(sizePolicy7);
         groupBox_2->setMaximumSize(QSize(111111, 70));
         groupBox_2->setStyleSheet(QLatin1String("font: 9pt \"Calibri\";\n"
 "background-color: rgbrgb(111, 215, 253)"));
@@ -805,14 +847,16 @@ public:
         label_8 = new QLabel(splitter_2);
         label_8->setObjectName(QStringLiteral("label_8"));
         splitter_2->addWidget(label_8);
-        horizontalSlider_2 = new QSlider(splitter_2);
-        horizontalSlider_2->setObjectName(QStringLiteral("horizontalSlider_2"));
-        horizontalSlider_2->setMinimum(1);
-        horizontalSlider_2->setMaximum(5);
-        horizontalSlider_2->setPageStep(1);
-        horizontalSlider_2->setValue(3);
-        horizontalSlider_2->setOrientation(Qt::Horizontal);
-        splitter_2->addWidget(horizontalSlider_2);
+        rightExSlider = new QSlider(splitter_2);
+        rightExSlider->setObjectName(QStringLiteral("rightExSlider"));
+        rightExSlider->setEnabled(false);
+        rightExSlider->setMinimum(0);
+        rightExSlider->setMaximum(3);
+        rightExSlider->setPageStep(1);
+        rightExSlider->setValue(1);
+        rightExSlider->setOrientation(Qt::Horizontal);
+        rightExSlider->setTickPosition(QSlider::TicksBothSides);
+        splitter_2->addWidget(rightExSlider);
 
         gridLayout_9->addWidget(splitter_2, 1, 1, 1, 1);
 
@@ -829,11 +873,11 @@ public:
 
         widget_5 = new QWidget(dockWidgetContents_3);
         widget_5->setObjectName(QStringLiteral("widget_5"));
-        QSizePolicy sizePolicy7(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
-        sizePolicy7.setHorizontalStretch(0);
-        sizePolicy7.setVerticalStretch(0);
-        sizePolicy7.setHeightForWidth(widget_5->sizePolicy().hasHeightForWidth());
-        widget_5->setSizePolicy(sizePolicy7);
+        QSizePolicy sizePolicy8(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+        sizePolicy8.setHorizontalStretch(0);
+        sizePolicy8.setVerticalStretch(0);
+        sizePolicy8.setHeightForWidth(widget_5->sizePolicy().hasHeightForWidth());
+        widget_5->setSizePolicy(sizePolicy8);
         gridLayout_6 = new QGridLayout(widget_5);
         gridLayout_6->setSpacing(0);
         gridLayout_6->setObjectName(QStringLiteral("gridLayout_6"));
@@ -872,9 +916,9 @@ public:
         MainWindow->addDockWidget(static_cast<Qt::DockWidgetArea>(2), dockWidget_2);
 #ifndef QT_NO_SHORTCUT
         label_5->setBuddy(snapSpeedBox);
-        label_6->setBuddy(horizontalSlider);
+        label_6->setBuddy(leftExSlider);
         label_7->setBuddy(spinBox);
-        label_8->setBuddy(horizontalSlider_2);
+        label_8->setBuddy(rightExSlider);
 #endif // QT_NO_SHORTCUT
 
         menubar->addAction(menuFile->menuAction());
@@ -907,7 +951,7 @@ public:
         QObject::connect(snapSpeedBox, SIGNAL(valueChanged(int)), spinBox, SLOT(setValue(int)));
         QObject::connect(spinBox, SIGNAL(valueChanged(int)), snapSpeedBox, SLOT(setValue(int)));
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -988,6 +1032,7 @@ public:
         actionChinese->setToolTip(QApplication::translate("MainWindow", "zh", 0));
 #endif // QT_NO_TOOLTIP
         label->setText(QApplication::translate("MainWindow", "Point Size", 0));
+        label_2->setText(QApplication::translate("MainWindow", "Current Operation Processed:", 0));
         label_9->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Capture images as displayed:</p></body></html>", 0));
         currentPhotoLabel->setText(QApplication::translate("MainWindow", "0", 0));
         label_11->setText(QApplication::translate("MainWindow", "<html><head/><body><p>/12 images have been captured.</p></body></html>", 0));
@@ -996,9 +1041,11 @@ public:
         redoButton->setText(QApplication::translate("MainWindow", "Redo", 0));
         calibButton->setText(QApplication::translate("MainWindow", "Calibrate", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Calibrate", 0));
+        startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
+        findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
+        label_3->setText(QApplication::translate("MainWindow", "Binary Threshold", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Scan", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("MainWindow", "Reconstruct", 0));
-        label_2->setText(QApplication::translate("MainWindow", "Current Operation Processed:", 0));
         menuFile->setTitle(QApplication::translate("MainWindow", "Project", 0));
         menuCustomize->setTitle(QApplication::translate("MainWindow", "Customize", 0));
         menuLanguage->setTitle(QApplication::translate("MainWindow", "Language", 0));

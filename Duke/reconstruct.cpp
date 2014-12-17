@@ -1,9 +1,9 @@
 #include "reconstruct.h"
 #include <QMessageBox>
 
-Reconstruct::Reconstruct(int numOfCams_,QString path)
+Reconstruct::Reconstruct()
 {
-    numOfCams = numOfCams_;
+    numOfCams = 2;
     mask = NULL;
     decRows = NULL;
     decCols = NULL;
@@ -16,22 +16,7 @@ Reconstruct::Reconstruct(int numOfCams_,QString path)
     scanFolder = new QString[2];
     imgPrefix = new QString[2];
     pathSet = false;
-    for(int i = 0; i< 2; i++)
-    {
-        QString pathI;
-        if(i==0){
-            pathI = path + "/scan/left/";//Load Images for reconstruction
-        }
-        else{
-            pathI = path + "/scan/right/";//输入path为projectPath
-        }
-        camsPixels[i] = NULL;
-        scanFolder[i] = pathI;
-        if(i==0)
-            imgPrefix[i] = "L";
-        else
-            imgPrefix[i] = "R";
-    }
+
     imgSuffix = ".png";//这里暂时认为图片后缀为.png
 }
 Reconstruct::~Reconstruct()
@@ -99,7 +84,7 @@ void Reconstruct::decodePaterns()
 bool Reconstruct::loadCameras()//Load calibration data into camera[i]
 {
     bool loaded;
-    for(int i=0; i<numOfCams; i++)
+    for(int i = 0; i < 2; i++)//这里为了处理方便将numofcam直接替换为2
     {
         QString path;
         path = calibFolder[i];
@@ -399,4 +384,21 @@ void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, bool a
     autoContrast_ = autocontrast;
     saveAutoContrast_ = saveautocontrast;
     savePath_ = savePath;//equal to projectPath
+
+    for(int i = 0; i < 2; i++)
+    {
+        QString pathI;
+        if(i==0){
+            pathI = savePath + "/scan/left/";//Load Images for reconstruction
+        }
+        else{
+            pathI = savePath + "/scan/right/";
+        }
+        camsPixels[i] = NULL;
+        scanFolder[i] = pathI;
+        if(i==0)
+            imgPrefix[i] = "L";
+        else
+            imgPrefix[i] = "R";
+    }
 }

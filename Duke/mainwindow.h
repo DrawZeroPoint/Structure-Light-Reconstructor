@@ -9,6 +9,7 @@
 #include <QTimer>
 
 #include "set.h"
+#include "dotmatch.h"
 #include <opencv/highgui.h>
 #include <opencv/cv.h>
 #include "projector.h"
@@ -36,6 +37,7 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
     Set *setDialog;
+    DotMatch *dm;
     GLWidget *displayModel;
 
     QString projectPath;
@@ -51,14 +53,18 @@ public:
 private:
     Ui::MainWindow *ui;
     CameraCalibration *calibrator;
+    Projector *pj;
 
     void createConnections();
     void createCentralWindow(QWidget *parent);
     void captureImage(int saveCount, bool dispaly);
+    void findPoint();
     void getScreenGeometry();
     void closeCamera();
     void generatePath(int type);
     void selectPath(int type);
+
+    ///---------------相机相关函数---------------///
 
     void OnSnapexOpen();
     void OnSnapexStart();
@@ -66,28 +72,26 @@ private:
     void OnSnapexClose();
     int OnSnapChange();
 
+    ///---------------辅助功能---------------///
+
     void progressPop(int up);
+    void drawCross(QPainter &p, int x, int y);
 
     QLabel *msgLabel;//show message in the bottom of the window
 
     QTimer *timer;
-
-    //QImage *image_1;//由rawbuffer得到的图像指针
     QImage image_1;
-    QImage *image_2;
+    QImage image_2;
     QPixmap pimage_1;//由图像指针得到的.png格式图像
     QPixmap pimage_2;
 
     bool cameraOpened;
     bool isProjectorOpened;
     bool isConfigured;
-    Projector *pj;
     int saveCon;//count the photo captured.
 
     QString path_1;
     QString path_2;
-
-    //CameraCalibration *calibrator;
 
     ///////////////////////////////
     HHV	m_hhv_1;			///< 数字摄像机句柄
@@ -115,14 +119,20 @@ private slots:
     void openproject();
 
     void opencamera();
+    void exposurecontrol();
     void readframe();
+
     void capturecalib();
     void redocapture();
     void projectorcontrol();
 
     void calib();
     void calibration();
+
     void scan();
+    void pointmatch();
+    void startscan();
+
     void reconstruct();
     void set();
     void getSetInfo();

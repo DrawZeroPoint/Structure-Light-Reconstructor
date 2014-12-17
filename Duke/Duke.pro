@@ -17,7 +17,8 @@ SOURCES += \
     virtualcamera.cpp \
     plyloader.cpp \
     glwidget.cpp \
-    cameracalibration.cpp
+    cameracalibration.cpp \
+    dotmatch.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -52,7 +53,8 @@ HEADERS += \
     virtualcamera.h \
     plyloader.h \
     glwidget.h \
-    cameracalibration.h
+    cameracalibration.h \
+    dotmatch.h
 
 FORMS += \
     mainwindow.ui \

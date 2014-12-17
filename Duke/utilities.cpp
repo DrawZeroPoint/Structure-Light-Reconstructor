@@ -441,3 +441,4 @@ void Utilities::folderScan(const char *path)
             _chdir("../");
     }
 }
+
