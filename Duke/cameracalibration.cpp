@@ -289,8 +289,9 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img,cv::vector<cv::Point2f>
 
         ///这里尝试采用opencv自带的找圆心功能
         cv::Size patternsize(numOfCornersX, numOfCornersY);
-        cv::bitwise_not(img_grey, img_grey);
-        found = cv::findCirclesGrid(img_grey, patternsize, *camCorners,cv::CALIB_CB_ASYMMETRIC_GRID);//改为检测圆点
+        cv::bitwise_not(img_grey, img_grey);//反相处理
+        found = cv::findCirclesGrid(img_grey, patternsize, *camCorners,cv::CALIB_CB_SYMMETRIC_GRID);//改为检测圆点
+        ///注意只能用CALIB_CB_SYMMETRIC_GRID方法
         //found = cv::findChessboardCorners(img_grey, cvSize(numOfCornersX,numOfCornersY), *camCorners, CV_CALIB_CB_ADAPTIVE_THRESH );
         cv::drawChessboardCorners(img_copy, patternsize, *camCorners, found);
         int key = cv::waitKey(1);
