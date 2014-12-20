@@ -33,6 +33,8 @@ void CameraCalibration::exportTxtFiles(const char *path, int CAMCALIB_OUT_PARAM)
         case CAMCALIB_OUT_TRANSLATION:
             out = translationVector;
             break;
+        case CAMCALIB_OUT_FUNDAMENTAL:
+            out = fundamentalMatrix;
     }
     Utilities::exportMat(path, out);
 }
@@ -351,7 +353,6 @@ int CameraCalibration::extractImageCorners()
 
     for(int i = 0; i < numOfCamImgs; i++)
     {
-        int cornersReturn;
         cv::vector<cv::Point2f> cCam;
         cv::vector<cv::Point3f> cObj;
         findCornersInCamImg(calibImgs[i], &cCam, &cObj );//为加入对图像旋转的处理，这里可能需要根据i设置横、纵向点数
@@ -361,6 +362,16 @@ int CameraCalibration::extractImageCorners()
             objBoardCornersCam.push_back(cObj);
         }
     }
+
+    /***********为求解基础矩阵，采样点来自第一组图片（L1，R1）的角点数据*************/
+    for (int i = 0; i < 30; i++)//放入30个点
+    {
+        if (isleft)
+            findFunLeft.push_back(imgBoardCornersCam[0][3*i]);
+        else
+            findFunRight.push_back(imgBoardCornersCam[0][3*i]);
+    }
+
     return 1;
 }
 
@@ -373,7 +384,7 @@ int CameraCalibration::calibrateCamera()
     cv::vector<cv::Mat> camRotationVectors;
     cv::vector<cv::Mat> camTranslationVectors;
 
-    cv::calibrateCamera(objBoardCornersCam,imgBoardCornersCam,camImageSize,camMatrix, distortion, camRotationVectors,camTranslationVectors,0,
+    cv::calibrateCamera(objBoardCornersCam, imgBoardCornersCam, camImageSize, camMatrix, distortion, camRotationVectors,camTranslationVectors,0,
         cv::TermCriteria( (cv::TermCriteria::COUNT)+(cv::TermCriteria::EPS), 30, DBL_EPSILON) );
 
     camCalibrated = true;
@@ -448,6 +459,13 @@ bool CameraCalibration::findCameraExtrisics()
     bool r = cv::solvePnP(objPoints3D,imgPoints,camMatrix,distortion,rVec,translationVector);
     cv::Rodrigues(rVec,rotationMatrix);
     return r;
+}
+
+void CameraCalibration::findFundamental()
+{
+    fundamentalMatrix = cv::findFundamentalMat(findFunLeft, findFunRight, cv::FM_RANSAC, 3, 0.99);
+    findFunLeft.clear();
+    findFunRight.clear();
 }
 
 void CameraCalibration::setSquareSize(cv::Size size_in_mm)

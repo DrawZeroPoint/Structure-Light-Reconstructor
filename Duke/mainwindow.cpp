@@ -342,16 +342,23 @@ void MainWindow::calibration()
 {
     ui->progressBar->reset();
     nowProgress = 0;
-
+    calibrator = new CameraCalibration();
     QString path;
+
     for(int i = 1; i <= 2; i++)
     {
         path = projectPath + "/calib/";
-        calibrator = new CameraCalibration();
-        if(i == 1)
+
+        if (i == 1)
+        {
             path += "left/L";
+            calibrator->isleft = true;
+        }
         else
+        {
             path += "right/R";
+            calibrator->isleft = false;
+        }
 
         //load images
         calibrator->loadCameraImgs(path);
@@ -390,6 +397,10 @@ void MainWindow::calibration()
         calibrator->exportTxtFiles(file_name.toLocal8Bit(),CAMCALIB_OUT_TRANSLATION);
         progressPop(10);
     }
+    path = projectPath + "/calib/fundamental_mat.txt";
+    calibrator->findFundamental();
+    calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_FUNDAMENTAL);
+
     ui->progressBar->setValue(100);
 }
 

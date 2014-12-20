@@ -11,6 +11,7 @@
 #define CAMCALIB_OUT_DISTORTION 2
 #define CAMCALIB_OUT_ROTATION 3
 #define CAMCALIB_OUT_TRANSLATION 4
+#define CAMCALIB_OUT_FUNDAMENTAL 5
 
 class CameraCalibration :public QObject
 {
@@ -24,6 +25,7 @@ public:
     void unloadCameraImgs();
 
     bool findCameraExtrisics();
+    void findFundamental();
 
     void	setSquareSize(cv::Size size);
     cv::Size getSquareSize();
@@ -38,6 +40,14 @@ public:
     cv::Mat distortion;
     cv::Mat rotationMatrix;
     cv::Mat translationVector;
+    cv::Mat fundamentalMatrix;
+
+    cv::vector<cv::vector<cv::Point2f>> imgBoardCornersCam;
+
+    cv::vector<cv::Point2f> findFunLeft;//存储基础矩阵计算用的左相机图像角点
+    cv::vector<cv::Point2f> findFunRight;
+
+    bool isleft;
 
 private:
     bool findCornersInCamImg(cv::Mat camImg,cv::vector<cv::Point2f> *camCorners,cv::vector<cv::Point3f> *objCorners);
@@ -50,7 +60,6 @@ private:
     void perspectiveTransformation(cv::vector<cv::Point2f> corners_in,cv::Mat homoMatrix, cv::vector<cv::Point3f> &points_out);
     void undistortCameraImgPoints(cv::vector<cv::Point2f> points_in,cv::vector<cv::Point2f> &points_out);
 
-    cv::vector<cv::vector<cv::Point2f>> imgBoardCornersCam;
     cv::vector<cv::vector<cv::Point3f>> objBoardCornersCam;
 
     cv::Vector<cv::Mat> calibImgs;
