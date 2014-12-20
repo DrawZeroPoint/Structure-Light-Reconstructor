@@ -3,12 +3,16 @@
 #include "QMessageBox"
 
 bool cameraLoaded = false;
-int YDISTANCE = 5;//两相机标志点Y向距离小于该值认为是同一点
+int YDISTANCE = 15;//两相机标志点Y向距离小于该值认为是同一点
+int EDGEUP = 10;//水平方向上标志点边缘黑色宽度上限
+int EDGEDOWN = 3;
+int MIDDOWN = 10;
+int MIDUP = 25;
 
 DotMatch::DotMatch(QObject *parent, QString projectPath) :
     QObject(parent)
 {
-    bwThreshold = 60;//二值化阈值
+    bwThreshold = 70;//二值化阈值
     firstFind = true;//第一次查找标志点默认为基准点
     scanNo = 0;//表示扫描的次数，0表示第一次扫描
 
@@ -25,25 +29,87 @@ vector<vector<float>> DotMatch::findDot(Mat image ,int cam)//cam表示相机编�
     vector<vector<Point> > contours;//声明存储轮廓点的向量，本身是存储轮廓的向量
     Mat bimage = image >= bwThreshold;//这种生成二值图像的方法很简洁
 
-	/*自创方法*/
-	//bool initial;
-	Point2i temp
-	for (int i = 0; i < bimage.rows; i++)
-	{
-		for (int j = 0; j < bimage.cols - 1; j++)
-		{
-			//initial = bimage.at(i, 0);
-			if (bimage.at(i, j + 1) - bimage.at(i, j) = 1)//说明发生了状态跳变（由白到黑）
-			{
-				temp.x = j;
-				temp.y = i;
-			}
-			if (temp.size() != 0)
-			{
+    /****************四点匹配法*****************/
+    vector<vector<float>> alltemp;
+    vector<float> ptemp;
+    for (int i = 0; i < bimage.rows; i++)
+    {
+        ptemp.push_back(i);
+        for (int j = 0; j < bimage.cols - 1; j++)
+        {
+            if ((bimage.at<uchar>(i, j + 1) - bimage.at<uchar>(i, j)) != 0)//说明发生了状态跳变
+            {
+                ptemp.push_back(j);
+            }
+        }
 
-			}
-		}
-	}
+        if (ptemp.size() >= 5)
+        {
+            for (int p = 1; p < ptemp.size() - 4; p++)
+            {
+                int d1 = ptemp[p+1] - ptemp[p];
+                int d2 = ptemp[p+2] - ptemp[p+1];
+                int d3 = ptemp[p+3] - ptemp[p+2];
+                if (d1 > EDGEDOWN && d1 < EDGEUP && d2 >MIDDOWN && d2 < MIDUP && d3 > EDGEDOWN && d3 < EDGEUP)
+                {
+                    int length = alltemp.size();
+                    int match = -1;
+                    vector<float> localtemp;//包含3个元素，y值，x左值，x右值
+                    localtemp.push_back(ptemp[0]);
+                    localtemp.push_back(ptemp[p]);
+                    localtemp.push_back(ptemp[p+3]);
+                    if (length == 0)
+                    {
+                        alltemp.push_back(localtemp);
+                    }
+                    else
+                    {
+                        for (int q = 0; q < length; q++)
+                        {
+                            int dy = localtemp[0] - alltemp[q][0];
+                            int dx = abs(localtemp[2] - alltemp[q][2]);
+                            if (dy < 10 && dx < 4)
+                            {
+                                match = q;
+                                break;
+                            }
+                        }
+                        if (match >= 0)
+                        {
+                            int deltax = (alltemp[match][2] - alltemp[match][1]) - (localtemp[2] - localtemp[1]);
+                            if (deltax < 0)
+                            {
+                                alltemp[match] = localtemp;
+                            }
+                            else if (deltax == 0)
+                            {
+                                alltemp[match][0] = (alltemp[match][0] + localtemp[0])/2;
+                                alltemp[match][1] = localtemp[1];
+                                alltemp[match][2] = localtemp[2];
+                            }
+                        }
+                        else
+                        {
+                            alltemp.push_back(localtemp);
+                        }
+                    }
+                }
+            }
+        }
+        ptemp.clear();
+    }
+
+    vector<Point2f> out = subPixel(bimage, alltemp);//将初步得到的圆心坐标进一步精确
+    vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
+    for (int i = out.size() - 1; i > -1; i--)
+    {
+        vector<float> point;
+        point.push_back(out[i].x);
+        point.push_back(out[i].y);
+        dotOutput.push_back(point);
+    }
+
+    /****************OpenCV检测******************
     //Mat bsmooth = bimage;
     //medianBlur(bimage, bsmooth, 5);
     //bimage = bsmooth;
@@ -92,6 +158,7 @@ vector<vector<float>> DotMatch::findDot(Mat image ,int cam)//cam表示相机编�
                 dotOutput.push_back(dot);
         }
     }
+    */
     return dotOutput;
 }
 
@@ -430,5 +497,79 @@ void DotMatch::markPoint()
         dotForMark.push_back(eachPoint);
     }
 }
+
+
+vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
+{
+    vector<Point2f> out;
+    Point2f p;
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        p.x = (int)(vec[i][1] + vec[i][2])/2;
+        p.y = (int)vec[i][0];
+        int xl = 0;
+        int xr = 0;
+        int yu = 0;
+        int yd = 0;
+        if (img.at<uchar>(p.y, p.x) != 0)
+        {
+            while (img.at<uchar>(p.y, (p.x - xl)) > 0)
+            {
+                xl++;
+                if (xl > MIDUP)
+                    break;
+            }
+            while (img.at<uchar>(p.y, (p.x + xr)) > 0)
+            {
+                xr++;
+                if (xr > MIDUP)
+                    break;
+            }
+            while (img.at<uchar>((p.y + yu), p.x) > 0)
+            {
+                yu++;
+                if (yu > MIDUP)
+                    break;
+            }
+            while (img.at<uchar>((p.y - yd), p.x) > 0)
+            {
+                yd++;
+                if (yd > MIDUP)
+                    break;
+            }
+
+            if (yd >= MIDUP || yu >= MIDUP || xr >= MIDUP || xl >= MIDUP)
+            {
+                yd = 0;
+                yu = 0;
+                xr = 0;
+                xl = 0;
+                continue;
+            }
+            else
+            {
+                if (yu >= yd)
+                {
+                    p.y = p.y + (yu-yd)/2;
+                }
+                else
+                {
+                    p.y = p.y - (yd-yu)/2;
+                }
+                if (xl >= xr)
+                {
+                    p.x  = p.x - (xl-xr)/2;
+                }
+                else
+                {
+                    p.x = p.x + (xr - xl)/2;
+                }
+            out.push_back(p);
+            }
+        }
+    }
+    return out;
+}
+
 
 

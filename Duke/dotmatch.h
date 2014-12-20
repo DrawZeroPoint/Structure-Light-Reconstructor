@@ -42,6 +42,7 @@ private:
     bool dotClassify(cv::vector<cv::vector<Point3f> > featureTemp);
     void calMatrix();
     void markPoint();
+    vector<Point2f> subPixel(Mat img, vector<vector<float>> vec);
     Reconstruct *rc;
 
     cv::vector<Point3f> dotPositionEven;//偶数次扫描所得点的绝对坐标

@@ -417,7 +417,7 @@ void MainWindow::scan()
 
 void MainWindow::pointmatch()
 {
-    dm->bwThreshold = ui->thresholdBox->value();
+    //dm->bwThreshold = ui->thresholdBox->value();
     findPoint();
 }
 
