@@ -83,7 +83,7 @@ public:
     QPushButton *calibButton;
     QWidget *tab_2;
     QPushButton *startScanButton;
-    QWidget *widget;
+    QWidget *layoutWidget;
     QHBoxLayout *horizontalLayout_3;
     QPushButton *findPointButton;
     QLabel *label_3;
@@ -452,24 +452,24 @@ public:
         startScanButton->setObjectName(QStringLiteral("startScanButton"));
         startScanButton->setEnabled(false);
         startScanButton->setGeometry(QRect(10, 60, 75, 23));
-        widget = new QWidget(tab_2);
-        widget->setObjectName(QStringLiteral("widget"));
-        widget->setGeometry(QRect(10, 20, 222, 25));
-        horizontalLayout_3 = new QHBoxLayout(widget);
+        layoutWidget = new QWidget(tab_2);
+        layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
+        layoutWidget->setGeometry(QRect(10, 20, 222, 25));
+        horizontalLayout_3 = new QHBoxLayout(layoutWidget);
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
         horizontalLayout_3->setContentsMargins(0, 0, 0, 0);
-        findPointButton = new QPushButton(widget);
+        findPointButton = new QPushButton(layoutWidget);
         findPointButton->setObjectName(QStringLiteral("findPointButton"));
         findPointButton->setEnabled(false);
 
         horizontalLayout_3->addWidget(findPointButton);
 
-        label_3 = new QLabel(widget);
+        label_3 = new QLabel(layoutWidget);
         label_3->setObjectName(QStringLiteral("label_3"));
 
         horizontalLayout_3->addWidget(label_3);
 
-        thresholdBox = new QSpinBox(widget);
+        thresholdBox = new QSpinBox(layoutWidget);
         thresholdBox->setObjectName(QStringLiteral("thresholdBox"));
         QSizePolicy sizePolicy6(QSizePolicy::Minimum, QSizePolicy::Fixed);
         sizePolicy6.setHorizontalStretch(0);
@@ -959,7 +959,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "NEU 3D Reconstructor", 0));
         actionNew->setText(QApplication::translate("MainWindow", "New Project", 0));
         actionNew->setIconText(QApplication::translate("MainWindow", "  New  ", 0));
 #ifndef QT_NO_TOOLTIP

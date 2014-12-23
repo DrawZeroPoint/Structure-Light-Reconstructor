@@ -93,6 +93,9 @@ void CameraCalibration::drawOutsideOfRectangle(cv::Mat img,cv::vector<cv::Point2
 
 void CameraCalibration::loadCameraImgs(QString fpath)
 {
+    if (calibImgs.size())
+        calibImgs.clear();
+
     for(int i = 0; i < 12; i++)
     {
         //这里假定每个相机的标定图片数为12，folderPath应包括前缀L、R
@@ -295,10 +298,10 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img,cv::vector<cv::Point2f>
         found = cv::findCirclesGrid(img_grey, patternsize, *camCorners,cv::CALIB_CB_SYMMETRIC_GRID);//改为检测圆点
         ///注意只能用CALIB_CB_SYMMETRIC_GRID方法
         //found = cv::findChessboardCorners(img_grey, cvSize(numOfCornersX,numOfCornersY), *camCorners, CV_CALIB_CB_ADAPTIVE_THRESH );
-        cv::drawChessboardCorners(img_copy, patternsize, *camCorners, found);
-        int key = cv::waitKey(1);
-        if(key==13)
-            break;
+        //cv::drawChessboardCorners(img_copy, patternsize, *camCorners, found);
+        //int key = cv::waitKey(1);
+        //if(key==13)
+            //break;
         //QMessageBox::information(NULL, NULL, QObject::tr("Press 'Enter' to continue or 'ESC' to repeat the procedure."));
         ///要实现全自动可以屏蔽下面的while循环
 /*
@@ -337,7 +340,7 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img,cv::vector<cv::Point2f>
             }
         }
     }
-    cv::destroyWindow("Calibration");
+    //cv::destroyWindow("Calibration");
     return found;
 }
 
@@ -364,12 +367,19 @@ int CameraCalibration::extractImageCorners()
     }
 
     /***********为求解基础矩阵，采样点来自第一组图片（L1，R1）的角点数据*************/
-    for (int i = 0; i < 30; i++)//放入30个点
+    if (isleft)
     {
-        if (isleft)
-            findFunLeft.push_back(imgBoardCornersCam[0][3*i]);
-        else
-            findFunRight.push_back(imgBoardCornersCam[0][3*i]);
+        for (int i = 0; i < 99; i++)//放入99个点
+        {
+            findFunLeft.push_back(imgBoardCornersCam[11][i]);
+        }
+    }
+    else
+    {
+        for (int i = 0; i < 99; i++)//放入99个点
+        {
+            findFunRight.push_back(imgBoardCornersCam[0][i]);
+        }
     }
 
     return 1;
@@ -463,7 +473,7 @@ bool CameraCalibration::findCameraExtrisics()
 
 void CameraCalibration::findFundamental()
 {
-    fundamentalMatrix = cv::findFundamentalMat(findFunLeft, findFunRight, cv::FM_RANSAC, 3, 0.99);
+    fundamentalMatrix = cv::findFundamentalMat(findFunLeft, findFunRight, cv::FM_RANSAC);
     findFunLeft.clear();
     findFunRight.clear();
 }
