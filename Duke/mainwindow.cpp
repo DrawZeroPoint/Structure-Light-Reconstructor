@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     createConnections();
 
     saveCon = 1;//Save calib images start with 1
+    scanSquenceNo = -1;
     cameraOpened = false;
     isConfigured = false;
     isProjectorOpened = true;
@@ -240,8 +241,8 @@ void MainWindow::readframe()
 void MainWindow::capturecalib()
 {
     if(cameraOpened){
-        selectPath(0);//0 for calibration and 1 for scan
-        captureImage(saveCon,true);
+        selectPath(PATHCALIB);//0 for calibration and 1 for scan
+        captureImage("", saveCon, true);
         ui->currentPhotoLabel->setText(QString::number(saveCon));
         saveCon++;
         QString explain = ":/" + QString::number(saveCon) + ".png";
@@ -258,17 +259,16 @@ void MainWindow::capturecalib()
 void MainWindow::redocapture()
 {
     if(cameraOpened){
-        captureImage(saveCon - 1, true);
+        captureImage("", saveCon - 1, true);
         }
     else
         QMessageBox::warning(this,tr("Warning"), tr("Open cameras failed."));
 }
 
-void MainWindow::captureImage(int saveCount,bool dispaly)
+void MainWindow::captureImage(QString pref, int saveCount,bool dispaly)
 {
-    QString savecount = QString::number(saveCount);
-    pimage_1.save(projChildPath + "/left/L" + savecount +".png");
-    pimage_2.save(projChildPath + "/right/R" + savecount +".png");
+    pimage_1.save(projChildPath + "/left/" + pref + "L" + QString::number(saveCount) +".png");
+    pimage_2.save(projChildPath + "/right/" + pref + "R" + QString::number(saveCount) +".png");
     if(dispaly){
         ui->leftCaptureLabel->setPixmap(pimage_1);
         ui->rightCaptureLabel->setPixmap(pimage_2);
@@ -280,7 +280,8 @@ void MainWindow::generatePath(int type)
     selectPath(type);
     QDir *addpath_1 = new QDir;
     QDir *addpath_2 = new QDir;
-    if(type==0||type==1){
+    if(type == 0 || type == 1)
+    {
         addpath_1->mkpath(projChildPath + "/left/");
         addpath_2->mkpath(projChildPath +"/right/");
     }
@@ -288,18 +289,18 @@ void MainWindow::generatePath(int type)
         addpath_1->mkpath(projChildPath);
 }
 
-void MainWindow::selectPath(int type)//decide current childpath
+void MainWindow::selectPath(int PATH)//decide current childpath
 {
     QString t;
-    switch(type){
-        case 0:
-        t = "/calib";
+    switch (PATH) {
+        case PATHCALIB:
+        t = "/calib/";
         break;
-        case 1:
-        t = "/scan";
+        case PATHSCAN:
+        t = "/scan/";
         break;
-        case 2:
-        t = "/reconstruction";
+        case PATHRECON:
+        t = "/reconstruction/";
         break;
     }
     projChildPath = projectPath + t;
@@ -418,7 +419,7 @@ void MainWindow::scan()
         QMessageBox::warning(this,tr("Save path not set"), tr("You need create a project first."));
         return;
     }
-    selectPath(1);
+    selectPath(PATHSCAN);
     ui->tabWidget->setCurrentIndex(1);
     ui->findPointButton->setEnabled(true);
     ui->startScanButton->setEnabled(true);
@@ -428,7 +429,6 @@ void MainWindow::scan()
 
 void MainWindow::pointmatch()
 {
-    //dm->bwThreshold = ui->thresholdBox->value();
     findPoint();
 }
 
@@ -442,6 +442,7 @@ void MainWindow::findPoint()
     cv::Mat mat_2 = cv::Mat(Height, Width, CV_8UC1, m_pRawBuffer_2);
     //imshow("d",mat_1);
     //cvWaitKey(10);
+    scanSquenceNo = dm->scanNo;
     dm->matchDot(mat_1,mat_2);
     QPixmap pcopy_1 = pimage_1;
     QPixmap pcopy_2 = pimage_2;
@@ -478,13 +479,12 @@ void MainWindow::findPoint()
 
 void MainWindow::startscan()
 {
-    /*
-    if (dm->dotInOrder.size()<3)
+    if (scanSquenceNo < 0)
     {
-        QMessageBox::warning(this,tr("Not enough match point"), tr("Active Find Point to match marked point first."));
+        QMessageBox::warning(this,tr("Need Find Point"), tr("Current scan can't continue due to lacking of alignment data."));
         return;
     }
-    */
+
     closeCamera();
     pj->displaySwitch(false);
     pj->opencvWindow();
@@ -494,6 +494,12 @@ void MainWindow::startscan()
 
     pj->showImg(grayCode->getNextImg());
     int grayCount = 0;
+
+    QString pref = QString::number(scanSquenceNo) + "/";
+    QDir *addpath_1 = new QDir;
+    QDir *addpath_2 = new QDir;
+    addpath_1->mkpath(projChildPath + "/left/" + pref);
+    addpath_2->mkpath(projChildPath +"/right/" + pref);
 
     while(true)
     {
@@ -507,7 +513,7 @@ void MainWindow::startscan()
         image_2 = QImage(m_pRawBuffer_2, Width, Height, QImage::Format_Indexed8);
         pimage_2 = QPixmap::fromImage(image_2);
 
-        captureImage(grayCount, false);
+        captureImage(pref, grayCount, false);
         grayCount++;
         //show captured result
         if(grayCount == grayCode->getNumOfImgs())
@@ -526,7 +532,7 @@ void MainWindow::startscan()
     ui->progressBar->setValue(100);
 }
 
-////////////////////////重建////////////////////////
+///***************重建****************///
 void MainWindow::reconstruct()
 {
     ui->progressBar->reset();
@@ -538,10 +544,11 @@ void MainWindow::reconstruct()
         QMessageBox::warning(this,tr("Warning"), tr("Press 'Set' button to configure the settings."));
         return;
     }
+
     ui->tabWidget->setCurrentIndex(2);
-    selectPath(2);//set current path to :/reconstruct
+    selectPath(PATHRECON);//set current path to :/reconstruct
     Reconstruct *reconstructor= new Reconstruct();
-    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, isAutoContrast, isSaveAutoContrast,projectPath);
+    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, scanSquenceNo, isAutoContrast, isSaveAutoContrast,projectPath);
 
     reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
     reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
@@ -571,9 +578,9 @@ void MainWindow::reconstruct()
     progressPop(10);
 
     if(isExportObj)
-        meshCreator->exportObjMesh(projectPath + "/reconstruction/result.obj");
+        meshCreator->exportObjMesh(projChildPath + QString::number(scanSquenceNo) + ".obj");
     if(isExportPly || !(isExportObj || isExportPly))
-        meshCreator->exportPlyMesh(projectPath + "/reconstruction/result.ply");
+        meshCreator->exportPlyMesh(projectPath + QString::number(scanSquenceNo) + ".ply");
     delete meshCreator;
     delete reconstructor;
     opencamera();

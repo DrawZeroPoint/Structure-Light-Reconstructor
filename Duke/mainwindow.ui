@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>NEU 3D Reconstructor</string>
   </property>
   <property name="windowIcon">
    <iconset resource="Resource/res.qrc">
@@ -484,7 +484,7 @@ font: 9pt &quot;Calibri&quot;;</string>
             <string>Start Scan</string>
            </property>
           </widget>
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <property name="geometry">
             <rect>
              <x>10</x>

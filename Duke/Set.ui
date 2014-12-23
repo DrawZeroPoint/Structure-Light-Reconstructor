@@ -59,7 +59,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -541,7 +541,7 @@
                <string>Export Obj</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
               <property name="tristate">
                <bool>false</bool>
@@ -552,6 +552,9 @@
              <widget class="QCheckBox" name="exportPlyCheck">
               <property name="text">
                <string>Export Ply</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>

@@ -25,6 +25,10 @@
 
 #define WM_SNAP_CHANGE		(WM_USER + 100)
 
+#define PATHCALIB 0
+#define PATHSCAN 1
+#define PATHRECON 2
+
 namespace Ui {
 class MainWindow;
 }
@@ -50,6 +54,8 @@ public:
     int cameraWidth;
     int cameraHeight;
 
+    int scanSquenceNo;//表示当前正在进行的扫描序列数，从0开始
+
 private:
     Ui::MainWindow *ui;
     CameraCalibration *calibrator;
@@ -57,12 +63,12 @@ private:
 
     void createConnections();
     void createCentralWindow(QWidget *parent);
-    void captureImage(int saveCount, bool dispaly);
+    void captureImage(QString pref, int saveCount, bool dispaly);
     void findPoint();
     void getScreenGeometry();
     void closeCamera();
     void generatePath(int type);
-    void selectPath(int type);
+    void selectPath(int PATH);
 
     ///---------------相机相关函数---------------///
 
