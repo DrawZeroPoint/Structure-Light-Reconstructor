@@ -37,14 +37,19 @@ public:
     int scanNo;
 
 private:
-    void triangleCalculate();
-    cv::vector<cv::vector<Point3f> > calFeature(cv::vector<Point3f> dotP);
-    bool dotClassify(cv::vector<cv::vector<Point3f> > featureTemp);
+    QString path;
+
+    bool triangleCalculate();
+    cv::vector<cv::vector<float> > calFeature(cv::vector<Point3f> dotP);
+    bool dotClassify(cv::vector<cv::vector<float> > featureTemp);
     void calMatrix();
     void markPoint();
+    int OSTU_Region(cv::Mat &image);
+
     vector<Point2f> subPixel(Mat img, vector<vector<float>> vec);
     Reconstruct *rc;
 
+    Mat fundMat;
     cv::vector<Point3f> dotPositionEven;//偶数次扫描所得点的绝对坐标
     cv::vector<Point3f> dotPositionOdd;//奇数次扫描所得点的绝对坐标
 
@@ -54,8 +59,8 @@ private:
     //该点在dotInOrder中的序号
     cv::vector<Point2i> correspondPointEven;
     cv::vector<Point2i> correspondPointOdd;
-    cv::vector<cv::vector<cv::Point3f>> dotFeature;
-    cv::vector<cv::vector<cv::Point3f>> dotFeatureTemp;
+    cv::vector<cv::vector<float>> dotFeature;
+    cv::vector<cv::vector<float>> dotFeatureTemp;
 
 signals:
 

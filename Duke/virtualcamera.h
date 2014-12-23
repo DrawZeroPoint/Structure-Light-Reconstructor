@@ -19,9 +19,11 @@ public:
     bool loadCameraMatrix(QString path);
     void loadRotationMatrix(QString path);
     void loadTranslationVector(QString path);
+    void loadFundamentalMatrix(QString path);
     cv::Mat distortion;
     cv::Mat rotationMatrix;
     cv::Mat translationVector;
+    cv::Mat fundamentalMatrix;
     cv::Point3f position;//相机的三维坐标原点，在runReconstruction函数中赋值为(0,0,0)
     cv::Point2f fc;
     cv::Point2f cc;

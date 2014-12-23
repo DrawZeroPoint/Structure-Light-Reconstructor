@@ -105,6 +105,10 @@ bool Reconstruct::loadCameras()//Load calibration data into camera[i]
         path += "cam_trans_vectror.txt";
         cameras[i].loadTranslationVector(path);
 
+        path = savePath_;
+        path += "/calib/fundamental_mat.txt";
+        cameras[i].loadFundamentalMatrix(path);
+
         cameras[i].height = 0;
         cameras[i].width = 0;
     }
@@ -213,7 +217,7 @@ bool Reconstruct::runReconstruction()
                                        //在此之前camera相当于一个temp，注意二者单复数有区别
         camsPixels[i] = new cv::vector<cv::Point>[proj_h*proj_w];
         camPixels = camsPixels[i];
-        runSucess = loadCamImgs(scanFolder[i],imgPrefix[i],imgSuffix);
+        runSucess = loadCamImgs(scanFolder[i], imgPrefix[i], imgSuffix);
         ///截至这一步，实例camera的position、width、height属性已被赋值，camera对应cameras[i]
 
         if(!runSucess)//如果加载图片失败，中断
@@ -365,6 +369,12 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
                     if(!ok)
                         continue;
 
+                    ///*****以下判断为多次重建得到的点云拼接做准备****///
+                    if (scanSN_ != 0)
+                    {
+
+                    }
+
                     //get pixel color for the second camera view
                     //color2 = Utilities::matGet3D( colorImgs[cam2index], cam2Pixs[c2].x, cam2Pixs[c2].y);//这里有问题
 
@@ -375,7 +385,7 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     }
 }
 
-void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, bool autocontrast, bool saveautocontrast, QString savePath)
+void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, int scanSN, bool autocontrast, bool saveautocontrast, QString savePath)
 {
     proj_w = scanw;
     proj_h = scanh;
@@ -384,6 +394,7 @@ void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, bool a
     autoContrast_ = autocontrast;
     saveAutoContrast_ = saveautocontrast;
     savePath_ = savePath;//equal to projectPath
+    scanSN_ = scanSN;
 
     for(int i = 0; i < 2; i++)
     {
@@ -396,9 +407,9 @@ void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, bool a
         }
         camsPixels[i] = NULL;
         scanFolder[i] = pathI;
-        if(i==0)
-            imgPrefix[i] = "L";
+        if(i == 0)
+            imgPrefix[i] = QString::number(scanSN) + "/L";
         else
-            imgPrefix[i] = "R";
+            imgPrefix[i] = QString::number(scanSN) +"/R";
     }
 }
