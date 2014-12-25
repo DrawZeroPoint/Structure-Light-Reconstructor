@@ -440,13 +440,14 @@ public:
 
         exportObjCheck = new QCheckBox(groupBox_6);
         exportObjCheck->setObjectName(QStringLiteral("exportObjCheck"));
-        exportObjCheck->setChecked(true);
+        exportObjCheck->setChecked(false);
         exportObjCheck->setTristate(false);
 
         verticalLayout->addWidget(exportObjCheck);
 
         exportPlyCheck = new QCheckBox(groupBox_6);
         exportPlyCheck->setObjectName(QStringLiteral("exportPlyCheck"));
+        exportPlyCheck->setChecked(true);
 
         verticalLayout->addWidget(exportPlyCheck);
 
@@ -469,7 +470,7 @@ public:
         QObject::connect(buttonBox, SIGNAL(accepted()), SetDialog, SLOT(accept()));
         QObject::connect(buttonBox, SIGNAL(rejected()), SetDialog, SLOT(reject()));
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(3);
 
 
         QMetaObject::connectSlotsByName(SetDialog);

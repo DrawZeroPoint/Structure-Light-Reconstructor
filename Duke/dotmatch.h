@@ -50,6 +50,7 @@ private:
     Reconstruct *rc;
 
     Mat fundMat;
+    Mat affineFormer;
     cv::vector<Point3f> dotPositionEven;//偶数次扫描所得点的绝对坐标
     cv::vector<Point3f> dotPositionOdd;//奇数次扫描所得点的绝对坐标
 

@@ -26,15 +26,6 @@ Reconstruct::~Reconstruct()
         delete points3DProjView ;
 }
 
-void Reconstruct::enableSavingAutoContrast()
-{
-    saveAutoContrast_ = true;
-}
-
-void Reconstruct::disableSavingAutoContrast()
-{
-    saveAutoContrast_ = false;
-}
 
 void Reconstruct::enableRaySampling()
 {
@@ -314,9 +305,35 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 {
     int w = proj_w;
     int h = proj_h;
-    //start reconstraction
-    //int load = 0;
-    //reconstraction for every projector pixel
+    double r0,r1,r2,r3,r4,r5,r6,r7,r8,t0,t1,t2;
+    cv::Mat matH(3,4,CV_32F);
+    /*
+    cv::Range rangeR(0, 3);
+    cv::Range rangeT(3, 4);
+    */
+    if (scanSN_ > 0)
+    {
+        /*************加载仿射变换矩阵**************/
+        QString loadPath = savePath_ + "/scan/affine_mat" + QString::number(scanSN_) + ".txt";
+        camera1.loadMatrix(matH, 3, 4, loadPath.toStdString());
+        r0=matH.at<float>(0,0);
+        r1=matH.at<float>(0,1);
+        r2=matH.at<float>(0,2);
+        r3=matH.at<float>(1,0);
+        r4=matH.at<float>(1,1);
+        r5=matH.at<float>(1,2);
+        r6=matH.at<float>(2,0);
+        r7=matH.at<float>(2,1);
+        r8=matH.at<float>(2,2);
+        t0=matH.at<float>(0,3);
+        t1=matH.at<float>(1,3);
+        t2=matH.at<float>(2,3);
+    }
+    double r[] = {r0,r1,r2,r3,r4,r5,r6,r7,r8};
+    double t[] = {t0,t1,t2};
+    cv::Mat matR(3,3,CV_64F,r);
+    cv::Mat matT(3,1,CV_64F,t);
+
     for(int i = 0; i < w; i++)
     {
         for(int j = 0; j < h; j++)
@@ -363,22 +380,31 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
                     Utilities::normalize(ray2Vector);
 
                     cv::Point3f interPoint;
+                    cv::Point3f refinedPoint;
 
                     bool ok = Utilities::line_lineIntersection(camera1.position,ray1Vector,camera2.position,ray2Vector,interPoint);
 
                     if(!ok)
                         continue;
 
-                    ///*****以下判断为多次重建得到的点云拼接做准备****///
-                    if (scanSN_ != 0)
+                    /****以下判断为多次重建得到的点云拼接做准备****/
+                    if (scanSN_ > 0)
                     {
-
+                        double point[] = {interPoint.x, interPoint.y, interPoint.z};
+                        cv::Mat pointMat(3, 1, CV_64F, point);
+                        cv::Mat refineMat(3, 1, CV_64F);
+                        refineMat = matR * pointMat + matT;
+                        refinedPoint.x = refineMat.at<double>(0, 0);
+                        refinedPoint.y = refineMat.at<double>(1, 0);
+                        refinedPoint.z = refineMat.at<double>(2, 0);
                     }
+                    else
+                        refinedPoint = interPoint;
 
                     //get pixel color for the second camera view
                     //color2 = Utilities::matGet3D( colorImgs[cam2index], cam2Pixs[c2].x, cam2Pixs[c2].y);//这里有问题
 
-                    points3DProjView->addPoint(i, j, interPoint);//这里有问题, (color1 + color2)/2暂时去掉
+                    points3DProjView->addPoint(i, j, refinedPoint);
                 }
             }
         }

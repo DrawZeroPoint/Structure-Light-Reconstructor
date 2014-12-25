@@ -31,6 +31,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -82,12 +83,11 @@ public:
     QPushButton *redoButton;
     QPushButton *calibButton;
     QWidget *tab_2;
-    QPushButton *startScanButton;
-    QWidget *layoutWidget;
-    QHBoxLayout *horizontalLayout_3;
+    QWidget *widget;
+    QVBoxLayout *verticalLayout;
     QPushButton *findPointButton;
-    QLabel *label_3;
-    QSpinBox *thresholdBox;
+    QPushButton *reFindButton;
+    QPushButton *startScanButton;
     QWidget *tab_3;
     QMenuBar *menubar;
     QMenu *menuFile;
@@ -448,38 +448,29 @@ public:
         tabWidget->addTab(tab, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QStringLiteral("tab_2"));
-        startScanButton = new QPushButton(tab_2);
-        startScanButton->setObjectName(QStringLiteral("startScanButton"));
-        startScanButton->setEnabled(false);
-        startScanButton->setGeometry(QRect(10, 60, 75, 23));
-        layoutWidget = new QWidget(tab_2);
-        layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
-        layoutWidget->setGeometry(QRect(10, 20, 222, 25));
-        horizontalLayout_3 = new QHBoxLayout(layoutWidget);
-        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
-        horizontalLayout_3->setContentsMargins(0, 0, 0, 0);
-        findPointButton = new QPushButton(layoutWidget);
+        widget = new QWidget(tab_2);
+        widget->setObjectName(QStringLiteral("widget"));
+        widget->setGeometry(QRect(10, 21, 77, 83));
+        verticalLayout = new QVBoxLayout(widget);
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
+        findPointButton = new QPushButton(widget);
         findPointButton->setObjectName(QStringLiteral("findPointButton"));
         findPointButton->setEnabled(false);
 
-        horizontalLayout_3->addWidget(findPointButton);
+        verticalLayout->addWidget(findPointButton);
 
-        label_3 = new QLabel(layoutWidget);
-        label_3->setObjectName(QStringLiteral("label_3"));
+        reFindButton = new QPushButton(widget);
+        reFindButton->setObjectName(QStringLiteral("reFindButton"));
+        reFindButton->setEnabled(false);
 
-        horizontalLayout_3->addWidget(label_3);
+        verticalLayout->addWidget(reFindButton);
 
-        thresholdBox = new QSpinBox(layoutWidget);
-        thresholdBox->setObjectName(QStringLiteral("thresholdBox"));
-        QSizePolicy sizePolicy6(QSizePolicy::Minimum, QSizePolicy::Fixed);
-        sizePolicy6.setHorizontalStretch(0);
-        sizePolicy6.setVerticalStretch(0);
-        sizePolicy6.setHeightForWidth(thresholdBox->sizePolicy().hasHeightForWidth());
-        thresholdBox->setSizePolicy(sizePolicy6);
-        thresholdBox->setMaximum(255);
-        thresholdBox->setValue(60);
+        startScanButton = new QPushButton(widget);
+        startScanButton->setObjectName(QStringLiteral("startScanButton"));
+        startScanButton->setEnabled(false);
 
-        horizontalLayout_3->addWidget(thresholdBox);
+        verticalLayout->addWidget(startScanButton);
 
         tabWidget->addTab(tab_2, QString());
         tab_3 = new QWidget();
@@ -619,11 +610,11 @@ public:
         gridLayout_7->setContentsMargins(0, 0, 0, 0);
         widget_3 = new QWidget(dockWidgetContents);
         widget_3->setObjectName(QStringLiteral("widget_3"));
-        QSizePolicy sizePolicy7(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        sizePolicy7.setHorizontalStretch(0);
-        sizePolicy7.setVerticalStretch(0);
-        sizePolicy7.setHeightForWidth(widget_3->sizePolicy().hasHeightForWidth());
-        widget_3->setSizePolicy(sizePolicy7);
+        QSizePolicy sizePolicy6(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        sizePolicy6.setHorizontalStretch(0);
+        sizePolicy6.setVerticalStretch(0);
+        sizePolicy6.setHeightForWidth(widget_3->sizePolicy().hasHeightForWidth());
+        widget_3->setSizePolicy(sizePolicy6);
         gridLayout_3 = new QGridLayout(widget_3);
         gridLayout_3->setSpacing(0);
         gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
@@ -661,8 +652,8 @@ public:
 
         widget_4 = new QWidget(dockWidgetContents);
         widget_4->setObjectName(QStringLiteral("widget_4"));
-        sizePolicy7.setHeightForWidth(widget_4->sizePolicy().hasHeightForWidth());
-        widget_4->setSizePolicy(sizePolicy7);
+        sizePolicy6.setHeightForWidth(widget_4->sizePolicy().hasHeightForWidth());
+        widget_4->setSizePolicy(sizePolicy6);
         gridLayout_4 = new QGridLayout(widget_4);
         gridLayout_4->setSpacing(0);
         gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
@@ -699,8 +690,8 @@ public:
 
         groupBox = new QGroupBox(dockWidgetContents);
         groupBox->setObjectName(QStringLiteral("groupBox"));
-        sizePolicy7.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
-        groupBox->setSizePolicy(sizePolicy7);
+        sizePolicy6.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
+        groupBox->setSizePolicy(sizePolicy6);
         groupBox->setMaximumSize(QSize(111111, 70));
         groupBox->setStyleSheet(QLatin1String("font: 9pt \"Calibri\";\n"
 "background-color: rgbrgb(111, 215, 253)"));
@@ -815,8 +806,8 @@ public:
 
         groupBox_2 = new QGroupBox(dockWidgetContents_3);
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
-        sizePolicy7.setHeightForWidth(groupBox_2->sizePolicy().hasHeightForWidth());
-        groupBox_2->setSizePolicy(sizePolicy7);
+        sizePolicy6.setHeightForWidth(groupBox_2->sizePolicy().hasHeightForWidth());
+        groupBox_2->setSizePolicy(sizePolicy6);
         groupBox_2->setMaximumSize(QSize(111111, 70));
         groupBox_2->setStyleSheet(QLatin1String("font: 9pt \"Calibri\";\n"
 "background-color: rgbrgb(111, 215, 253)"));
@@ -873,11 +864,11 @@ public:
 
         widget_5 = new QWidget(dockWidgetContents_3);
         widget_5->setObjectName(QStringLiteral("widget_5"));
-        QSizePolicy sizePolicy8(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
-        sizePolicy8.setHorizontalStretch(0);
-        sizePolicy8.setVerticalStretch(0);
-        sizePolicy8.setHeightForWidth(widget_5->sizePolicy().hasHeightForWidth());
-        widget_5->setSizePolicy(sizePolicy8);
+        QSizePolicy sizePolicy7(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+        sizePolicy7.setHorizontalStretch(0);
+        sizePolicy7.setVerticalStretch(0);
+        sizePolicy7.setHeightForWidth(widget_5->sizePolicy().hasHeightForWidth());
+        widget_5->setSizePolicy(sizePolicy7);
         gridLayout_6 = new QGridLayout(widget_5);
         gridLayout_6->setSpacing(0);
         gridLayout_6->setObjectName(QStringLiteral("gridLayout_6"));
@@ -1041,9 +1032,9 @@ public:
         redoButton->setText(QApplication::translate("MainWindow", "Redo", 0));
         calibButton->setText(QApplication::translate("MainWindow", "Calibrate", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Calibrate", 0));
-        startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
         findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
-        label_3->setText(QApplication::translate("MainWindow", "Binary Threshold", 0));
+        reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));
+        startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Scan", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("MainWindow", "Reconstruct", 0));
         menuFile->setTitle(QApplication::translate("MainWindow", "Project", 0));

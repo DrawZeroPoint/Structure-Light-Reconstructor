@@ -7,7 +7,7 @@ int YDISTANCE = 15;//两相机标志点Y向距离小于该值认为是同一点
 int EDGEUP = 9;//水平方向上标志点边缘黑色宽度上限
 int EDGEDOWN = 3;
 int MIDDOWN = 9;
-int MIDUP = 25;
+int MIDUP = 29;
 float tolerance = 30;//判断特征值是否相等时的误差
 
 DotMatch::DotMatch(QObject *parent, QString projectPath) :
@@ -451,7 +451,7 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 
     ////到这里已经找出了在本次扫描及上次扫描中的共有点，并存入dotPositionEven中
     ///  当dotPositionEven[i].size()=2时，说明第i点在两次扫描中都被找到，可用来计算变换矩阵
-    if (validpoint >=3)
+    if (validpoint > 3)
     {
         for (size_t i  = 0; i < dotFeatureTemp.size(); i++)
         {
@@ -500,8 +500,23 @@ void DotMatch::calMatrix()
             }
         }
     }
-    cv::estimateAffine3D(laterPoint, formerPoint, transfer, inliers);
-    QString outMat = path + "/scan/H" + QString::number(scanNo) + ".txt";
+    cv::estimateAffine3D(formerPoint, laterPoint, transfer, inliers);
+    if (scanNo == 1)
+        affineFormer = transfer;
+    else
+    {
+        cv::Range rangeR(0, 3);
+        cv::Range rangeT(3, 4);
+        cv::Mat matRF(affineFormer, Range::all(), rangeR);
+        cv::Mat matTF(affineFormer, Range::all(), rangeT);
+        cv::Mat matRA(transfer, Range::all(), rangeR);
+        cv::Mat matTA(transfer, Range::all(), rangeT);
+        Mat matR = matRA * matRF;
+        Mat matT = matTA + matTF;
+        transfer(Range::all(), rangeR) = matR;
+        transfer(Range::all(), rangeT) = matT;
+    }
+    QString outMat = path + "/scan/affine_mat" + QString::number(scanNo) + ".txt";
     Utilities::exportMat(outMat.toLocal8Bit(), transfer);
 }
 

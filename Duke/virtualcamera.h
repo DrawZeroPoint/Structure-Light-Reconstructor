@@ -20,6 +20,9 @@ public:
     void loadRotationMatrix(QString path);
     void loadTranslationVector(QString path);
     void loadFundamentalMatrix(QString path);
+
+    int loadMatrix(cv::Mat &matrix, int s1, int s2 , std::string file);
+
     cv::Mat distortion;
     cv::Mat rotationMatrix;
     cv::Mat translationVector;
@@ -31,7 +34,7 @@ public:
     int height;
 
 private:
-    int loadMatrix(cv::Mat &matrix, int s1, int s2 , std::string file);
+
 };
 
 #endif // VIRTUALCAMERA_H

@@ -35,8 +35,6 @@ public:
     void saveDecodedRowImg(const char path[]);
     void saveDecodedColImg(const char path[]);
 
-    void enableSavingAutoContrast();
-    void disableSavingAutoContrast();
     void enableRaySampling();
     void disableRaySampling();
 
