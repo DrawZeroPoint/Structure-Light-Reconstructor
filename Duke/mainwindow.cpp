@@ -422,6 +422,7 @@ void MainWindow::scan()
     selectPath(PATHSCAN);
     ui->tabWidget->setCurrentIndex(1);
     ui->findPointButton->setEnabled(true);
+    ui->reFindButton->setEnabled(true);
     ui->startScanButton->setEnabled(true);
     pj->crossVisible = false;
     pj->update();//自动调用paintevent重绘窗口，取消十字的显示
@@ -429,6 +430,12 @@ void MainWindow::scan()
 
 void MainWindow::pointmatch()
 {
+    findPoint();
+}
+
+void MainWindow::refindmatch()
+{
+    dm->scanNo--;
     findPoint();
 }
 
@@ -481,9 +488,11 @@ void MainWindow::startscan()
 {
     if (scanSquenceNo < 0)
     {
-        QMessageBox::warning(this,tr("Need Find Point"), tr("Current scan can't continue due to lacking of alignment data."));
+        QMessageBox::warning(this,tr("Need Find Point"), tr("Find point first so that the cloud could be aligned."));
         return;
     }
+    ui->progressBar->reset();
+    nowProgress = 0;
 
     closeCamera();
     pj->displaySwitch(false);
@@ -548,7 +557,7 @@ void MainWindow::reconstruct()
     ui->tabWidget->setCurrentIndex(2);
     selectPath(PATHRECON);//set current path to :/reconstruct
     Reconstruct *reconstructor= new Reconstruct();
-    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, scanSquenceNo, isAutoContrast, isSaveAutoContrast,projectPath);
+    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, scanSquenceNo, isAutoContrast, isSaveAutoContrast, projectPath);
 
     reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
     reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
@@ -559,10 +568,7 @@ void MainWindow::reconstruct()
 
     reconstructor->setBlackThreshold(black_);
     reconstructor->setWhiteThreshold(white_);
-    if(isSaveAutoContrast)
-        reconstructor->enableSavingAutoContrast();
-    else
-        reconstructor->disableSavingAutoContrast();
+
     if(isRaySampling)
         reconstructor->enableRaySampling();
     else
@@ -580,7 +586,7 @@ void MainWindow::reconstruct()
     if(isExportObj)
         meshCreator->exportObjMesh(projChildPath + QString::number(scanSquenceNo) + ".obj");
     if(isExportPly || !(isExportObj || isExportPly))
-        meshCreator->exportPlyMesh(projectPath + QString::number(scanSquenceNo) + ".ply");
+        meshCreator->exportPlyMesh(projChildPath + QString::number(scanSquenceNo) + ".ply");
     delete meshCreator;
     delete reconstructor;
     opencamera();
@@ -626,6 +632,8 @@ void MainWindow::createConnections()
 
     connect(ui->actionProjector,SIGNAL(triggered()),this,SLOT(projectorcontrol()));
 
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(selectPath(int)));
+
     connect(ui->actionCalib, SIGNAL(triggered()), this, SLOT(calib()));
     connect(ui->captureButton, SIGNAL(clicked()), this, SLOT(capturecalib()));
     connect(ui->redoButton, SIGNAL(clicked()), this, SLOT(redocapture()));
@@ -633,7 +641,7 @@ void MainWindow::createConnections()
 
     connect(ui->actionScan,SIGNAL(triggered()),this,SLOT(scan()));
     connect(ui->findPointButton,SIGNAL(clicked()),this,SLOT(pointmatch()));
-    connect(ui->thresholdBox,SIGNAL(valueChanged(int)),this,SLOT(pointmatch()));
+    connect(ui->reFindButton,SIGNAL(clicked()),this,SLOT(refindmatch()));
     connect(ui->startScanButton, SIGNAL(clicked()), this, SLOT(startscan()));
 
     connect(ui->actionReconstruct,SIGNAL(triggered()),this,SLOT(reconstruct()));
@@ -643,7 +651,7 @@ void MainWindow::createConnections()
     connect(ui->pSizeValue, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
 }
 
-////////////////*辅助功能*/////////////////
+///*************辅助功能***************///
 
 void MainWindow::switchlanguage()
 {

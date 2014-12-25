@@ -68,7 +68,6 @@ private:
     void getScreenGeometry();
     void closeCamera();
     void generatePath(int type);
-    void selectPath(int PATH);
 
     ///---------------相机相关函数---------------///
 
@@ -128,6 +127,8 @@ private slots:
     void exposurecontrol();
     void readframe();
 
+    void selectPath(int PATH);
+
     void capturecalib();
     void redocapture();
     void projectorcontrol();
@@ -137,6 +138,7 @@ private slots:
 
     void scan();
     void pointmatch();
+    void refindmatch();
     void startscan();
 
     void reconstruct();
