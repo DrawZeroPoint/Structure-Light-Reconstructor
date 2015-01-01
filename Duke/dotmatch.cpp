@@ -385,7 +385,7 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 {
     int match = 0;//表示匹配的特征值个数
     int validpoint = 0;//表示找到的一致点个数，小于3则不能生成变换矩阵，则应重新获取
-    int featureSize = dotFeature.size();
+    size_t featureSize = dotFeature.size();
     int formermatch = 0;//记录match最大值
     int bestNo = 0;//达到最大匹配程度（match值最高）的 j
     bool matched = false;//表示featureTemp中的 i 点是否与dotFeature中的点匹配
@@ -479,8 +479,7 @@ void DotMatch::calMatrix()
     }
     cv::vector<Point3f> formerPoint;
     cv::vector<Point3f> laterPoint;
-    cv::Mat transfer(3, 4, CV_32F);
-    cv::vector<uchar> inliers;
+
     for (size_t i =0; i < correspondPointOdd.size(); i++)
     {
         for (size_t j = 0; j < correspondPointEven.size(); j++)
@@ -500,24 +499,43 @@ void DotMatch::calMatrix()
             }
         }
     }
-    cv::estimateAffine3D(formerPoint, laterPoint, transfer, inliers);
-    if (scanNo == 1)
-        affineFormer = transfer;
-    else
+
+    /********Horn四元数法求解变换矩阵*********/
+
+    std::vector<double> inpoints;
+    for(size_t i = 0;i < formerPoint.size();i++)
     {
-        cv::Range rangeR(0, 3);
-        cv::Range rangeT(3, 4);
-        cv::Mat matRF(affineFormer, Range::all(), rangeR);
-        cv::Mat matTF(affineFormer, Range::all(), rangeT);
-        cv::Mat matRA(transfer, Range::all(), rangeR);
-        cv::Mat matTA(transfer, Range::all(), rangeT);
-        Mat matR = matRA * matRF;
-        Mat matT = matTA + matTF;
-        transfer(Range::all(), rangeR) = matR;
-        transfer(Range::all(), rangeT) = matT;
+        inpoints.push_back(formerPoint[i].x);
+        inpoints.push_back(formerPoint[i].y);
+        inpoints.push_back(formerPoint[i].z);
+        inpoints.push_back(laterPoint[i].x);
+        inpoints.push_back(laterPoint[i].y);
+        inpoints.push_back(laterPoint[i].z);
     }
-    QString outMat = path + "/scan/affine_mat" + QString::number(scanNo) + ".txt";
-    Utilities::exportMat(outMat.toLocal8Bit(), transfer);
+    std::vector<double> outQuaternion;
+    outQuaternion.resize(7);//如果不首先确定大小，可能产生和指针有关的问题
+    double flag = mrpt::scanmatching::HornMethod(inpoints,outQuaternion);
+    double tx = outQuaternion[0];
+    double ty = outQuaternion[1];
+    double tz = outQuaternion[2];
+    double w = outQuaternion[3];
+    double i = outQuaternion[4];
+    double j = outQuaternion[5];
+    double k = outQuaternion[6];
+    double r0 = pow(w,2)+pow(i,2)-pow(j,2)-pow(k,2);
+    double r1 = 2*(i*j-w*k);
+    double r2 = 2*(i*k+w*j);
+    double r3 = 2*(i*j+w*k);
+    double r4 = pow(w,2)-pow(i,2)+pow(j,2)-pow(k,2);
+    double r5 = 2*(j*k-w*i);
+    double r6 = 2*(k*i-w*j);
+    double r7 = 2*(k*j+w*k);//
+    double r8 = pow(w,2)-pow(i,2)-pow(j,2)+pow(k,2);
+    double data[] = {r0,r1,r2,tx,r3,r4,r5,ty,r6,r7,r8,tz};
+    cv::Mat outMat(3,4,CV_64F,data);
+
+    QString outMatPath = path + "/scan/transfer_mat" + QString::number(scanNo) + ".txt";
+    Utilities::exportMat(outMatPath.toLocal8Bit(), outMat);
 }
 
 void DotMatch::markPoint()
@@ -591,25 +609,25 @@ vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
             while (img.at<uchar>(p.y, (p.x - xl)) > 0)
             {
                 xl++;
-                if (xl > MIDUP)
+                if (xl > MIDUP || (p.x - xl) <= 0)
                     break;
             }
             while (img.at<uchar>(p.y, (p.x + xr)) > 0)
             {
                 xr++;
-                if (xr > MIDUP)
+                if (xr > MIDUP || (p.x + xr) >= img.cols)
                     break;
             }
             while (img.at<uchar>((p.y + yu), p.x) > 0)
             {
                 yu++;
-                if (yu > MIDUP)
+                if (yu > MIDUP || (p.y + yu) >= img.rows)
                     break;
             }
             while (img.at<uchar>((p.y - yd), p.x) > 0)
             {
                 yd++;
-                if (yd > MIDUP)
+                if (yd > MIDUP || (p.y - yd) <= 0)
                     break;
             }
 

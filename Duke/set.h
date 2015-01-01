@@ -35,7 +35,6 @@ public:
     int projectorWinPos_x;
     int projectorWinPos_y;
     bool autoContrast;
-    bool saveAutoContrast;
     bool raySampling;
     int exportObj;
     int exportPly;

@@ -473,40 +473,62 @@ font: 9pt &quot;Calibri&quot;;</string>
             <rect>
              <x>10</x>
              <y>21</y>
-             <width>77</width>
-             <height>83</height>
+             <width>204</width>
+             <height>85</height>
             </rect>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QPushButton" name="findPointButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Find Point</string>
-              </property>
-             </widget>
+             <layout class="QVBoxLayout" name="verticalLayout">
+              <item>
+               <widget class="QPushButton" name="findPointButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Find Point</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="reFindButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Redo Find</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="startScanButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Start Scan</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="reFindButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Redo Find</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="startScanButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Start Scan</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Current scan order: </string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="scanNoLabel">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

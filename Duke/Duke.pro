@@ -25,9 +25,13 @@ RESOURCES += \
 
 INCLUDEPATH += E:\opencv\build\include\
 D:\VC\inc\
+D:\mrpt\libs\base\include\
+D:\mrpt\libs\scanmatching\include\
+D:\mrpt\include\mrpt\mrpt-config\
 
 LIBS += -LE:\opencv\build\x86\vc10\lib\
 -LD:\VC\lib\
+-LD:\mrpt\lib\
 -lopencv_core249d\
 -lopencv_highgui249d\
 -lopencv_imgproc249d\
@@ -37,6 +41,9 @@ LIBS += -LE:\opencv\build\x86\vc10\lib\
 -lHVExtend\
 -lHVUtil\
 -lRaw2Rgb\
+-llibmrpt-base122-dbg\
+-llibmrpt-scanmatching122-dbg\
+
 
 # Default rules for deployment.
 include(deployment.pri)

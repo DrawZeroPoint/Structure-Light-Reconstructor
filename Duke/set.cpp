@@ -48,10 +48,6 @@ void Set::createConfigurationFile()//如果是槽函数，那么void声明不可
         autoContrast = true;
     else
         autoContrast = false;
-    if(set->saveAutoContrastImagesCheck->isChecked() == true)
-        saveAutoContrast = true;
-    else
-        saveAutoContrast = false;
     if(set->raySamplingCheck->isChecked() == true)
         raySampling = true;
     else
@@ -71,7 +67,6 @@ void Set::createSetFile()
 {
     int autoc, autocs, ray;
     autoc = boolToInt(autoContrast);
-    autocs = boolToInt(saveAutoContrast);
     ray = boolToInt(raySampling);
 
     const QString &fileName = saveSetPath +"/set.xml";

@@ -95,7 +95,6 @@ public:
     QGridLayout *gridLayout_12;
     QVBoxLayout *verticalLayout;
     QCheckBox *autoContrastCheck;
-    QCheckBox *saveAutoContrastImagesCheck;
     QCheckBox *raySamplingCheck;
     QCheckBox *exportObjCheck;
     QCheckBox *exportPlyCheck;
@@ -362,7 +361,7 @@ public:
         scanResV = new QSpinBox(groupBox_4);
         scanResV->setObjectName(QStringLiteral("scanResV"));
         scanResV->setMaximum(1024);
-        scanResV->setValue(600);
+        scanResV->setValue(800);
 
         gridLayout_9->addWidget(scanResV, 1, 1, 1, 1);
 
@@ -427,11 +426,6 @@ public:
         autoContrastCheck->setObjectName(QStringLiteral("autoContrastCheck"));
 
         verticalLayout->addWidget(autoContrastCheck);
-
-        saveAutoContrastImagesCheck = new QCheckBox(groupBox_6);
-        saveAutoContrastImagesCheck->setObjectName(QStringLiteral("saveAutoContrastImagesCheck"));
-
-        verticalLayout->addWidget(saveAutoContrastImagesCheck);
 
         raySamplingCheck = new QCheckBox(groupBox_6);
         raySamplingCheck->setObjectName(QStringLiteral("raySamplingCheck"));
@@ -504,7 +498,6 @@ public:
         label_12->setText(QApplication::translate("SetDialog", "White Threshold", 0));
         groupBox_6->setTitle(QString());
         autoContrastCheck->setText(QApplication::translate("SetDialog", "Auto Contrast", 0));
-        saveAutoContrastImagesCheck->setText(QApplication::translate("SetDialog", "Save Auto Contrast Image", 0));
         raySamplingCheck->setText(QApplication::translate("SetDialog", "Ray Sampling", 0));
         exportObjCheck->setText(QApplication::translate("SetDialog", "Export Obj", 0));
         exportPlyCheck->setText(QApplication::translate("SetDialog", "Export Ply", 0));

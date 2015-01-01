@@ -142,8 +142,8 @@ void MeshCreator::exportPlyMesh(QString path)
             return_val = cloud->getPoint(i, j, point);
             if(return_val)
             {
-                out1<< point.x << " " << point.y << " " << point.z << " "<< 10 << " " << 10 << " " << 10 << "\n";
-                //这里去掉了表示颜色的项，统一赋值为10
+                out1<< point.x << " " << point.y << " " << point.z << " "<< 128 << " " << 128 << " " << 128 << "\n";
+                //这里去掉了表示颜色的项，统一赋值为128
                 //out1<< point.x << " " << point.y << " " << point.z << " "<< (int) color[2] << " " << (int) color[1] << " " << (int) color[0] << "\n";
             }
             else

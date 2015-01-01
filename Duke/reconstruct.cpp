@@ -9,14 +9,12 @@ Reconstruct::Reconstruct()
     decCols = NULL;
     points3DProjView = NULL;
     autoContrast_ = false;
-    saveAutoContrast_ = false;
     cameras = new  VirtualCamera[2];//生成virtualcamera的两个实例，保存在数组cameras[2]
     camsPixels = new cv::vector<cv::Point>*[2];
     calibFolder = new QString[2];
     scanFolder = new QString[2];
     imgPrefix = new QString[2];
     pathSet = false;
-
     imgSuffix = ".png";//这里暂时认为图片后缀为.png
 }
 Reconstruct::~Reconstruct()
@@ -128,14 +126,6 @@ bool Reconstruct::loadCamImgs(QString folder, QString prefix, QString suffix)//l
             if(autoContrast_)//auto contrast
             {
                 Utilities::autoContrast(tmp,tmp);
-                if(saveAutoContrast_)
-                {
-                    QString p;
-                    p = savePath_ + "/AutoContrastSave/" + QString::number(i+1,10) + suffix;
-                    std::string cstr;
-                    cstr = std::string((const char *)p.toLocal8Bit());
-                    cv::imwrite(cstr,tmp);
-                }
             }
             if(i==0)
             {
@@ -305,7 +295,7 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 {
     int w = proj_w;
     int h = proj_h;
-    double r0,r1,r2,r3,r4,r5,r6,r7,r8,t0,t1,t2;
+    //double r0,r1,r2,r3,r4,r5,r6,r7,r8,t0,t1,t2;
     cv::Mat matH(3,4,CV_32F);
     /*
     cv::Range rangeR(0, 3);
@@ -314,8 +304,9 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     if (scanSN_ > 0)
     {
         /*************加载仿射变换矩阵**************/
-        QString loadPath = savePath_ + "/scan/affine_mat" + QString::number(scanSN_) + ".txt";
+        QString loadPath = savePath_ + "/scan/transfer_mat" + QString::number(scanSN_) + ".txt";
         camera1.loadMatrix(matH, 3, 4, loadPath.toStdString());
+        /*
         r0=matH.at<float>(0,0);
         r1=matH.at<float>(0,1);
         r2=matH.at<float>(0,2);
@@ -328,11 +319,12 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
         t0=matH.at<float>(0,3);
         t1=matH.at<float>(1,3);
         t2=matH.at<float>(2,3);
+        */
     }
-    double r[] = {r0,r1,r2,r3,r4,r5,r6,r7,r8};
-    double t[] = {t0,t1,t2};
-    cv::Mat matR(3,3,CV_64F,r);
-    cv::Mat matT(3,1,CV_64F,t);
+    //double r[] = {r0,r1,r2,r3,r4,r5,r6,r7,r8};
+    //double t[] = {t0,t1,t2};
+    //cv::Mat matR(3,3,CV_64F,r);
+    //cv::Mat matT(3,1,CV_64F,t);
 
     for(int i = 0; i < w; i++)
     {
@@ -390,13 +382,16 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
                     /****以下判断为多次重建得到的点云拼接做准备****/
                     if (scanSN_ > 0)
                     {
-                        double point[] = {interPoint.x, interPoint.y, interPoint.z};
-                        cv::Mat pointMat(3, 1, CV_64F, point);
-                        cv::Mat refineMat(3, 1, CV_64F);
-                        refineMat = matR * pointMat + matT;
-                        refinedPoint.x = refineMat.at<double>(0, 0);
-                        refinedPoint.y = refineMat.at<double>(1, 0);
-                        refinedPoint.z = refineMat.at<double>(2, 0);
+                        ///*
+                        float point[] = {interPoint.x, interPoint.y, interPoint.z, 1};
+                        cv::Mat pointMat(4, 1, CV_32F, point);
+                        cv::Mat refineMat(3, 1, CV_32F);
+                        refineMat = matH * pointMat;
+                        refinedPoint.x = refineMat.at<float>(0, 0);
+                        refinedPoint.y = refineMat.at<float>(1, 0);
+                        refinedPoint.z = refineMat.at<float>(2, 0);
+                        //*/
+                        //refinedPoint = interPoint;
                     }
                     else
                         refinedPoint = interPoint;
@@ -411,14 +406,13 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     }
 }
 
-void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, int scanSN, bool autocontrast, bool saveautocontrast, QString savePath)
+void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, int scanSN, bool autocontrast, QString savePath)
 {
     proj_w = scanw;
     proj_h = scanh;
     cameraWidth = camw;
     cameraHeight = camh;
     autoContrast_ = autocontrast;
-    saveAutoContrast_ = saveautocontrast;
     savePath_ = savePath;//equal to projectPath
     scanSN_ = scanSN;
 

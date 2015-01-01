@@ -22,3 +22,9 @@ Duke/Duke.pro
 Duke/Duke.pro
 Duke/Duke.pro
 Duke/Duke.pro
+*.ini
+build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_mytransform.cpp
+build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_pregistration.cpp
+build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_registration.cpp
+build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_transform.cpp
+build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_transformwithhorn.cpp

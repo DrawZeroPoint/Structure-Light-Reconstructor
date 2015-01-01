@@ -40,7 +40,7 @@ public:
 
     void cam2WorldSpace(VirtualCamera cam, cv::Point3f &p);
 
-    void getParameters(int scanw, int scanh,  int camw, int camh, int scanSN, bool autocontrast, bool saveautocontrast, QString savePath);
+    void getParameters(int scanw, int scanh,  int camw, int camh, int scanSN, bool autocontrast, QString savePath);
     QString savePath_;//same as projectPath
 
 private:
@@ -72,7 +72,6 @@ private:
     cv::Mat decCols;
     bool pathSet;
     bool autoContrast_;
-    bool saveAutoContrast_;
     bool raySampling_;
     int cameraWidth;
     int cameraHeight;

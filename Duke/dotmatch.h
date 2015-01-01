@@ -9,6 +9,7 @@
 #include "reconstruct.h"
 #include "virtualcamera.h"
 #include "utilities.h"
+#include <mrpt/scanmatching.h>
 
 using namespace cv;
 using namespace std;

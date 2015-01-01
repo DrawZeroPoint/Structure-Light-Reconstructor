@@ -450,6 +450,7 @@ void MainWindow::findPoint()
     //imshow("d",mat_1);
     //cvWaitKey(10);
     scanSquenceNo = dm->scanNo;
+    ui->scanNoLabel->setText(QString::number(scanSquenceNo));
     dm->matchDot(mat_1,mat_2);
     QPixmap pcopy_1 = pimage_1;
     QPixmap pcopy_2 = pimage_2;
@@ -550,14 +551,15 @@ void MainWindow::reconstruct()
     if(cameraOpened)
         closeCamera();
     if(isConfigured == false){
-        QMessageBox::warning(this,tr("Warning"), tr("Press 'Set' button to configure the settings."));
-        return;
+        if(QMessageBox::warning(this,tr("Warning"), tr("You may want to change the settings, continue with default settings?"),
+                QMessageBox::Yes,QMessageBox::No) == QMessageBox::No)
+            return;
     }
 
     ui->tabWidget->setCurrentIndex(2);
     selectPath(PATHRECON);//set current path to :/reconstruct
     Reconstruct *reconstructor= new Reconstruct();
-    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, scanSquenceNo, isAutoContrast, isSaveAutoContrast, projectPath);
+    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, scanSquenceNo, isAutoContrast, projectPath);
 
     reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
     reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
@@ -614,7 +616,6 @@ void MainWindow::getSetInfo()
     black_ = setDialog->black_threshold;
     white_ = setDialog->white_threshold;
     isAutoContrast = setDialog->autoContrast;
-    isSaveAutoContrast = setDialog->saveAutoContrast;
     isRaySampling = setDialog->raySampling;
     isExportObj = setDialog->exportObj;
     isExportPly = setDialog->exportPly;

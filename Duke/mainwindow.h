@@ -114,7 +114,6 @@ private:
     int black_ ;
     int white_;
     bool isAutoContrast;
-    bool isSaveAutoContrast;
     bool isRaySampling;
     bool isExportObj;
     bool isExportPly;

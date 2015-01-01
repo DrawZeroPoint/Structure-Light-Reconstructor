@@ -84,10 +84,14 @@ public:
     QPushButton *calibButton;
     QWidget *tab_2;
     QWidget *widget;
+    QHBoxLayout *horizontalLayout_4;
     QVBoxLayout *verticalLayout;
     QPushButton *findPointButton;
     QPushButton *reFindButton;
     QPushButton *startScanButton;
+    QHBoxLayout *horizontalLayout_3;
+    QLabel *label_3;
+    QLabel *scanNoLabel;
     QWidget *tab_3;
     QMenuBar *menubar;
     QMenu *menuFile;
@@ -450,10 +454,12 @@ public:
         tab_2->setObjectName(QStringLiteral("tab_2"));
         widget = new QWidget(tab_2);
         widget->setObjectName(QStringLiteral("widget"));
-        widget->setGeometry(QRect(10, 21, 77, 83));
-        verticalLayout = new QVBoxLayout(widget);
+        widget->setGeometry(QRect(10, 21, 204, 85));
+        horizontalLayout_4 = new QHBoxLayout(widget);
+        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
+        horizontalLayout_4->setContentsMargins(0, 0, 0, 0);
+        verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
-        verticalLayout->setContentsMargins(0, 0, 0, 0);
         findPointButton = new QPushButton(widget);
         findPointButton->setObjectName(QStringLiteral("findPointButton"));
         findPointButton->setEnabled(false);
@@ -471,6 +477,24 @@ public:
         startScanButton->setEnabled(false);
 
         verticalLayout->addWidget(startScanButton);
+
+
+        horizontalLayout_4->addLayout(verticalLayout);
+
+        horizontalLayout_3 = new QHBoxLayout();
+        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+        label_3 = new QLabel(widget);
+        label_3->setObjectName(QStringLiteral("label_3"));
+
+        horizontalLayout_3->addWidget(label_3);
+
+        scanNoLabel = new QLabel(widget);
+        scanNoLabel->setObjectName(QStringLiteral("scanNoLabel"));
+
+        horizontalLayout_3->addWidget(scanNoLabel);
+
+
+        horizontalLayout_4->addLayout(horizontalLayout_3);
 
         tabWidget->addTab(tab_2, QString());
         tab_3 = new QWidget();
@@ -1035,6 +1059,8 @@ public:
         findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
         reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));
         startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
+        label_3->setText(QApplication::translate("MainWindow", "Current scan order: ", 0));
+        scanNoLabel->setText(QApplication::translate("MainWindow", "0", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Scan", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("MainWindow", "Reconstruct", 0));
         menuFile->setTitle(QApplication::translate("MainWindow", "Project", 0));
