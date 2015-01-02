@@ -296,7 +296,7 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     int w = proj_w;
     int h = proj_h;
     //double r0,r1,r2,r3,r4,r5,r6,r7,r8,t0,t1,t2;
-    cv::Mat matH(3,4,CV_32F);
+    cv::Mat matTransfer(3,4,CV_32F);
     /*
     cv::Range rangeR(0, 3);
     cv::Range rangeT(3, 4);
@@ -305,20 +305,20 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     {
         /*************加载仿射变换矩阵**************/
         QString loadPath = savePath_ + "/scan/transfer_mat" + QString::number(scanSN_) + ".txt";
-        camera1.loadMatrix(matH, 3, 4, loadPath.toStdString());
+        camera1.loadMatrix(matTransfer, 3, 4, loadPath.toStdString());
         /*
-        r0=matH.at<float>(0,0);
-        r1=matH.at<float>(0,1);
-        r2=matH.at<float>(0,2);
-        r3=matH.at<float>(1,0);
-        r4=matH.at<float>(1,1);
-        r5=matH.at<float>(1,2);
-        r6=matH.at<float>(2,0);
-        r7=matH.at<float>(2,1);
-        r8=matH.at<float>(2,2);
-        t0=matH.at<float>(0,3);
-        t1=matH.at<float>(1,3);
-        t2=matH.at<float>(2,3);
+        r0=matTransfer.at<float>(0,0);
+        r1=matTransfer.at<float>(0,1);
+        r2=matTransfer.at<float>(0,2);
+        r3=matTransfer.at<float>(1,0);
+        r4=matTransfer.at<float>(1,1);
+        r5=matTransfer.at<float>(1,2);
+        r6=matTransfer.at<float>(2,0);
+        r7=matTransfer.at<float>(2,1);
+        r8=matTransfer.at<float>(2,2);
+        t0=matTransfer.at<float>(0,3);
+        t1=matTransfer.at<float>(1,3);
+        t2=matTransfer.at<float>(2,3);
         */
     }
     //double r[] = {r0,r1,r2,r3,r4,r5,r6,r7,r8};
@@ -380,25 +380,22 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
                         continue;
 
                     /****以下判断为多次重建得到的点云拼接做准备****/
+
                     if (scanSN_ > 0)
                     {
                         ///*
                         float point[] = {interPoint.x, interPoint.y, interPoint.z, 1};
                         cv::Mat pointMat(4, 1, CV_32F, point);
                         cv::Mat refineMat(3, 1, CV_32F);
-                        refineMat = matH * pointMat;
+                        refineMat = matTransfer * pointMat;
                         refinedPoint.x = refineMat.at<float>(0, 0);
                         refinedPoint.y = refineMat.at<float>(1, 0);
                         refinedPoint.z = refineMat.at<float>(2, 0);
-                        //*/
-                        //refinedPoint = interPoint;
                     }
                     else
                         refinedPoint = interPoint;
-
                     //get pixel color for the second camera view
                     //color2 = Utilities::matGet3D( colorImgs[cam2index], cam2Pixs[c2].x, cam2Pixs[c2].y);//这里有问题
-
                     points3DProjView->addPoint(i, j, refinedPoint);
                 }
             }

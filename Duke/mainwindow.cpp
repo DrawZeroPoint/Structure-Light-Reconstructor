@@ -401,7 +401,8 @@ void MainWindow::calibration()
     path = projectPath + "/calib/fundamental_mat.txt";
     calibrator->findFundamental();
     calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_FUNDAMENTAL);
-
+    path = projectPath + "/calib/status_mat.txt";
+    calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_FUNDI);
     ui->progressBar->setValue(100);
 }
 
@@ -458,7 +459,7 @@ void MainWindow::findPoint()
     QPainter pt_2(&pcopy_2);
     QFont textf("Calibri",50);
     QColor greencolor(0,255,0);
-    QColor yellowcolor(255,255,0);
+    QColor yellowcolor(238,76,0);
     pt_1.setFont(textf);
     pt_2.setFont(textf);
 

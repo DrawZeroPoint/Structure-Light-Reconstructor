@@ -1,5 +1,4 @@
 #include "dotmatch.h"
-#include "math.h"
 #include "QMessageBox"
 
 bool cameraLoaded = false;
@@ -8,7 +7,7 @@ int EDGEUP = 9;//水平方向上标志点边缘黑色宽度上限
 int EDGEDOWN = 3;
 int MIDDOWN = 9;
 int MIDUP = 29;
-float tolerance = 30;//判断特征值是否相等时的误差
+float tolerance = 40;//判断特征值是否相等时的误差
 
 DotMatch::DotMatch(QObject *parent, QString projectPath) :
     QObject(parent)
@@ -219,9 +218,11 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
             cv::Mat ld(1, 3, CV_32F, lp);
             cv::Mat rd(1, 3, CV_32F, rp);
 
-            cv::Mat iszero = ld * fundMat * rd.t();
-            float z = iszero.at<float>(0,0);
-            if(abs(z) > 0.09)
+            cv::Mat ltor = rd * fundMat * ld.t();
+            //cv::Mat rtol = ld * fundMat.t() * rd.t();
+            float zlr = ltor.at<float>(0,0);
+            //float zrl = rtol.at<float>(0,0);
+            if(abs(zlr) > 1)//|| abs(zrl) > 0.9
                 continue;
             if (fabs(leftDot[i][1] - rightDot[j][1]) > YDISTANCE)
                 continue;
@@ -229,9 +230,18 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
             /****判断当前点相对于上一点X坐标的正负，如正负不同，则不是对应点****/
             if (k != 0)
             {
-                int checkLefft = leftDot[i][0] - dotInOrder[k-1][0];
-                int checkRight = rightDot[j][0] - dotInOrder[k-1][2];
-                if(checkLefft * checkRight <= 0)
+                bool isbreak = false;
+                for (int p = 0;p < k;p++)
+                {
+                    int checkLefft = leftDot[i][0] - dotInOrder[p][0];
+                    int checkRight = rightDot[j][0] - dotInOrder[p][2];
+                    if(checkLefft * checkRight <= 0)
+                    {
+                        isbreak = true;
+                        break;
+                    }
+                }
+                if (isbreak)
                 {
                     nowMatch++;
                     break;
@@ -258,11 +268,11 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
         return;
 
     /****如果是第一次扫描，所得到的全部标志点从零编号并保存****/
+    cv::vector<cv::vector<float> > featureTemp;
     if (firstFind)
     {
         dotFeature.clear();
-
-        cv::vector<cv::vector<float> > featureTemp = calFeature(dotPositionEven);
+        featureTemp = calFeature(dotPositionEven);
         for (size_t p = 0;p < featureTemp.size(); p++)
         {
             dotFeature.push_back(featureTemp[p]);
@@ -274,8 +284,6 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
     }
     else
     {
-        cv::vector<cv::vector<float> > featureTemp;
-
         if (scanNo%2 == 0)
             featureTemp = calFeature(dotPositionEven);
         else
@@ -477,8 +485,8 @@ void DotMatch::calMatrix()
         QMessageBox::warning(NULL, tr("Not Enough Data"), tr("Accuqaring point position data failed"));
         return;
     }
-    cv::vector<Point3f> formerPoint;
-    cv::vector<Point3f> laterPoint;
+    cv::vector<Point3f> pFormer;
+    cv::vector<Point3f> pLater;
 
     for (size_t i =0; i < correspondPointOdd.size(); i++)
     {
@@ -488,13 +496,13 @@ void DotMatch::calMatrix()
             {
                 if (scanNo%2 == 0)
                 {
-                    formerPoint.push_back(dotPositionOdd[i]);
-                    laterPoint.push_back(dotPositionEven[j]);
+                    pFormer.push_back(dotPositionOdd[correspondPointOdd[i].y]);
+                    pLater.push_back(dotPositionEven[correspondPointEven[j].y]);
                 }
                 else
                 {
-                    formerPoint.push_back(dotPositionEven[j]);
-                    laterPoint.push_back(dotPositionOdd[i]);
+                    pFormer.push_back(dotPositionEven[correspondPointEven[j].y]);
+                    pLater.push_back(dotPositionOdd[correspondPointOdd[i].y]);
                 }
             }
         }
@@ -503,14 +511,14 @@ void DotMatch::calMatrix()
     /********Horn四元数法求解变换矩阵*********/
 
     std::vector<double> inpoints;
-    for(size_t i = 0;i < formerPoint.size();i++)
+    for(size_t i = 0;i < pFormer.size();i++)
     {
-        inpoints.push_back(formerPoint[i].x);
-        inpoints.push_back(formerPoint[i].y);
-        inpoints.push_back(formerPoint[i].z);
-        inpoints.push_back(laterPoint[i].x);
-        inpoints.push_back(laterPoint[i].y);
-        inpoints.push_back(laterPoint[i].z);
+        inpoints.push_back(pFormer[i].x);
+        inpoints.push_back(pFormer[i].y);
+        inpoints.push_back(pFormer[i].z);
+        inpoints.push_back(pLater[i].x);
+        inpoints.push_back(pLater[i].y);
+        inpoints.push_back(pLater[i].z);
     }
     std::vector<double> outQuaternion;
     outQuaternion.resize(7);//如果不首先确定大小，可能产生和指针有关的问题
@@ -529,13 +537,27 @@ void DotMatch::calMatrix()
     double r4 = pow(w,2)-pow(i,2)+pow(j,2)-pow(k,2);
     double r5 = 2*(j*k-w*i);
     double r6 = 2*(k*i-w*j);
-    double r7 = 2*(k*j+w*k);//
+    double r7 = 2*(k*j+w*i);//Horn原论文此处疑有误，正确的参考www.j3d.org/matrix_faq/matrfaq_latest.html
     double r8 = pow(w,2)-pow(i,2)-pow(j,2)+pow(k,2);
     double data[] = {r0,r1,r2,tx,r3,r4,r5,ty,r6,r7,r8,tz};
     cv::Mat outMat(3,4,CV_64F,data);
 
+    if (scanNo == 1)
+    {
+        transFormer = outMat;
+    }
+    else if (scanNo > 1)
+    {
+        cv::Range rangeR(0,3);
+        cv::Range rangeT(3,4);
+        cv::Mat formerMatR = transFormer(cv::Range::all(),rangeR);
+        cv::Mat formerMatT = transFormer(cv::Range::all(),rangeT);
+        transFormer(cv::Range::all(),rangeR) = formerMatR * outMat(cv::Range::all(),rangeR);
+        transFormer(cv::Range::all(),rangeT) = formerMatT + outMat(cv::Range::all(),rangeT);
+    }
+
     QString outMatPath = path + "/scan/transfer_mat" + QString::number(scanNo) + ".txt";
-    Utilities::exportMat(outMatPath.toLocal8Bit(), outMat);
+    Utilities::exportMat(outMatPath.toLocal8Bit(), transFormer);
 }
 
 void DotMatch::markPoint()

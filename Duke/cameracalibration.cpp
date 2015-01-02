@@ -35,6 +35,10 @@ void CameraCalibration::exportTxtFiles(const char *path, int CAMCALIB_OUT_PARAM)
             break;
         case CAMCALIB_OUT_FUNDAMENTAL:
             out = fundamentalMatrix;
+            break;
+        case CAMCALIB_OUT_FUNDI:
+            out = statusMatrix;
+            break;
     }
     Utilities::exportMat(path, out);
 }
@@ -366,7 +370,7 @@ int CameraCalibration::extractImageCorners()
         }
     }
 
-    /***********为求解基础矩阵，采样点来自第一组图片（L1，R1）的角点数据*************/
+    /***********为求解基础矩阵，采样点来自第十二组图片（L12，R12）的角点数据*************/
     if (isleft)
     {
         for (int i = 0; i < 99; i++)//放入99个点
@@ -378,7 +382,7 @@ int CameraCalibration::extractImageCorners()
     {
         for (int i = 0; i < 99; i++)//放入99个点
         {
-            findFunRight.push_back(imgBoardCornersCam[0][i]);
+            findFunRight.push_back(imgBoardCornersCam[11][i]);
         }
     }
 
@@ -473,7 +477,7 @@ bool CameraCalibration::findCameraExtrisics()
 
 void CameraCalibration::findFundamental()
 {
-    fundamentalMatrix = cv::findFundamentalMat(findFunLeft, findFunRight, cv::FM_RANSAC);
+    fundamentalMatrix = cv::findFundamentalMat(findFunLeft, findFunRight, statusMatrix, cv::FM_RANSAC);
     findFunLeft.clear();
     findFunRight.clear();
 }
