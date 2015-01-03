@@ -5,11 +5,8 @@
 #include <QColorDialog>
 #include <qmath.h>
 
-#define F_PATH "D:\\result.PLY"
-
 GLfloat scale = 1.0;
 GLfloat percent = 0.1;
-
 GLfloat offsetX = 0.0;
 GLfloat offsetY = 0.0;
 
@@ -22,18 +19,21 @@ GLWidget::GLWidget(QWidget *parent) :
     rotationX = 0.0;
     rotationY = 0.0;
     rotationZ = 0.0;
-
     pointSize = 5;
-
     backColor = QColor::fromCmykF(0.5, 0.4, 0.4, 0.2);
     createGradient();
-    plyloader = new PlyLoader();
-    plyloader->LoadModel(F_PATH);
+    plyloader = new PlyLoader(this);
 }
 
 GLWidget::~GLWidget()
 {
     delete plyloader;
+}
+
+void GLWidget::LoadModel(QString loadpath)
+{
+    plyloader->LoadModel(loadpath);
+    draw();
 }
 
 void GLWidget::initializeGL()

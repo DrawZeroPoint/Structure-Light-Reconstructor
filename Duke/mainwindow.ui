@@ -258,7 +258,7 @@ font: 9pt &quot;Calibri&quot;;</string>
           <enum>QTabWidget::Triangular</enum>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="elideMode">
           <enum>Qt::ElideNone</enum>
@@ -537,6 +537,54 @@ font: 9pt &quot;Calibri&quot;;</string>
           <attribute name="title">
            <string>Reconstruct</string>
           </attribute>
+          <widget class="QWidget" name="">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>20</y>
+             <width>329</width>
+             <height>51</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QCheckBox" name="manualReconstruction">
+              <property name="text">
+               <string>Manual reconstruction</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_5">
+                <item>
+                 <widget class="QLabel" name="label_4">
+                  <property name="text">
+                   <string>Set current reconstruction count to:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QSpinBox" name="reconstructionCount">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QPushButton" name="reconstructionButton">
+                <property name="text">
+                 <string>Reconstruction</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </widget>
        </item>
@@ -2105,6 +2153,22 @@ background-color: rgbrgb(111, 215, 253)</string>
     <hint type="destinationlabel">
      <x>138</x>
      <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>manualReconstruction</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>reconstructionCount</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>489</x>
+     <y>414</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>539</x>
+     <y>441</y>
     </hint>
    </hints>
   </connection>

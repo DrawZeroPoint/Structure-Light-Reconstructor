@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDockWidget>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
@@ -93,6 +94,14 @@ public:
     QLabel *label_3;
     QLabel *scanNoLabel;
     QWidget *tab_3;
+    QWidget *widget;
+    QVBoxLayout *verticalLayout_2;
+    QCheckBox *manualReconstruction;
+    QHBoxLayout *horizontalLayout_6;
+    QHBoxLayout *horizontalLayout_5;
+    QLabel *label_4;
+    QSpinBox *reconstructionCount;
+    QPushButton *reconstructionButton;
     QMenuBar *menubar;
     QMenu *menuFile;
     QMenu *menuCustomize;
@@ -499,6 +508,43 @@ public:
         tabWidget->addTab(tab_2, QString());
         tab_3 = new QWidget();
         tab_3->setObjectName(QStringLiteral("tab_3"));
+        widget = new QWidget(tab_3);
+        widget->setObjectName(QStringLiteral("widget"));
+        widget->setGeometry(QRect(10, 20, 329, 51));
+        verticalLayout_2 = new QVBoxLayout(widget);
+        verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
+        verticalLayout_2->setContentsMargins(0, 0, 0, 0);
+        manualReconstruction = new QCheckBox(widget);
+        manualReconstruction->setObjectName(QStringLiteral("manualReconstruction"));
+
+        verticalLayout_2->addWidget(manualReconstruction);
+
+        horizontalLayout_6 = new QHBoxLayout();
+        horizontalLayout_6->setObjectName(QStringLiteral("horizontalLayout_6"));
+        horizontalLayout_5 = new QHBoxLayout();
+        horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
+        label_4 = new QLabel(widget);
+        label_4->setObjectName(QStringLiteral("label_4"));
+
+        horizontalLayout_5->addWidget(label_4);
+
+        reconstructionCount = new QSpinBox(widget);
+        reconstructionCount->setObjectName(QStringLiteral("reconstructionCount"));
+        reconstructionCount->setEnabled(false);
+
+        horizontalLayout_5->addWidget(reconstructionCount);
+
+
+        horizontalLayout_6->addLayout(horizontalLayout_5);
+
+        reconstructionButton = new QPushButton(widget);
+        reconstructionButton->setObjectName(QStringLiteral("reconstructionButton"));
+
+        horizontalLayout_6->addWidget(reconstructionButton);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_6);
+
         tabWidget->addTab(tab_3, QString());
 
         gridLayout_2->addWidget(tabWidget, 1, 0, 1, 1);
@@ -965,8 +1011,9 @@ public:
         retranslateUi(MainWindow);
         QObject::connect(snapSpeedBox, SIGNAL(valueChanged(int)), spinBox, SLOT(setValue(int)));
         QObject::connect(spinBox, SIGNAL(valueChanged(int)), snapSpeedBox, SLOT(setValue(int)));
+        QObject::connect(manualReconstruction, SIGNAL(clicked(bool)), reconstructionCount, SLOT(setEnabled(bool)));
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -1062,6 +1109,9 @@ public:
         label_3->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Current scan count: </p></body></html>", 0));
         scanNoLabel->setText(QApplication::translate("MainWindow", "0", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Scan", 0));
+        manualReconstruction->setText(QApplication::translate("MainWindow", "Manual reconstruction", 0));
+        label_4->setText(QApplication::translate("MainWindow", "Set current reconstruction count to:", 0));
+        reconstructionButton->setText(QApplication::translate("MainWindow", "Reconstruction", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("MainWindow", "Reconstruct", 0));
         menuFile->setTitle(QApplication::translate("MainWindow", "Project", 0));
         menuCustomize->setTitle(QApplication::translate("MainWindow", "Customize", 0));

@@ -141,6 +141,8 @@ private slots:
     void startscan();
 
     void reconstruct();
+    void startreconstruct();
+
     void set();
     void getSetInfo();
 

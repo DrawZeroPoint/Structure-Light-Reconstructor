@@ -20,8 +20,6 @@ const HV_SNAP_SPEED SnapSpeed = HIGH_SPEED;
 long ADCLevel           = ADC_LEVEL2;
 const int XStart              = 0;//图像左上角点在相机幅面1280X1024上相对于幅面左上角点坐标
 const int YStart              = 0;
-int Width;//相机视野
-int Height;
 int scanWidth;//扫描区域
 int scanHeight;
 bool inEnglish = true;
@@ -32,40 +30,42 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
+    /*****生成主窗口UI*****/
     ui->setupUi(this);
-    createConnections();
 
+    /*****声明全局变量*****/
     saveCon = 1;//Save calib images start with 1
     scanSquenceNo = -1;
     cameraOpened = false;
     isConfigured = false;
     isProjectorOpened = true;
 
+    /****生成计时器并连接*****/
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(readframe()));
 
+    /*****生成OpenGL窗口并加载*****/
     displayModel = new GLWidget(ui->displayWidget);
     ui->displayLayout->addWidget(displayModel);
 
+    /*****生成设置窗口并输出默认设置*****/
     setDialog = new Set(this);//Initialize the set dialog
     getSetInfo();
 
-    cameraWidth = Width;
-    cameraHeight = Height;
-
+    /*****获取屏幕尺寸信息*****/
     getScreenGeometry();//Get mian screen and projector screen geometry
     QDesktopWidget* desktopWidget = QApplication::desktop();
     QRect projRect = desktopWidget->screenGeometry(1);//1 represent projector
     int xOffSet = (projRect.width() - scanWidth)/2 + screenWidth;
     int yOffSet = (projRect.height() - scanHeight)/2;
 
+    /*****初始化投影窗口*****/
     pj = new Projector(NULL, scanWidth, scanHeight, projectorWidth, projectorHeight, xOffSet, yOffSet);//Initialize the projector
     pj->move(screenWidth,0);//make the window displayed by the projector
     pj->showFullScreen();
 
-    connect(ui->actionExit, SIGNAL(triggered()), pj, SLOT(close()));//解决投影窗口不能关掉的问题
-    connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
-
+    /*****建立连接*****/
+    createConnections();
 }
 
 MainWindow::~MainWindow()
@@ -160,22 +160,22 @@ void MainWindow::opencamera()
 
     HVSetSnapMode(m_hhv_1, SnapMode);//Snap mode include CONTINUATION、TRIGGER
     HVSetSnapMode(m_hhv_2, SnapMode);
-    //  设置ADC的级别
-    HVADCControl(m_hhv_1, ADC_BITS, ADCLevel);
+
+    HVADCControl(m_hhv_1, ADC_BITS, ADCLevel);//设置ADC的级别
     HVADCControl(m_hhv_2, ADC_BITS, ADCLevel);
-    //  获取设备类型
-    HVTYPE type = UNKNOWN_TYPE;
+
+    HVTYPE type = UNKNOWN_TYPE;//获取设备类型
     int size    = sizeof(HVTYPE);
     HVGetDeviceInfo(m_hhv_1,DESC_DEVICE_TYPE, &type, &size);//由于两相机型号相同，故只获取一个
 
-    HVSetOutputWindow(m_hhv_1, XStart, YStart, Width, Height);
-    HVSetOutputWindow(m_hhv_2, XStart, YStart, Width, Height);
-    //设置采集速度
-    HVSetSnapSpeed(m_hhv_1, SnapSpeed);
+    HVSetOutputWindow(m_hhv_1, XStart, YStart, cameraWidth, cameraHeight);
+    HVSetOutputWindow(m_hhv_2, XStart, YStart, cameraWidth, cameraHeight);
+
+    HVSetSnapSpeed(m_hhv_1, SnapSpeed);//设置采集速度
     HVSetSnapSpeed(m_hhv_2, SnapSpeed);
 
-    m_pRawBuffer_1 = new BYTE[Width * Height];
-    m_pRawBuffer_2 = new BYTE[Width * Height];
+    m_pRawBuffer_1 = new BYTE[cameraWidth * cameraHeight];
+    m_pRawBuffer_2 = new BYTE[cameraWidth * cameraHeight];
 
     OnSnapexOpen();
     OnSnapexStart();
@@ -230,8 +230,8 @@ int CALLBACK MainWindow::SnapThreadCallback(HV_SNAP_INFO *pInfo)
 
 void MainWindow::readframe()
 {
-    image_1 = QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
-    image_2 = QImage(m_pRawBuffer_2, Width, Height, QImage::Format_Indexed8);
+    image_1 = QImage(m_pRawBuffer_1, cameraWidth, cameraHeight, QImage::Format_Indexed8);
+    image_2 = QImage(m_pRawBuffer_2, cameraWidth, cameraHeight, QImage::Format_Indexed8);
     pimage_1 = QPixmap::fromImage(image_1);
     pimage_2 = QPixmap::fromImage(image_2);
     ui->leftViewLabel->setPixmap(pimage_1);
@@ -446,8 +446,8 @@ void MainWindow::findPoint()
     {
         dm->dotForMark.clear();
     }
-    cv::Mat mat_1 = cv::Mat(Height, Width, CV_8UC1, m_pRawBuffer_1);//直接从内存缓冲区获得图像数据是可行的
-    cv::Mat mat_2 = cv::Mat(Height, Width, CV_8UC1, m_pRawBuffer_2);
+    cv::Mat mat_1 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, m_pRawBuffer_1);//直接从内存缓冲区获得图像数据是可行的
+    cv::Mat mat_2 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, m_pRawBuffer_2);
     //imshow("d",mat_1);
     //cvWaitKey(10);
     scanSquenceNo = dm->scanNo;
@@ -459,7 +459,7 @@ void MainWindow::findPoint()
     QPainter pt_2(&pcopy_2);
     QFont textf("Calibri",50);
     QColor greencolor(0,255,0);
-    QColor yellowcolor(238,76,0);
+    QColor orangecolor(238,76,0);
     pt_1.setFont(textf);
     pt_2.setFont(textf);
 
@@ -476,8 +476,8 @@ void MainWindow::findPoint()
         }
         else
         {
-            pt_1.setPen(yellowcolor);
-            pt_2.setPen(yellowcolor);
+            pt_1.setPen(orangecolor);
+            pt_2.setPen(orangecolor);
             drawCross(pt_1, dm->dotForMark[i][0] ,dm->dotForMark[i][1]);
             drawCross(pt_2, dm->dotForMark[i][2], dm->dotForMark[i][3]);
         }
@@ -516,12 +516,11 @@ void MainWindow::startscan()
     {
         cvWaitKey(100);
         HVSnapShot(m_hhv_1, ppBuf_1, 1);
-        //image_1 = new QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
-        image_1 = QImage(m_pRawBuffer_1, Width, Height, QImage::Format_Indexed8);
+        image_1 = QImage(m_pRawBuffer_1, cameraWidth, cameraHeight, QImage::Format_Indexed8);
         pimage_1 = QPixmap::fromImage(image_1);
 
         HVSnapShot(m_hhv_2, ppBuf_2, 1);
-        image_2 = QImage(m_pRawBuffer_2, Width, Height, QImage::Format_Indexed8);
+        image_2 = QImage(m_pRawBuffer_2, cameraWidth, cameraHeight, QImage::Format_Indexed8);
         pimage_2 = QPixmap::fromImage(image_2);
 
         captureImage(pref, grayCount, false);
@@ -548,25 +547,37 @@ void MainWindow::reconstruct()
 {
     ui->progressBar->reset();
     nowProgress = 0;
+    ui->tabWidget->setCurrentIndex(2);
+    selectPath(PATHRECON);//set current path to :/reconstruct
+}
 
+void MainWindow::startreconstruct()
+{
+    ui->progressBar->reset();
+    nowProgress = 0;
     if(cameraOpened)
         closeCamera();
     if(isConfigured == false){
         if(QMessageBox::warning(this,tr("Warning"), tr("You may want to change the settings, continue with default settings?"),
                 QMessageBox::Yes,QMessageBox::No) == QMessageBox::No)
             return;
+        else
+            isConfigured = true;
     }
 
-    ui->tabWidget->setCurrentIndex(2);
-    selectPath(PATHRECON);//set current path to :/reconstruct
     Reconstruct *reconstructor= new Reconstruct();
-    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, scanSquenceNo, isAutoContrast, projectPath);
+    int scanCount = (ui->manualReconstruction->isChecked())?(ui->reconstructionCount->value()):(scanSquenceNo);
+    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, scanCount, isAutoContrast, projectPath);
 
     reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
     reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
     bool loaded = reconstructor->loadCameras();//load camera matrix
     if(!loaded)
+    {
+        ui->progressBar->reset();
+        nowProgress = 0;
         return;
+    }
     progressPop(5);
 
     reconstructor->setBlackThreshold(black_);
@@ -580,7 +591,11 @@ void MainWindow::reconstruct()
 
     bool runSucess = reconstructor->runReconstruction();
     if(!runSucess)
+    {
+        ui->progressBar->reset();
+        nowProgress = 0;
         return;
+    }
     progressPop(50);
 
     MeshCreator *meshCreator=new MeshCreator(reconstructor->points3DProjView);//Export mesh
@@ -589,13 +604,16 @@ void MainWindow::reconstruct()
     if(isExportObj)
         meshCreator->exportObjMesh(projChildPath + QString::number(scanSquenceNo) + ".obj");
     if(isExportPly || !(isExportObj || isExportPly))
-        meshCreator->exportPlyMesh(projChildPath + QString::number(scanSquenceNo) + ".ply");
+    {
+        QString outPlyPath = projChildPath + QString::number(scanSquenceNo) + ".ply";
+        meshCreator->exportPlyMesh(outPlyPath);
+        displayModel->LoadModel(outPlyPath);
+    }
     delete meshCreator;
     delete reconstructor;
     opencamera();
     ui->progressBar->setValue(100);
 }
-
 
 void MainWindow::set()
 {
@@ -608,8 +626,8 @@ void MainWindow::set()
 
 void MainWindow::getSetInfo()
 {
-    Width = setDialog->cam_w;
-    Height = setDialog->cam_h;
+    cameraWidth = setDialog->cam_w;
+    cameraHeight = setDialog->cam_h;
     projectorWidth = setDialog->proj_w;
     projectorHeight = setDialog->proj_h;
     scanWidth = setDialog->scan_w;
@@ -647,10 +665,15 @@ void MainWindow::createConnections()
     connect(ui->startScanButton, SIGNAL(clicked()), this, SLOT(startscan()));
 
     connect(ui->actionReconstruct,SIGNAL(triggered()),this,SLOT(reconstruct()));
+    connect(ui->reconstructionButton,SIGNAL(clicked()),this,SLOT(startreconstruct()));
+
     connect(ui->actionSet, SIGNAL(triggered()), this, SLOT(set()));
     connect(ui->actionChinese, SIGNAL(triggered()), this, SLOT(switchlanguage()));
     connect(ui->actionEnglish, SIGNAL(triggered()), this, SLOT(switchlanguage()));
     connect(ui->pSizeValue, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
+
+    connect(ui->actionExit, SIGNAL(triggered()), pj, SLOT(close()));//解决投影窗口不能关掉的问题
+    connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
 }
 
 ///*************辅助功能***************///

@@ -12,6 +12,7 @@ public:
     ~GLWidget();
 
     int pointSize;
+    void LoadModel(QString loadpath);
     void setPoint(int psize);
 
 protected:
