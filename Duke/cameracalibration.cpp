@@ -36,8 +36,14 @@ void CameraCalibration::exportTxtFiles(const char *path, int CAMCALIB_OUT_PARAM)
         case CAMCALIB_OUT_FUNDAMENTAL:
             out = fundamentalMatrix;
             break;
-        case CAMCALIB_OUT_FUNDI:
+        case CAMCALIB_OUT_STATUS:
             out = statusMatrix;
+            break;
+        case CAMCALIB_OUT_H1:
+            out = H1;
+            break;
+        case CAMCALIB_OUT_H2:
+            out = H2;
             break;
     }
     Utilities::exportMat(path, out);
@@ -478,6 +484,7 @@ bool CameraCalibration::findCameraExtrisics()
 void CameraCalibration::findFundamental()
 {
     fundamentalMatrix = cv::findFundamentalMat(findFunLeft, findFunRight, statusMatrix, cv::FM_RANSAC);
+    cv::stereoRectifyUncalibrated(findFunLeft, findFunRight, fundamentalMatrix, camImageSize, H1, H2);
     findFunLeft.clear();
     findFunRight.clear();
 }

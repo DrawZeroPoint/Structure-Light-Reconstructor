@@ -3,6 +3,9 @@
 
 #include <QGLWidget>
 #include "plyloader.h"
+#include <glm.hpp>
+#include <GL/glut.h>
+#include <ext.hpp>
 
 class GLWidget : public QGLWidget
 {
@@ -24,8 +27,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-    void keyReleaseEvent(QKeyEvent *event);
 
 private:
     void draw();
@@ -35,13 +36,15 @@ private:
     GLfloat rotationX;
     GLfloat rotationY;
     GLfloat rotationZ;
+    GLfloat offsetX;
+    GLfloat offsetY;
     QPoint lastPos;
     PlyLoader *plyloader;
 
     QRadialGradient gradient;
     QColor backColor;
 
-
+    void drag_ball(int x1, int y1, int x2, int y2, glm::mat4& Tmodel, glm::mat4& Tcamera);
 };
 
 #endif // GLWIDGET_H

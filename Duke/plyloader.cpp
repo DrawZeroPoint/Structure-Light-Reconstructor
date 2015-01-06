@@ -6,7 +6,7 @@ PlyLoader::PlyLoader(QObject *parent) :
 {
 }
 
-int PlyLoader::LoadModel(QString filename)
+bool PlyLoader::LoadModel(QString filename)
 {
     if (filename != NULL)
     {
@@ -51,6 +51,8 @@ int PlyLoader::LoadModel(QString filename)
             }
             fclose(file);
         }
+        return true;
     }
-    return 0;
+    else
+        return false;
 }

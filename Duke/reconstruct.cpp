@@ -97,6 +97,14 @@ bool Reconstruct::loadCameras()//Load calibration data into camera[i]
         path += "/calib/fundamental_mat.txt";
         cameras[i].loadFundamentalMatrix(path);
 
+        path = savePath_;
+        path += "/calib/H1_mat.txt";
+        cameras[i].loadHomoMatrix(path, 1);
+
+        path = savePath_;
+        path += "/calib/H2_mat.txt";
+        cameras[i].loadHomoMatrix(path, 2);
+
         cameras[i].height = 0;
         cameras[i].width = 0;
     }

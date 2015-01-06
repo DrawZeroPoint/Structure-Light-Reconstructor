@@ -93,7 +93,7 @@ private:
     bool cameraOpened;
     bool isProjectorOpened;
     bool isConfigured;
-    int saveCon;//count the photo captured.
+    int saveCount;//count the photo captured.
 
     QString path_1;
     QString path_2;
@@ -147,6 +147,7 @@ private slots:
     void getSetInfo();
 
     void changePointSize(int psize);
+    void loadTestModel();
     void switchlanguage();
 
 };

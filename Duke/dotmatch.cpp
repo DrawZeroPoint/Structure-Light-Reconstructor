@@ -191,17 +191,19 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
             rc->cameras[1].position = cv::Point3f(0,0,0);
             rc->cam2WorldSpace(rc->cameras[1], rc->cameras[1].position);
             fundMat = rc->cameras[0].fundamentalMatrix;
+            Homo1 = rc->cameras[0].homoMat1;
+            Homo2 = rc->cameras[0].homoMat2;
         }
     }
     ////找出左右图像中的标志点
-    vector<vector<float>> leftDot = findDot(limage, 0);
-    vector<vector<float>> rightDot = findDot(rimage, 1);
+    vector<vector<float>> dotLeft = findDot(limage, 0);
+    vector<vector<float>> dotRight = findDot(rimage, 1);
 
     ////判断两相机所摄标志点的对应关系
     int k = 0;//dotInOrder中现存点个数
-    int nowMatch = 0;//防止rightDot中的同一点与leftDot中的不同点重复对应
+    int nowMatch = 0;//防止dotRight中的同一点与dotLeft中的不同点重复对应
     vector<int> alreadymatched;
-    for(size_t i = 0; i < leftDot.size(); i++)
+    for(size_t i = 0; i < dotLeft.size(); i++)
     {
         bool breakflag = false;
         for (size_t s = 0;s < alreadymatched.size();s++)
@@ -211,20 +213,27 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
         }
         if (breakflag)
             break;
-        for(size_t j = nowMatch; j < rightDot.size();j++)
+        for(size_t j = nowMatch; j < dotRight.size();j++)
         {
-            float lp[] = {leftDot[i][0], leftDot[i][1], 1.0};//齐次坐标
-            float rp[] = {rightDot[j][0], rightDot[j][1], 1.0};
-            cv::Mat ld(1, 3, CV_32F, lp);
-            cv::Mat rd(1, 3, CV_32F, rp);
-
-            cv::Mat ltor = rd * fundMat * ld.t();
+            float pleft[] = {dotLeft[i][0], dotLeft[i][1], 1.0};//齐次坐标
+            float pright[] = {dotRight[j][0], dotRight[j][1], 1.0};
+            cv::Mat plmat(1, 3, CV_32F, pleft);
+            cv::Mat prmat(1, 3, CV_32F, pright);
+            /*
+            cv::Mat O1(3,1,CV_32F);
+            cv::Mat O2(3,1,CV_32F);
+            O1 = Homo1 * plmat.t();
+            O2 = Homo2 * prmat.t();
+            float y1 = O2.at<float>(0,0);
+            float y2 = O2.at<float>(1,0);
+            */
+            cv::Mat ltor = prmat * fundMat * plmat.t();
             //cv::Mat rtol = ld * fundMat.t() * rd.t();
             float zlr = ltor.at<float>(0,0);
             //float zrl = rtol.at<float>(0,0);
             if(abs(zlr) > 1)//|| abs(zrl) > 0.9
                 continue;
-            if (fabs(leftDot[i][1] - rightDot[j][1]) > YDISTANCE)
+            if (fabs(dotLeft[i][1] - dotRight[j][1]) > YDISTANCE)
                 continue;
 
             /****判断当前点相对于上一点X坐标的正负，如正负不同，则不是对应点****/
@@ -233,8 +242,8 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
                 bool isbreak = false;
                 for (int p = 0;p < k;p++)
                 {
-                    int checkLefft = leftDot[i][0] - dotInOrder[p][0];
-                    int checkRight = rightDot[j][0] - dotInOrder[p][2];
+                    int checkLefft = dotLeft[i][0] - dotInOrder[p][0];
+                    int checkRight = dotRight[j][0] - dotInOrder[p][2];
                     if(checkLefft * checkRight <= 0)
                     {
                         isbreak = true;
@@ -249,10 +258,10 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
             }
 
             vector<float> dot;
-            dot.push_back(leftDot[i][0]);
-            dot.push_back(leftDot[i][1]);
-            dot.push_back(rightDot[j][0]);
-            dot.push_back(rightDot[j][1]);
+            dot.push_back(dotLeft[i][0]);
+            dot.push_back(dotLeft[i][1]);
+            dot.push_back(dotRight[j][0]);
+            dot.push_back(dotRight[j][1]);
             dotInOrder.push_back(dot);//每个元素都是包含4个float的向量，依次为左x，y；右x，y
 
             alreadymatched.push_back(i);
@@ -304,21 +313,21 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
 
 bool DotMatch::triangleCalculate()
 {
-    cv::Point2f leftDot;
-    cv::Point2f rightDot;
+    cv::Point2f dotLeft;
+    cv::Point2f dotRight;
     for (size_t i = 0; i < dotInOrder.size(); i++)
     {
-        leftDot.x = dotInOrder[i][0];
-        leftDot.y = dotInOrder[i][1];
-        rightDot.x = dotInOrder[i][2];
-        rightDot.y = dotInOrder[i][3];
+        dotLeft.x = dotInOrder[i][0];
+        dotLeft.y = dotInOrder[i][1];
+        dotRight.x = dotInOrder[i][2];
+        dotRight.y = dotInOrder[i][3];
 
-        cv::Point3f cam1Point = Utilities::pixelToImageSpace(leftDot, rc->cameras[0]); //convert camera pixel to image space
+        cv::Point3f cam1Point = Utilities::pixelToImageSpace(dotLeft, rc->cameras[0]); //convert camera pixel to image space
         rc->cam2WorldSpace(rc->cameras[0], cam1Point);
         cv::Vec3f ray1Vector = (cv::Vec3f) (rc->cameras[0].position - cam1Point); //compute ray vector
         Utilities::normalize(ray1Vector);
 
-        cv::Point3f cam2Point = Utilities::pixelToImageSpace(rightDot, rc->cameras[1]); //convert camera pixel to image space
+        cv::Point3f cam2Point = Utilities::pixelToImageSpace(dotRight, rc->cameras[1]); //convert camera pixel to image space
         rc->cam2WorldSpace(rc->cameras[1], cam2Point);
         cv::Vec3f ray2Vector = (cv::Vec3f) (rc->cameras[1].position - cam2Point); //compute ray vector
         Utilities::normalize(ray2Vector);

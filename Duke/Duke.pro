@@ -28,10 +28,13 @@ D:\VC\inc\
 D:\mrpt\libs\base\include\
 D:\mrpt\libs\scanmatching\include\
 D:\mrpt\include\mrpt\mrpt-config\
+D:\glm\
+E:\freeglut-2.8.1\include\
 
 LIBS += -LE:\opencv\build\x86\vc10\lib\
 -LD:\VC\lib\
 -LD:\mrpt\lib\
+-LE:\freeglut-2.8.1\lib\x86\Debug\
 -lopencv_core249d\
 -lopencv_highgui249d\
 -lopencv_imgproc249d\
@@ -43,6 +46,7 @@ LIBS += -LE:\opencv\build\x86\vc10\lib\
 -lRaw2Rgb\
 -llibmrpt-base122-dbg\
 -llibmrpt-scanmatching122-dbg\
+-lfreeglut\
 
 
 # Default rules for deployment.

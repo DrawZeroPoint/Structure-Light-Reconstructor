@@ -12,7 +12,9 @@
 #define CAMCALIB_OUT_ROTATION 3
 #define CAMCALIB_OUT_TRANSLATION 4
 #define CAMCALIB_OUT_FUNDAMENTAL 5
-#define CAMCALIB_OUT_FUNDI 6
+#define CAMCALIB_OUT_STATUS 6
+#define CAMCALIB_OUT_H1 7
+#define CAMCALIB_OUT_H2 8
 
 class CameraCalibration :public QObject
 {
@@ -42,6 +44,8 @@ public:
     cv::Mat rotationMatrix;
     cv::Mat translationVector;
     cv::Mat fundamentalMatrix;
+    cv::Mat H1;
+    cv::Mat H2;
     cv::Mat statusMatrix;
 
     cv::vector<cv::vector<cv::Point2f>> imgBoardCornersCam;

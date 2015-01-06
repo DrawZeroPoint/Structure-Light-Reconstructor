@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     /*****声明全局变量*****/
-    saveCon = 1;//Save calib images start with 1
+    saveCount = 1;//Save calib images start with 1
     scanSquenceNo = -1;
     cameraOpened = false;
     isConfigured = false;
@@ -242,13 +242,13 @@ void MainWindow::capturecalib()
 {
     if(cameraOpened){
         selectPath(PATHCALIB);//0 for calibration and 1 for scan
-        captureImage("", saveCon, true);
-        ui->currentPhotoLabel->setText(QString::number(saveCon));
-        saveCon++;
-        QString explain = ":/" + QString::number(saveCon) + ".png";
+        captureImage("", saveCount, true);
+        ui->currentPhotoLabel->setText(QString::number(saveCount));
+        saveCount++;
+        QString explain = ":/" + QString::number(saveCount) + ".png";
         ui->explainLabel->setPixmap(explain);
-        if(saveCon == 13){
-            saveCon = 1;
+        if(saveCount == 13){
+            saveCount = 1;
             ui->calibButton->setEnabled(true);
         }
     }
@@ -256,14 +256,16 @@ void MainWindow::capturecalib()
         QMessageBox::warning(this, tr("Warning"), tr("Open cameras failed."));
 }
 
+
 void MainWindow::redocapture()
 {
     if(cameraOpened){
-        captureImage("", saveCon - 1, true);
+        captureImage("", saveCount - 1, true);
         }
     else
         QMessageBox::warning(this,tr("Warning"), tr("Open cameras failed."));
 }
+
 
 void MainWindow::captureImage(QString pref, int saveCount,bool dispaly)
 {
@@ -330,12 +332,12 @@ void MainWindow::getScreenGeometry()
     }
 }
 
-///////////////////标定/////////////////////
+///-------------------标定-------------------///
 void MainWindow::calib()
 {
     QMessageBox::information(NULL, tr("Calibration"), tr("Calibration Actived!"));
     ui->tabWidget->setCurrentIndex(0);//go to calibration page
-    ui->explainLabel->setPixmap(":/" + QString::number(saveCon) + ".png");
+    ui->explainLabel->setPixmap(":/" + QString::number(saveCount) + ".png");
 }
 
 
@@ -401,8 +403,12 @@ void MainWindow::calibration()
     path = projectPath + "/calib/fundamental_mat.txt";
     calibrator->findFundamental();
     calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_FUNDAMENTAL);
+    path = projectPath + "/calib/H1_mat.txt";
+    calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_H1);
+    path = projectPath + "/calib/H2_mat.txt";
+    calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_H2);
     path = projectPath + "/calib/status_mat.txt";
-    calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_FUNDI);
+    calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_STATUS);
     ui->progressBar->setValue(100);
 }
 
@@ -671,6 +677,7 @@ void MainWindow::createConnections()
     connect(ui->actionChinese, SIGNAL(triggered()), this, SLOT(switchlanguage()));
     connect(ui->actionEnglish, SIGNAL(triggered()), this, SLOT(switchlanguage()));
     connect(ui->pSizeValue, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
+    connect(ui->loadTest, SIGNAL(clicked()), this, SLOT(loadTestModel()));
 
     connect(ui->actionExit, SIGNAL(triggered()), pj, SLOT(close()));//解决投影窗口不能关掉的问题
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
@@ -706,6 +713,12 @@ void MainWindow::switchlanguage()
 void MainWindow::changePointSize(int psize)
 {
     displayModel->setPoint(psize);
+}
+
+void MainWindow::loadTestModel()
+{
+    QString testPath = projChildPath + "0.ply";
+    displayModel->LoadModel(testPath);
 }
 
 

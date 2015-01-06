@@ -5,10 +5,13 @@
 #include <QColorDialog>
 #include <qmath.h>
 
-GLfloat scale = 1.0;
+GLfloat scale = 1;
 GLfloat percent = 0.1;
-GLfloat offsetX = 0.0;
-GLfloat offsetY = 0.0;
+GLfloat speed = 20;
+bool hasModel = false;
+glm::mat4 transform_camera(1.0f); // 摄像机的位置和定向，即摄像机在世界坐标系中位置
+glm::mat4 transform_model(1.0f);  // 模型变换矩阵，即物体坐标到世界坐标
+glm::mat4 model_view_matrix;
 
 bool keyPressed[2] = {false, false};
 
@@ -19,7 +22,9 @@ GLWidget::GLWidget(QWidget *parent) :
     rotationX = 0.0;
     rotationY = 0.0;
     rotationZ = 0.0;
-    pointSize = 5;
+    offsetX = 0.0;
+    offsetY = 0.0;
+    pointSize = 1;
     backColor = QColor::fromCmykF(0.5, 0.4, 0.4, 0.2);
     createGradient();
     plyloader = new PlyLoader(this);
@@ -32,17 +37,29 @@ GLWidget::~GLWidget()
 
 void GLWidget::LoadModel(QString loadpath)
 {
-    plyloader->LoadModel(loadpath);
-    draw();
+    hasModel = plyloader->LoadModel(loadpath);
+    if(hasModel)
+        updateGL();
 }
 
 void GLWidget::initializeGL()
 {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(30, float(this->width())/this->height(), 1.0, 1.0e10);
+
     qglClearColor(backColor);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_CULL_FACE);
     SetupLights();
     glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_NORMALIZE);
+
+    transform_camera = glm::affineInverse(glm::lookAt(glm::vec3(0,0,40), glm::vec3(0,0,0), glm::vec3(0,-1,0)));
+    transform_model = glm::translate(glm::vec3(-10,-10,0));
 }
 
 void GLWidget::resizeGL(int width, int height)
@@ -50,60 +67,41 @@ void GLWidget::resizeGL(int width, int height)
     glViewport(0, 0, this->width(), this->height());
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    GLfloat x = GLfloat(this->width()) / this->height();
-    glFrustum(-x,+x,-1.0,+1.0,4.0,15.0);
-    glMatrixMode(GL_MODELVIEW);
+    gluPerspective(28.0,float(this->width())/this->height(), 1.0, 1.0e10);
 }
 
 void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    model_view_matrix = glm::affineInverse(transform_camera);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(&model_view_matrix[0][0]);
+    model_view_matrix *= transform_model;
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(&model_view_matrix[0][0]);
     draw();
-    glLoadIdentity();
 }
 
 void GLWidget::draw()
 {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
     GLfloat sizes[]=
     {
         scale, scale, scale
     };
-    glTranslatef(0, 0, -10.0);
     glRotatef(rotationX, 1.0, 0.0, 0.0);
     glRotatef(rotationY, 0.0, 1.0, 0.0);
     glRotatef(rotationZ, 0.0, 0.0, 1.0);
     glScalef(sizes[0], sizes[1], sizes[2]);
-    /*
-    glBegin(GL_TRIANGLES);
-    qglColor(QColor::fromCmyk(255,0,0,0));
-    for(int i = 3; i < 6; i++)
-    {
-        glVertex3f(plyloader->mp_vertexXYZ[0 + 3*i], plyloader->mp_vertexXYZ[1 + 3*i], plyloader->mp_vertexXYZ[2 + 3*i]);
-    }
-    glEnd();
-    for(int m = 0; m < 6; ++m)
-    {
-        glBegin(GL_LINES);
-        qglColor(QColor::fromCmyk(0,255,0,0));
-        for(int k = 0; k <2; ++k)
-        {
-            glVertex3f(edges[m][k][0], edges[m][k][1],edges[m][k][2]);
-        }
-        glEnd();
-    }
-    */
+
     long int total = plyloader->m_totalConnectedPoints;
     for(int p = 0; p < total; ++p)
     {
         glPointSize(pointSize);
         glBegin(GL_POINTS);
         qglColor(QColor::fromCmyk(255,0,255,0));
-        glVertex3f((plyloader->mp_vertexXYZ[p*3] - offsetX) * percent,
-                (plyloader->mp_vertexXYZ[p*3 + 1] - offsetY) * percent,
-                 plyloader->mp_vertexXYZ[p*3 + 2] * percent);
+        glVertex3f((plyloader->mp_vertexXYZ[p*3]) * percent,
+                (plyloader->mp_vertexXYZ[p*3 + 1]) * percent,
+                 (plyloader->mp_vertexXYZ[p*3 + 2]) * percent);
         glEnd();
     }
     glFlush();
@@ -116,27 +114,23 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
+
     GLfloat dx = GLfloat(event->x() - lastPos.x()) / width();
     GLfloat dy = GLfloat(event->y() - lastPos.y()) / height();
+
     if(event->buttons() == Qt::LeftButton){
-        if(keyPressed[0] == true)
-        {
-            if (abs(dx) > abs(dy) && dx > 0) offsetX += 0.5;
-            else if (abs(dy) > abs(dx) && dy >0) offsetY += 0.5;
-            else if (abs(dy) > abs(dx) && dy < 0) offsetY -= 0.5;
-            else if (abs(dx) > abs(dy) && dx < 0) offsetX -= 0.5;
-        }
-        else
-        {
-            rotationX += 180 * dy;
-            rotationY += 180 * dx;
-        }
+        rotationX += 180 * dy;
+        rotationY += 180 * dx;
         updateGL();
     }
     else if(event->buttons() == Qt::RightButton){
-        rotationX += 180 * dy;
-        rotationZ += 180 * dx;
+        rotationX += 180 * dx;
+        rotationZ += 180 * dy;
         updateGL();
+    }
+    else if(event->buttons()==Qt::MiddleButton) {
+         transform_camera *= glm::translate(glm::vec3(-speed*dx,speed*dy,0));
+         updateGL();
     }
     lastPos = event->pos();
 }
@@ -155,37 +149,13 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 {
     double numDegrees = - event->delta() / 3600.0;
     scale += numDegrees;
-    if(scale < 3 && scale > 0)
+    if(scale < 10 && scale > 0)
     {
         updateGL();
     }
     else
     {
         scale = 1;
-    }
-}
-
-void GLWidget::keyPressEvent(QKeyEvent *event)
-{
-    if (event->key() == Qt::Key_Control)
-    {
-        keyPressed[0] = true;
-    }
-    else if (event->key() == Qt::Key_Alt)
-    {
-        keyPressed[1] = true;
-    }
-}
-
-void GLWidget::keyReleaseEvent(QKeyEvent *event)
-{
-    if(event->key() == Qt::Key_Control)
-    {
-        keyPressed[0] = false;
-    }
-    else if (event->key() == Qt::Key_Alt)
-    {
-        keyPressed[1] = false;
     }
 }
 
@@ -233,4 +203,39 @@ void GLWidget::setPoint(int psize)
 {
     pointSize = psize;
     updateGL();
+}
+
+
+void GLWidget::drag_ball(int x1, int y1, int x2, int y2, glm::mat4& Tmodel, glm::mat4& Tcamera)
+{
+    float r = (float)std::min(this->height(), this->width())/3;
+    float r2 = r*0.9f;
+    float ax = x1 - (float)this->width()/2;
+    float ay = y1 - (float)this->height()/2;
+    float bx = x2 - (float)this->width()/2;
+    float by = y2 - (float)this->height()/2;
+    float da = std::sqrt(ax*ax+ay*ay);
+    float db = std::sqrt(bx*bx+by*by);
+    if(std::max(da,db)>r2){
+        float dx, dy;
+        if(da>db){
+            dx = (r2/da-1)*ax;
+            dy = (r2/da-1)*ay;
+        }else{
+            dx = (r2/db-1)*bx;
+            dy = (r2/db-1)*by;
+        }
+        ax += dx; ay +=dy; bx += dx; by += dy;
+    }
+    float az = std::sqrt( r*r-(ax*ax+ay*ay) );
+    float bz = std::sqrt( r*r-(bx*bx+by*by) );
+    glm::vec3 a = glm::vec3(ax,ay,az);
+    glm::vec3 b = glm::vec3(bx,by,bz);
+    float theta = std::acos(glm::dot(a,b)/(r*r));
+    glm::vec3 v2 = glm::cross(a,b);
+    // v2是视觉坐标系的向量，v是v2在物体坐标系中的坐标
+    glm::vec3 v = glm::vec3(
+        glm::affineInverse(Tmodel) * Tcamera
+        * glm::vec4(v2[0],v2[1],v2[2],0) );
+    Tmodel *= glm::rotate( theta*180/3.14f, v );
 }
