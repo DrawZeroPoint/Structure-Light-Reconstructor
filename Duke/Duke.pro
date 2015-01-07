@@ -2,7 +2,7 @@ TEMPLATE = app
 
 TARGET = Duke
 
-QT += qml quick widgets opengl
+QT += quick widgets opengl
 
 SOURCES += \
     graycodes.cpp \

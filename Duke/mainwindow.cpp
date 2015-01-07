@@ -419,11 +419,11 @@ void MainWindow::scan()
     nowProgress = 0;
 
     if(!cameraOpened){
-        QMessageBox::warning(this, tr("Cameras not opened"), tr("Cameras are not opened."));
+        QMessageBox::warning(this, tr("Cameras are not Opened"), tr("Cameras are not opened."));
         return;
     }
     if(projectPath==""){
-        QMessageBox::warning(this,tr("Save path not set"), tr("You need create a project first."));
+        QMessageBox::warning(this,tr("Save Path hasn't been Set"), tr("You need create a project first."));
         return;
     }
     selectPath(PATHSCAN);
@@ -496,8 +496,9 @@ void MainWindow::startscan()
 {
     if (scanSquenceNo < 0)
     {
-        QMessageBox::warning(this,tr("Need Find Point"), tr("Find point first so that the cloud could be aligned."));
-        return;
+        if (QMessageBox::warning(this,tr("Mark Point Need to be Found"), tr("Scan result can't be aligned,continue?")
+                                 ,QMessageBox::Yes,QMessageBox::No) == QMessageBox::No)
+            return;
     }
     ui->progressBar->reset();
     nowProgress = 0;
@@ -717,8 +718,16 @@ void MainWindow::changePointSize(int psize)
 
 void MainWindow::loadTestModel()
 {
-    QString testPath = projChildPath + "0.ply";
-    displayModel->LoadModel(testPath);
+    if (projChildPath != NULL)
+    {
+        QString testPath = projChildPath + "0.ply";
+        displayModel->LoadModel(testPath);
+    }
+    else
+    {
+        QMessageBox::warning(NULL,tr("File Not Found"),tr("Test file doesn't exist."));
+        return;
+    }
 }
 
 

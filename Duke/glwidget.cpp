@@ -40,6 +40,8 @@ void GLWidget::LoadModel(QString loadpath)
     hasModel = plyloader->LoadModel(loadpath);
     if(hasModel)
         updateGL();
+    else
+        return;
 }
 
 void GLWidget::initializeGL()
