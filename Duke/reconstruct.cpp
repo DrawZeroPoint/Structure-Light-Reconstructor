@@ -76,15 +76,23 @@ bool Reconstruct::loadCameras()//Load calibration data into camera[i]
     {
         QString path;
         path = calibFolder[i];
+#ifndef USE_STEREOCALIB_DATA
         path += "cam_matrix.txt";
         loaded = cameras[i].loadCameraMatrix(path);//defined in visualcamera
-        if(!loaded){
+        if(!loaded)
             break;
-        }
         path = calibFolder[i];
         path += "cam_distortion.txt";
         cameras[i].loadDistortion(path);//注意loaddistortion方法加载一个5X1矩阵，而不是说明书里的3X1
-
+#else
+        path += "cam_stereo.txt";
+        loaded = cameras[i].loadCameraMatrix(path);//defined in visualcamera
+        if(!loaded)
+            break;
+        path = calibFolder[i];
+        path += "distortion_stereo.txt";
+        cameras[i].loadDistortion(path);
+#endif
         path = calibFolder[i];
         path += "cam_rotation_matrix.txt";
         cameras[i].loadRotationMatrix(path);
@@ -94,7 +102,11 @@ bool Reconstruct::loadCameras()//Load calibration data into camera[i]
         cameras[i].loadTranslationVector(path);
 
         path = savePath_;
+#ifndef USE_STEREOCALIB_DATA
         path += "/calib/fundamental_mat.txt";
+#else
+        path += "/calib/fundamental_stereo.txt";
+#endif
         cameras[i].loadFundamentalMatrix(path);
 
         path = savePath_;

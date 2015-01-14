@@ -1,8 +1,6 @@
 #ifndef RECONSTRUCT_H
 #define RECONSTRUCT_H
 
-//#pragma comment(lib,"opencv_highgui249d.lib")
-
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "graycodes.h"
@@ -10,12 +8,7 @@
 #include "pointcloudimage.h"
 #include "set.h"
 
-#define RECONSTRUCTION_SAMPLING_ON
-#define SAMPLES_NUM 25
-#define COL_GRAY_OFFSET 0
-#define ROW_GRAY_OFFSET 0
-#define EXPORT_MASKED_POINTS
-#define SCALE 1
+#define USE_STEREOCALIB_DATA
 
 class Reconstruct
 {
