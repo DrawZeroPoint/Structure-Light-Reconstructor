@@ -1,6 +1,9 @@
 #ifndef DOTMATCH_H
 #define DOTMATCH_H
 
+//#define DEBUG
+#define USE_FOUR_POINT
+
 #include <QObject>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -20,8 +23,9 @@ class DotMatch : public QObject
 public:
 
     DotMatch(QObject *parent = 0, QString projectPath = NULL);
-    vector<vector<float>> findDot(Mat image, int cam);
+    vector<vector<float>> findDot(Mat image);
     void matchDot(Mat limage, Mat rimage);
+    int OSTU_Region(cv::Mat &image);
 
     vector<vector<float>> dotInOrder;
 
@@ -45,7 +49,6 @@ private:
     bool dotClassify(cv::vector<cv::vector<float> > featureTemp);
     void calMatrix();
     void markPoint();
-    int OSTU_Region(cv::Mat &image);
 
     vector<Point2f> subPixel(Mat img, vector<vector<float>> vec);
     Reconstruct *rc;

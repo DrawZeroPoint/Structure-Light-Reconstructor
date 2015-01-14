@@ -17,7 +17,9 @@
 #include "meshcreator.h"
 #include "glwidget.h"
 #include "cameracalibration.h"
-
+#include "blobdetector.h"
+#include "graycodes.h"
+#include "multifrequency.h"
 
 #include "Windows.h"//加载此头文件以解决大恒相机头文件类型未定义问题
 #include <HVDAILT.h>
@@ -59,6 +61,9 @@ public:
 private:
     Ui::MainWindow *ui;
     CameraCalibration *calibrator;
+    BlobDetector *blob;
+    GrayCodes *grayCode;
+    MultiFrequency *mf;
     Projector *pj;
 
     void createConnections();
@@ -139,6 +144,7 @@ private slots:
     void pointmatch();
     void refindmatch();
     void startscan();
+    void testmulitfreq();
 
     void reconstruct();
     void startreconstruct();

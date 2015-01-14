@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "graycodes.h"
 #include "set.h"
 #include "ui_mainwindow.h"
 
@@ -23,8 +22,11 @@ const int YStart              = 0;
 int scanWidth;//扫描区域
 int scanHeight;
 bool inEnglish = true;
-
 int nowProgress = 0;//进度条初始化
+
+QFont textf("Calibri",50);
+QColor greencolor(0,255,0);
+QColor orangecolor(238,76,0);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -66,6 +68,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     /*****建立连接*****/
     createConnections();
+
+    /*****初始化圆点探测*****/
+    blob = new BlobDetector();
 }
 
 MainWindow::~MainWindow()
@@ -82,6 +87,7 @@ MainWindow::~MainWindow()
         delete []m_pRawBuffer_2;
     }
     delete pj;
+    delete blob;
     delete ui;
 }
 
@@ -89,8 +95,7 @@ void MainWindow::newproject()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),"/home",QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     projectPath = dir;
-    if(projectPath != "")
-    {
+    if(projectPath != ""){
         for(int i = 0;i<3;i++){
             generatePath(i);
         }
@@ -238,10 +243,20 @@ void MainWindow::readframe()
     ui->rightViewLabel->setPixmap(pimage_2);
 }
 
+///-------------------标定-------------------///
+void MainWindow::calib()
+{
+    QMessageBox::information(NULL, tr("Calibration"), tr("Calibration Actived!"));
+    selectPath(PATHCALIB);
+    ui->tabWidget->setCurrentIndex(0);//go to calibration page
+    ui->explainLabel->setPixmap(":/" + QString::number(saveCount) + ".png");
+    ui->calibButton->setEnabled(true);
+}
+
+
 void MainWindow::capturecalib()
 {
     if(cameraOpened){
-        selectPath(PATHCALIB);//0 for calibration and 1 for scan
         captureImage("", saveCount, true);
         ui->currentPhotoLabel->setText(QString::number(saveCount));
         saveCount++;
@@ -272,72 +287,36 @@ void MainWindow::captureImage(QString pref, int saveCount,bool dispaly)
     pimage_1.save(projChildPath + "/left/" + pref + "L" + QString::number(saveCount) +".png");
     pimage_2.save(projChildPath + "/right/" + pref + "R" + QString::number(saveCount) +".png");
     if(dispaly){
-        ui->leftCaptureLabel->setPixmap(pimage_1);
-        ui->rightCaptureLabel->setPixmap(pimage_2);
+        for (size_t camCount = 0; camCount < 2; camCount++){
+                BYTE *buffer = (camCount == 0)?(image_1.bits()):(image_2.bits());
+                cv::Mat mat = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, buffer);//直接从内存缓冲区获得图像数据是可行的
+                //int bwThreshold = dm->OSTU_Region(mat);
+                cv::Mat bimage = mat >= 60;
+                cv::bitwise_not(bimage, bimage);
+                vector<cv::Point2d> centers;
+                blob->findBlobs(bimage,centers);
+            if(camCount==0){
+                QPixmap pcopy = pimage_1;
+                QPainter pt(&pcopy);
+                pt.setPen(greencolor);
+                for (size_t i = 0; i < centers.size();i++)
+                {
+                    drawCross(pt,centers[i].x,centers[i].y);
+                }
+                ui->leftCaptureLabel->setPixmap(pcopy);
+            }
+            else{
+                QPixmap pcopy_1 = pimage_2;
+                QPainter pt_1(&pcopy_1);
+                pt_1.setPen(greencolor);
+                for (size_t i = 0; i < centers.size();i++)
+                {
+                    drawCross(pt_1,centers[i].x,centers[i].y);
+                }
+                ui->rightCaptureLabel->setPixmap(pcopy_1);
+            }
+        }
     }
-}
-
-void MainWindow::generatePath(int type)
-{
-    selectPath(type);
-    QDir *addpath_1 = new QDir;
-    QDir *addpath_2 = new QDir;
-    if(type == 0 || type == 1)
-    {
-        addpath_1->mkpath(projChildPath + "/left/");
-        addpath_2->mkpath(projChildPath +"/right/");
-    }
-    else
-        addpath_1->mkpath(projChildPath);
-}
-
-void MainWindow::selectPath(int PATH)//decide current childpath
-{
-    QString t;
-    switch (PATH) {
-        case PATHCALIB:
-        t = "/calib/";
-        break;
-        case PATHSCAN:
-        t = "/scan/";
-        break;
-        case PATHRECON:
-        t = "/reconstruction/";
-        break;
-    }
-    projChildPath = projectPath + t;
-}
-
-void MainWindow::projectorcontrol()
-{
-    isProjectorOpened = !isProjectorOpened;
-    if(isProjectorOpened){
-        pj->displaySwitch(true);
-    }
-    else{
-        pj->displaySwitch(false);
-    }
-}
-
-void MainWindow::getScreenGeometry()
-{
-    QDesktopWidget* desktopWidget = QApplication::desktop();
-    int screencount = desktopWidget->screenCount();//get screen amount
-    if(screencount == 1){
-    }
-    else{
-        QRect screenRect = desktopWidget->screenGeometry(0);
-        screenWidth = screenRect.width();
-        screenHeight = screenRect.height();
-    }
-}
-
-///-------------------标定-------------------///
-void MainWindow::calib()
-{
-    QMessageBox::information(NULL, tr("Calibration"), tr("Calibration Actived!"));
-    ui->tabWidget->setCurrentIndex(0);//go to calibration page
-    ui->explainLabel->setPixmap(":/" + QString::number(saveCount) + ".png");
 }
 
 
@@ -346,19 +325,18 @@ void MainWindow::calibration()
     ui->progressBar->reset();
     nowProgress = 0;
     calibrator = new CameraCalibration();
+    calibrator->setSquareSize(cvSize(setDialog->cell_w,setDialog->cell_h));
     QString path;
 
     for(int i = 1; i <= 2; i++)
     {
         path = projectPath + "/calib/";
 
-        if (i == 1)
-        {
+        if (i == 1){
             path += "left/L";
             calibrator->isleft = true;
         }
-        else
-        {
+        else{
             path += "right/R";
             calibrator->isleft = false;
         }
@@ -366,22 +344,17 @@ void MainWindow::calibration()
         //load images
         calibrator->loadCameraImgs(path);
         progressPop(5);
-
         calibrator->extractImageCorners();
         progressPop(15);
-
         calibrator->calibrateCamera();
+        (i==1)?(ui->leftRMS->setText(QString::number(calibrator->rms))):(ui->rightRMS->setText(QString::number(calibrator->rms)));
         progressPop(10);
-
         calibrator->findCameraExtrisics();
         progressPop(10);
 
         //export txt files
         QString file_name;
-        if(i == 1)
-            path = projectPath + "/calib/left/";
-        else
-            path = projectPath + "/calib/right/";
+        path = (i==1)?(projectPath + "/calib/left/"):(projectPath + "/calib/right/");
 
         file_name =  path;
         file_name += "cam_matrix.txt";
@@ -409,6 +382,24 @@ void MainWindow::calibration()
     calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_H2);
     path = projectPath + "/calib/status_mat.txt";
     calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_STATUS);
+#ifdef TEST_STEREO
+    path = projectPath + "/calib/fundamental_stereo.txt";
+    calibrator->exportTxtFiles(path.toLocal8Bit(), STEREOCALIB_OUT_F);
+    path = projectPath + "/calib/R_stereo.txt";
+    calibrator->exportTxtFiles(path.toLocal8Bit(), STEREOCALIB_OUT_R);
+    path = projectPath + "/calib/T_stereo.txt";
+    calibrator->exportTxtFiles(path.toLocal8Bit(), STEREOCALIB_OUT_T);
+    for(int i=1;i<=2;i++){
+        QString file_name;
+        path=(i==1)?(projectPath + "/calib/left/"):(projectPath + "/calib/right/");
+        file_name=path;
+        file_name+="cam_stereo.txt";
+        calibrator->exportTxtFiles(file_name.toLocal8Bit(), (i==1)?(STEREOCALIB_OUT_MATRIXL):(STEREOCALIB_OUT_MATRIXR));
+        file_name=path;
+        file_name+="distortion_stereo.txt";
+        calibrator->exportTxtFiles(file_name.toLocal8Bit(), (i==1)?(STEREOCALIB_OUT_DISL):(STEREOCALIB_OUT_DISR));
+    }
+#endif
     ui->progressBar->setValue(100);
 }
 
@@ -427,12 +418,11 @@ void MainWindow::scan()
         return;
     }
     selectPath(PATHSCAN);
-    ui->tabWidget->setCurrentIndex(1);
+    ui->tabWidget->setCurrentIndex(PATHSCAN);
     ui->findPointButton->setEnabled(true);
     ui->reFindButton->setEnabled(true);
     ui->startScanButton->setEnabled(true);
-    pj->crossVisible = false;
-    pj->update();//自动调用paintevent重绘窗口，取消十字的显示
+    pj->setCrossVisable(false);
 }
 
 void MainWindow::pointmatch()
@@ -463,9 +453,6 @@ void MainWindow::findPoint()
     QPixmap pcopy_2 = pimage_2;
     QPainter pt_1(&pcopy_1);
     QPainter pt_2(&pcopy_2);
-    QFont textf("Calibri",50);
-    QColor greencolor(0,255,0);
-    QColor orangecolor(238,76,0);
     pt_1.setFont(textf);
     pt_2.setFont(textf);
 
@@ -506,12 +493,21 @@ void MainWindow::startscan()
     closeCamera();
     pj->displaySwitch(false);
     pj->opencvWindow();
-    GrayCodes *grayCode = new GrayCodes(projectorWidth,projectorHeight);
-    grayCode->generateGrays();
+    if (ui->useGray->isChecked())
+    {
+        grayCode = new GrayCodes(projectorWidth,projectorHeight);
+        grayCode->generateGrays();
+        pj->showImg(grayCode->getNextImg());
+    }
+    else
+    {
+        mf = new MultiFrequency(this, scanWidth, scanHeight);
+        mf->generateMutiFreq();
+        pj->showMatImg(mf->getNextMultiFreq());
+    }
     progressPop(10);
 
-    pj->showImg(grayCode->getNextImg());
-    int grayCount = 0;
+    int imgCount = 0;
 
     QString pref = QString::number(scanSquenceNo) + "/";
     QDir *addpath_1 = new QDir;
@@ -530,13 +526,21 @@ void MainWindow::startscan()
         image_2 = QImage(m_pRawBuffer_2, cameraWidth, cameraHeight, QImage::Format_Indexed8);
         pimage_2 = QPixmap::fromImage(image_2);
 
-        captureImage(pref, grayCount, false);
-        grayCount++;
-        //show captured result
-        if(grayCount == grayCode->getNumOfImgs())
-            break;
-        pj->showImg(grayCode->getNextImg());
-        progressPop(2);
+        captureImage(pref, imgCount, false);
+        imgCount++;
+
+        if (ui->useGray->isChecked()){
+            if(imgCount == grayCode->getNumOfImgs())
+                break;
+            pj->showImg(grayCode->getNextImg());
+            progressPop(2);
+        }
+        else{
+            if(imgCount == mf->getNumOfImgs())
+                break;
+            pj->showMatImg(mf->getNextMultiFreq());
+            progressPop(7);
+        }
     }
     HVOpenSnap(m_hhv_1,SnapThreadCallback, this);
     HVOpenSnap(m_hhv_2,SnapThreadCallback, this);
@@ -549,7 +553,17 @@ void MainWindow::startscan()
     ui->progressBar->setValue(100);
 }
 
-///***************重建****************///
+void MainWindow::testmulitfreq()
+{
+    pj->displaySwitch(false);
+    pj->opencvWindow();
+    MultiFrequency *mf = new MultiFrequency(this, scanWidth, scanHeight);
+    mf->generateMutiFreq();
+    cv::Mat play = mf->getNextMultiFreq();
+    pj->showMatImg(play);
+}
+
+///-----------------重建-------------------///
 void MainWindow::reconstruct()
 {
     ui->progressBar->reset();
@@ -670,6 +684,7 @@ void MainWindow::createConnections()
     connect(ui->findPointButton,SIGNAL(clicked()),this,SLOT(pointmatch()));
     connect(ui->reFindButton,SIGNAL(clicked()),this,SLOT(refindmatch()));
     connect(ui->startScanButton, SIGNAL(clicked()), this, SLOT(startscan()));
+    connect(ui->multiFreqTest, SIGNAL(clicked()), this, SLOT(testmulitfreq()));
 
     connect(ui->actionReconstruct,SIGNAL(triggered()),this,SLOT(reconstruct()));
     connect(ui->reconstructionButton,SIGNAL(clicked()),this,SLOT(startreconstruct()));
@@ -684,21 +699,73 @@ void MainWindow::createConnections()
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
 }
 
-///*************辅助功能***************///
+///------------------辅助功能-------------------///
+
+void MainWindow::generatePath(int type)
+{
+    selectPath(type);
+    QDir *addpath_1 = new QDir;
+    QDir *addpath_2 = new QDir;
+    if(type == 0 || type == 1){
+        addpath_1->mkpath(projChildPath + "/left/");
+        addpath_2->mkpath(projChildPath +"/right/");
+    }
+    else
+        addpath_1->mkpath(projChildPath);
+}
+
+void MainWindow::selectPath(int PATH)//decide current childpath
+{
+    QString t;
+    switch (PATH) {
+        case PATHCALIB:
+        t = "/calib/";
+        break;
+        case PATHSCAN:
+        t = "/scan/";
+        break;
+        case PATHRECON:
+        t = "/reconstruction/";
+        break;
+    }
+    projChildPath = projectPath + t;
+}
+
+void MainWindow::projectorcontrol()
+{
+    isProjectorOpened = !isProjectorOpened;
+    if(isProjectorOpened){
+        pj->displaySwitch(true);
+    }
+    else{
+        pj->displaySwitch(false);
+    }
+}
+
+void MainWindow::getScreenGeometry()
+{
+    QDesktopWidget* desktopWidget = QApplication::desktop();
+    int screencount = desktopWidget->screenCount();//get screen amount
+    if(screencount == 1)
+        QMessageBox::information(this,tr("Info"),tr("Only one screen detected."));
+    else{
+        QRect screenRect = desktopWidget->screenGeometry(0);
+        screenWidth = screenRect.width();
+        screenHeight = screenRect.height();
+    }
+}
 
 void MainWindow::switchlanguage()
 {
     QString qmPath = ":/";//表示从资源文件夹中加载
     QString local;
-    if(inEnglish)
-    {
+    if(inEnglish){
         local = "zh.pm";
         inEnglish = false;
         ui->actionEnglish->setEnabled(true);
         ui->actionChinese->setDisabled(true);
     }
-    else
-    {
+    else{
         local = "en.pm";
         inEnglish = true;
         ui->actionEnglish->setEnabled(false);
@@ -718,13 +785,11 @@ void MainWindow::changePointSize(int psize)
 
 void MainWindow::loadTestModel()
 {
-    if (projChildPath != NULL)
-    {
+    if (projChildPath != NULL){
         QString testPath = projChildPath + "0.ply";
         displayModel->LoadModel(testPath);
     }
-    else
-    {
+    else{
         QMessageBox::warning(NULL,tr("File Not Found"),tr("Test file doesn't exist."));
         return;
     }

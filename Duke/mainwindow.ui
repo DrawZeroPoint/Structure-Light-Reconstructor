@@ -253,55 +253,54 @@ font: 9pt &quot;Calibri&quot;;</string>
           <attribute name="title">
            <string>Calibrate</string>
           </attribute>
-          <layout class="QGridLayout" name="gridLayout_11">
-           <property name="leftMargin">
-            <number>3</number>
-           </property>
-           <property name="topMargin">
-            <number>3</number>
-           </property>
-           <property name="rightMargin">
-            <number>3</number>
-           </property>
-           <property name="bottomMargin">
-            <number>3</number>
-           </property>
-           <property name="spacing">
-            <number>3</number>
-           </property>
-           <item row="0" column="0" colspan="4">
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QLabel" name="label_9">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Capture images as displayed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="currentPhotoLabel">
-               <property name="layoutDirection">
-                <enum>Qt::LeftToRight</enum>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">background-color: rgb(255, 255, 255);</string>
-               </property>
-               <property name="text">
-                <string>0</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_11">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;/12 images have been captured.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+          <layout class="QGridLayout" name="gridLayout_17">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Capture images as displayed:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="currentPhotoLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(255, 255, 255);</string>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2" colspan="2">
+            <widget class="QLabel" name="label_11">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;/12 images have been captured.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
            </item>
            <item row="0" column="4">
             <spacer name="horizontalSpacer_15">
@@ -316,7 +315,7 @@ font: 9pt &quot;Calibri&quot;;</string>
              </property>
             </spacer>
            </item>
-           <item row="1" column="0" rowspan="3">
+           <item row="1" column="0" rowspan="3" colspan="3">
             <widget class="QLabel" name="explainLabel">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -353,7 +352,59 @@ font: 9pt &quot;Calibri&quot;;</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
+           <item row="1" column="3">
+            <layout class="QVBoxLayout" name="verticalLayout_3">
+             <property name="leftMargin">
+              <number>4</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="captureButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Capture</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="redoButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Redo</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="calibButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Calibrate</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="2" column="3">
             <spacer name="verticalSpacer_13">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -361,80 +412,71 @@ font: 9pt &quot;Calibri&quot;;</string>
              <property name="sizeHint" stdset="0">
               <size>
                <width>20</width>
-               <height>64</height>
+               <height>67</height>
               </size>
              </property>
             </spacer>
            </item>
-           <item row="2" column="1">
-            <spacer name="horizontalSpacer_13">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+           <item row="3" column="3">
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <property name="spacing">
+              <number>2</number>
              </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Preferred</enum>
+             <property name="leftMargin">
+              <number>4</number>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>10</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="3" column="2">
-            <spacer name="verticalSpacer_14">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>54</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="2" column="4">
-            <spacer name="horizontalSpacer_14">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Preferred</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>36</width>
-               <height>76</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="2" column="2" colspan="2">
-            <widget class="QSplitter" name="splitter_4">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <widget class="QPushButton" name="captureButton">
-              <property name="text">
-               <string>Capture</string>
-              </property>
-             </widget>
-             <widget class="QPushButton" name="redoButton">
-              <property name="text">
-               <string>Redo</string>
-              </property>
-             </widget>
-             <widget class="QPushButton" name="calibButton">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="text">
-               <string>Calibrate</string>
-              </property>
-             </widget>
-            </widget>
+             <item>
+              <widget class="QLabel" name="label_10">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>RMS:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QGridLayout" name="gridLayout_11">
+               <property name="horizontalSpacing">
+                <number>6</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>2</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Left Camera</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="leftRMS">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>Right Camera</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLabel" name="rightRMS">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -442,70 +484,114 @@ font: 9pt &quot;Calibri&quot;;</string>
           <attribute name="title">
            <string>Scan</string>
           </attribute>
-          <widget class="QWidget" name="layoutWidget">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>21</y>
-             <width>205</width>
-             <height>85</height>
-            </rect>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout">
-              <item>
-               <widget class="QPushButton" name="findPointButton">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>Find Point</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="reFindButton">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>Redo Find</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="startScanButton">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>Start Scan</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Current scan count: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="scanNoLabel">
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
+          <layout class="QGridLayout" name="gridLayout_16">
+           <item row="0" column="0">
+            <layout class="QGridLayout" name="gridLayout_15">
+             <item row="0" column="0" colspan="2">
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout">
+                 <item>
+                  <widget class="QPushButton" name="findPointButton">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>Find Point</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="reFindButton">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>Redo Find</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <item>
+                  <widget class="QLabel" name="label_3">
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Current scan count: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="scanNoLabel">
+                   <property name="text">
+                    <string>0</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item row="1" column="0">
+              <widget class="QGroupBox" name="groupBox_4">
+               <property name="title">
+                <string>Scan Method</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_14">
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="useGray">
+                  <property name="text">
+                   <string>GrayCodes</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="useMultiFreq">
+                  <property name="text">
+                   <string>MultiFrequency</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="multiFreqTest">
+               <property name="text">
+                <string>Test MultiFreq</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QPushButton" name="startScanButton">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Start Scan</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="1">
+            <spacer name="horizontalSpacer_16">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>132</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </widget>
          <widget class="QWidget" name="tab_3">
           <attribute name="title">

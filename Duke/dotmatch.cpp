@@ -3,10 +3,10 @@
 
 bool cameraLoaded = false;
 int YDISTANCE = 15;//两相机标志点Y向距离小于该值认为是同一点
-int EDGEUP = 9;//水平方向上标志点边缘黑色宽度上限
-int EDGEDOWN = 3;
-int MIDDOWN = 9;
-int MIDUP = 29;
+int EDGEUP = 8;//水平方向上标志点边缘黑色宽度上限
+int EDGEDOWN = 0;
+int MIDDOWN = 8;
+int MIDUP = 32;
 float tolerance = 40;//判断特征值是否相等时的误差
 
 DotMatch::DotMatch(QObject *parent, QString projectPath) :
@@ -25,100 +25,112 @@ DotMatch::DotMatch(QObject *parent, QString projectPath) :
     path = projectPath;
 }
 
-vector<vector<float>> DotMatch::findDot(Mat image ,int cam)//cam表示相机编号，0代表左，1代表右
+vector<vector<float>> DotMatch::findDot(Mat image)
 {
     bwThreshold = OSTU_Region(image);
     Mat bimage = image >= bwThreshold;
-
+#ifdef DEBUG
+    Mat cimage = Mat::zeros(bimage.size(), CV_8UC3);
+    Mat dimage = Mat::zeros(bimage.size(), CV_8UC3);
+    cvNamedWindow("Threshold",CV_WINDOW_NORMAL);
+    imshow("Threshold",bimage);
+    cvWaitKey();
+#endif
+#ifdef USE_FOUR_POINT
     /****************四点匹配法*****************/
     vector<vector<float>> alltemp;
-    vector<float> ptemp;
+
     for (int i = 0; i < bimage.rows; i++)
     {
-        ptemp.push_back(i);
+        vector<float> ptemp;
+        ptemp.push_back(i);//?
         for (int j = 0; j < bimage.cols - 1; j++)
         {
-            if ((bimage.at<uchar>(i, j + 1) - bimage.at<uchar>(i, j)) != 0)//说明发生了状态跳变
-            {
+            if ((bimage.at<uchar>(i, j + 1) - bimage.at<uchar>(i, j)) > 0){
                 ptemp.push_back(j);
-            }
+            }//说明发生了状态跳变0->255
+            else if((bimage.at<uchar>(i, j + 1) - bimage.at<uchar>(i, j)) < 0){
+                ptemp.push_back(j+1);
+            }//255->0
         }
 
-        if (ptemp.size() > 4)
-        {
-            for (size_t p = 1; p <= ptemp.size() - 4; p++)
-            {
+        if (ptemp.size() > 4){
+            for (size_t p = 1; p <= ptemp.size() - 4; p++){
                 int d1 = ptemp[p+1] - ptemp[p];
                 int d2 = ptemp[p+2] - ptemp[p+1];
                 int d3 = ptemp[p+3] - ptemp[p+2];
-                if (d1 > EDGEDOWN && d1 < EDGEUP && d2 >MIDDOWN && d2 < MIDUP && d3 > EDGEDOWN && d3 < EDGEUP)
-                {
-                    int length = alltemp.size();
+                if (d1 > EDGEDOWN && d1 < EDGEUP && d2 >MIDDOWN && d2 < MIDUP && d3 > EDGEDOWN && d3 < EDGEUP){
+                    int pointCount = alltemp.size();//表示alltemp中已经存在的点数
                     int match = -1;
                     vector<float> localtemp;//包含3个元素，y值，x左值，x右值
-                    localtemp.push_back(ptemp[0]);
-                    localtemp.push_back(ptemp[p]);
-                    localtemp.push_back(ptemp[p+3]);
-                    if (length == 0)
-                    {
+                    localtemp.push_back(ptemp[0]);//y
+                    localtemp.push_back(ptemp[p]);//x左
+                    localtemp.push_back(ptemp[p+3]);//x右
+                    if (pointCount == 0){
                         alltemp.push_back(localtemp);
                     }
-                    else
-                    {
-                        for (int q = 0; q < length; q++)
-                        {
+                    else{
+                        for (int q = 0; q < pointCount; q++){
                             int dy = localtemp[0] - alltemp[q][0];
                             int dx = abs(localtemp[2] - alltemp[q][2]);
                             if (dy < 10 && dx < 4)
                             {
-                                match = q;
-                                break;
+                                match = q;//说明alltemp中第q点与当前localtemp中的点来自同一个标记点
+                                break;//找到q跳出循环，未找到match=-1
                             }
                         }
-                        if (match >= 0)
-                        {
+                        if (match >= 0){
                             int deltax = (alltemp[match][2] - alltemp[match][1]) - (localtemp[2] - localtemp[1]);
-                            if (deltax < 0)
-                            {
-                                alltemp[match] = localtemp;
-                            }
-                            else if (deltax == 0)
-                            {
-                                alltemp[match][0] = (alltemp[match][0] + localtemp[0])/2;
-                                alltemp[match][1] = localtemp[1];
-                                alltemp[match][2] = localtemp[2];
+                            if (deltax <= 0){
+                                alltemp[match] = localtemp;//deltax<0说明localtemp的x左右值代表的直径更大，即更接近圆心
                             }
                         }
-                        else
-                        {
-                            alltemp.push_back(localtemp);
+                        else{
+                            alltemp.push_back(localtemp);//说明该localtemp中的值是新点
                         }
                     }
                 }
             }
         }
-        ptemp.clear();
     }
-
+#ifdef DEBUG
+    for (size_t i=0; i <alltemp.size();i++)
+    {
+        Point2f p;
+        p.x = 0.5*(alltemp[i][1]+alltemp[i][2]);
+        p.y = alltemp[i][0];
+        circle(cimage,p,10,Scalar(0,255,0));
+    }
+    cvNamedWindow("Point Found",CV_WINDOW_NORMAL);
+    imshow("Point Found",cimage);
+    cvWaitKey();
+#endif
     vector<Point2f> out = subPixel(bimage, alltemp);//将初步得到的圆心坐标进一步精确
+#ifdef DEBUG
+    for (size_t i=0; i <out.size();i++)
+    {
+        circle(dimage,out[i],10,Scalar(0,255,0));
+    }
+    cvNamedWindow("Point Refined",CV_WINDOW_NORMAL);
+    imshow("Point Refined",dimage);
+    cvWaitKey();
+#endif
     vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
     for (int i = out.size() - 1; i > -1; i--)
     {
         vector<float> point;
         point.push_back(out[i].x);
         point.push_back(out[i].y);
-        //point.push_back(1);//输出为齐次坐标
         dotOutput.push_back(point);
     }
-
-    /****************OpenCV检测******************
+#else
+    /****************OpenCV检测******************/
      vector<vector<Point> > contours;//二层向量，内层为轮廓点集，外层为向量集
     //Mat bsmooth = bimage;
     //medianBlur(bimage, bsmooth, 5);
     //bimage = bsmooth;
     //imshow("s",bimage);
     //cvWaitKey(1);
-
     findContours(bimage, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 
     vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
@@ -161,31 +173,26 @@ vector<vector<float>> DotMatch::findDot(Mat image ,int cam)//cam表示相机编�
                 dotOutput.push_back(dot);
         }
     }
-    */
+#endif
     return dotOutput;
 }
 
-
-
-void DotMatch::matchDot(Mat limage,Mat rimage)
+void DotMatch::matchDot(Mat leftImage,Mat rightImage)
 {
     dotInOrder.clear();
-
-    if (scanNo%2 == 0)//整除2余数为零，判断为偶数
-    {
+    Mat Lcopy = leftImage;
+    Mat Rcopy = rightImage;
+    if (scanNo%2 == 0){
         dotPositionEven.clear();
         correspondPointEven.clear();
     }
-    else
-    {
+    else{
         dotPositionOdd.clear();
         correspondPointOdd.clear();
     }
-    if (!cameraLoaded)
-    {
+    if (!cameraLoaded){
         cameraLoaded =  rc->loadCameras();
-        if (cameraLoaded)
-        {
+        if (cameraLoaded){
             rc->cameras[0].position = cv::Point3f(0,0,0);//findProjectorCenter();
             rc->cam2WorldSpace(rc->cameras[0], rc->cameras[0].position);
             rc->cameras[1].position = cv::Point3f(0,0,0);
@@ -196,9 +203,49 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
         }
     }
     ////找出左右图像中的标志点
-    vector<vector<float>> dotLeft = findDot(limage, 0);
-    vector<vector<float>> dotRight = findDot(rimage, 1);
+    vector<vector<float>> dotLeft = findDot(leftImage);
+    vector<vector<float>> dotRight = findDot(rightImage);
+#ifdef DEBUG
+    cv::vector<Point2f> dl, dr;
+    for (size_t i = 0;i < dotLeft.size(); i++)
+    {
+        Point2f point;
+        point.x = dotLeft[i][0];
+        point.y = dotLeft[i][1];
+        dl.push_back(point);
+    }
+    for(size_t i = 0; i < dotRight.size(); i++)
+    {
+        Point2f point;
+        point.x = dotRight[i][0];
+        point.y = dotRight[i][1];
+        dr.push_back(point);
+    }
 
+    std::vector<cv::Vec3f> lines1;
+    cv::computeCorrespondEpilines(cv::Mat(dl),1,fundMat,lines1);
+    for (vector<cv::Vec3f>::const_iterator it= lines1.begin();
+             it!=lines1.end(); ++it) {
+             cv::line(Rcopy,cv::Point(0,-(*it)[2]/(*it)[1]),
+                             cv::Point(Rcopy.cols,-((*it)[2]+(*it)[0]*Rcopy.cols)/(*it)[1]),
+                             cv::Scalar(255,255,255));
+    }
+    std::vector<cv::Vec3f> lines2;
+    cv::computeCorrespondEpilines(cv::Mat(dr),2,fundMat,lines2);
+    for (vector<cv::Vec3f>::const_iterator it= lines2.begin();
+        it!=lines2.end(); ++it) {
+             cv::line(Lcopy,cv::Point(0,-(*it)[2]/(*it)[1]),
+                             cv::Point(Lcopy.cols,-((*it)[2]+(*it)[0]*Lcopy.cols)/(*it)[1]),
+                             cv::Scalar(255,255,255));
+    }
+    // Display the images with epipolar lines
+    cv::namedWindow("Right Image Epilines (RANSAC)",CV_WINDOW_NORMAL);
+    cv::imshow("Right Image Epilines (RANSAC)",Lcopy);
+    cv::waitKey();
+    cv::namedWindow("Left Image Epilines (RANSAC)",CV_WINDOW_NORMAL);
+    cv::imshow("Left Image Epilines (RANSAC)",Rcopy);
+    cv::waitKey();
+#endif
     ////判断两相机所摄标志点的对应关系
     int k = 0;//dotInOrder中现存点个数
     int nowMatch = 0;//防止dotRight中的同一点与dotLeft中的不同点重复对应
@@ -219,39 +266,28 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
             float pright[] = {dotRight[j][0], dotRight[j][1], 1.0};
             cv::Mat plmat(1, 3, CV_32F, pleft);
             cv::Mat prmat(1, 3, CV_32F, pright);
-            /*
-            cv::Mat O1(3,1,CV_32F);
-            cv::Mat O2(3,1,CV_32F);
-            O1 = Homo1 * plmat.t();
-            O2 = Homo2 * prmat.t();
-            float y1 = O2.at<float>(0,0);
-            float y2 = O2.at<float>(1,0);
-            */
+
             cv::Mat ltor = prmat * fundMat * plmat.t();
             //cv::Mat rtol = ld * fundMat.t() * rd.t();
             float zlr = ltor.at<float>(0,0);
             //float zrl = rtol.at<float>(0,0);
-            if(abs(zlr) > 1)//|| abs(zrl) > 0.9
-                continue;
             if (fabs(dotLeft[i][1] - dotRight[j][1]) > YDISTANCE)
+                continue;
+            if(fabs(zlr) > 0.1)//|| abs(zrl) > 0.9
                 continue;
 
             /****判断当前点相对于上一点X坐标的正负，如正负不同，则不是对应点****/
-            if (k != 0)
-            {
+            if (k != 0){
                 bool isbreak = false;
-                for (int p = 0;p < k;p++)
-                {
+                for (int p = 0;p < k;p++){
                     int checkLefft = dotLeft[i][0] - dotInOrder[p][0];
                     int checkRight = dotRight[j][0] - dotInOrder[p][2];
-                    if(checkLefft * checkRight <= 0)
-                    {
+                    if(checkLefft * checkRight <= 0){
                         isbreak = true;
                         break;
                     }
                 }
-                if (isbreak)
-                {
+                if (isbreak){
                     nowMatch++;
                     break;
                 }
@@ -262,6 +298,16 @@ void DotMatch::matchDot(Mat limage,Mat rimage)
             dot.push_back(dotLeft[i][1]);
             dot.push_back(dotRight[j][0]);
             dot.push_back(dotRight[j][1]);
+#ifdef DEBUG
+            cv::Mat O1(1,3,CV_32F);
+            cv::Mat O2(1,3,CV_32F);
+            O1 = plmat*Homo1;
+            O2 = prmat*Homo2;
+            float x1 = O1.at<float>(0,0);
+            float y1 = O1.at<float>(0,1);
+            float x2 = O2.at<float>(0,0);
+            float y2 = O2.at<float>(0,1);
+#endif
             dotInOrder.push_back(dot);//每个元素都是包含4个float的向量，依次为左x，y；右x，y
 
             alreadymatched.push_back(i);

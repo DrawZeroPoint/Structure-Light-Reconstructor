@@ -18,7 +18,9 @@ SOURCES += \
     plyloader.cpp \
     glwidget.cpp \
     cameracalibration.cpp \
-    dotmatch.cpp
+    dotmatch.cpp \
+    multifrequency.cpp \
+    blobdetector.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -65,7 +67,9 @@ HEADERS += \
     plyloader.h \
     glwidget.h \
     cameracalibration.h \
-    dotmatch.h
+    dotmatch.h \
+    multifrequency.h \
+    blobdetector.h
 
 FORMS += \
     mainwindow.ui \

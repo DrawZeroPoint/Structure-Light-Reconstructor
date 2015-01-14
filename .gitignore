@@ -28,3 +28,6 @@ build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_pregistration.cp
 build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_registration.cpp
 build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_transform.cpp
 build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_transformwithhorn.cpp
+build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/debug/moc_multifrequency.cpp
+build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/ui_mainwindow.h
+build-Duke-Desktop_Qt_5_3_MSVC2010_OpenGL_32bit-Debug/ui_Set.h
