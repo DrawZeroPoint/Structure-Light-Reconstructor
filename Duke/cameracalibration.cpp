@@ -21,34 +21,59 @@ void CameraCalibration::exportTxtFiles(const char *path, int CAMCALIB_OUT_PARAM)
     cv::Mat out;
     switch (CAMCALIB_OUT_PARAM)
     {
-        case CAMCALIB_OUT_MATRIX:
-            out = camMatrix;
-            break;
-        case CAMCALIB_OUT_DISTORTION:
-            out = distortion;
-            break;
-        case CAMCALIB_OUT_ROTATION:
-            out = rotationMatrix;
-            break;
-        case CAMCALIB_OUT_TRANSLATION:
-            out = translationVector;
-            break;
-        case CAMCALIB_OUT_FUNDAMENTAL:
-            out = fundamentalMatrix;
-            break;
-        case CAMCALIB_OUT_STATUS:
-            out = statusMatrix;
-            break;
-        case CAMCALIB_OUT_H1:
-            out = H1;
-            break;
-        case CAMCALIB_OUT_H2:
-            out = H2;
-            break;
+    case CAMCALIB_OUT_MATRIX:
+        out = camMatrix;
+        break;
+    case CAMCALIB_OUT_DISTORTION:
+        out = distortion;
+        break;
+    case CAMCALIB_OUT_ROTATION:
+        out = rotationMatrix;
+        break;
+    case CAMCALIB_OUT_TRANSLATION:
+        out = translationVector;
+        break;
+    case CAMCALIB_OUT_FUNDAMENTAL:
+        out = fundamentalMatrix;
+        break;
+    case CAMCALIB_OUT_STATUS:
+        out = statusMatrix;
+        break;
+    case CAMCALIB_OUT_H1:
+        out = H1;
+        break;
+    case CAMCALIB_OUT_H2:
+        out = H2;
+        break;
+#ifdef TEST_STEREO
+    case STEREOCALIB_OUT_MATRIXL:
+        out = camMatrixL;
+        break;
+    case STEREOCALIB_OUT_MATRIXR:
+        out = camMatrixR;
+        break;
+    case STEREOCALIB_OUT_DISL:
+        out = distortionL;
+        break;
+    case STEREOCALIB_OUT_DISR:
+        out = distortionR;
+        break;
+    case STEREOCALIB_OUT_R:
+        out = R;
+        break;
+    case STEREOCALIB_OUT_T:
+        out = T;
+        break;
+    case STEREOCALIB_OUT_F:
+        out = F;
+        break;
+#endif
     }
     Utilities::exportMat(path, out);
 }
 
+
+/*****************无效功能*****************
 void CameraCalibration::perspectiveTransformation(cv::vector<cv::Point2f> corners_in,cv::Mat homoMatrix, cv::vector<cv::Point3f> &points_out)
 {
     for(int i=0; i < corners_in.size(); i++)
@@ -68,76 +93,6 @@ void CameraCalibration::perspectiveTransformation(cv::vector<cv::Point2f> corner
     }
 }
 
-void CameraCalibration::undistortCameraImgPoints(cv::vector<cv::Point2f> points_in,cv::vector<cv::Point2f> &points_out)
-{
-    cv::undistortPoints(points_in,points_out,camMatrix,distortion);
-    float fX = camMatrix.at<double>(0,0);
-    float fY = camMatrix.at<double>(1,1);
-    float cX = camMatrix.at<double>(0,2);
-    float cY = camMatrix.at<double>(1,2);
-
-    for(int j=0; j<points_out.size(); j++)
-    {
-        points_out[j].x = (points_out[j].x*fX)+cX;
-        points_out[j].y = (points_out[j].y*fY)+cY;
-    }
-}
-
-void CameraCalibration::drawOutsideOfRectangle(cv::Mat img,cv::vector<cv::Point2f> rectanglePoints, float color)
-{
-    std::vector<cv::Point> corners;
-    for(int i = 0; i < rectanglePoints.size(); i++)
-    {
-        corners.push_back(rectanglePoints[i]);
-    }
-
-    cv::Mat mask(img.size(),img.type());
-    cv::Mat background(img.size(),img.type());
-
-    mask =  1;
-    cv::fillConvexPoly(mask, corners ,cv::Scalar(0));
-
-    background = color;
-    background.copyTo(img,mask);
-}
-
-void CameraCalibration::loadCameraImgs(QString fpath)
-{
-    if (calibImgs.size())
-        calibImgs.clear();
-
-    for(int i = 0; i < 12; i++)
-    {
-        //这里假定每个相机的标定图片数为12，folderPath应包括前缀L、R
-        QString path = fpath;
-        path += QString::number(i+1) + ".png";//这里假定每个相机的标定图片数为12，folderPath应包括前缀L、R
-        cv::Mat img = cv::imread(path.toStdString());
-        if(img.empty())
-        {
-            QMessageBox::warning(NULL, QObject::tr("Images Not Found"), QObject::tr("The camera calibration images are not found."));
-            return;
-        }
-        calibImgs.push_back(img);
-    }
-
-    QString path = fpath;
-    path += QString::number(12) + ".png";//暂时用第12幅图作为外部参数标定图像，以后可以多拍一幅
-    extrImg = cv::imread(path.toStdString());
-    if(extrImg.empty())
-    {
-        QMessageBox::warning(NULL, QObject::tr("Image Not Found"), QObject::tr("The extrinsicts calibration image is missing."));
-        return;
-    }
-    if(!calibImgs[0].empty())
-        camImageSize = calibImgs[0].size();
-}
-
-void CameraCalibration::unloadCameraImgs()
-{
-    for(int i = 0; i < calibImgs.size(); i++)
-        calibImgs[i].release();
-    extrImg.release();
-}
 
 void calib_board_corners_mouse_callback( int event, int x, int y, int flags, void* param )
 {
@@ -272,144 +227,24 @@ float CameraCalibration::markWhite(cv::Mat img)
         return white;
 }
 
-
-bool CameraCalibration:: findCornersInCamImg(cv::Mat img,cv::vector<cv::Point2f> *camCorners,cv::vector<cv::Point3f> *objCorners)
+void CameraCalibration::drawOutsideOfRectangle(cv::Mat img,cv::vector<cv::Point2f> rectanglePoints, float color)
 {
-    cv::Mat img_grey;
-    cv::Mat img_copy;
-    img.copyTo(img_copy);
-
-    int numOfCornersX = 11;//这里按标准双目标定板确定横向和纵向方格数目，进一步应改为从set获取
-    int numOfCornersY = 9;
-
-    bool found = false;
-    while(!found)
+    std::vector<cv::Point> corners;
+    for(int i = 0; i < rectanglePoints.size(); i++)
     {
-        cv::cvtColor(img, img_grey, CV_RGB2GRAY);
-        img.copyTo(img_copy);
-
-        ///为了实现自动获取角点屏蔽以下代码
-        /*
-        cv::vector<cv::Point2f> chessBoardCorners = manualMarkCheckBoard(img_copy);//改成自动获取角点
-        //ask user to mark a white point on checkboard
-        float color = markWhite(img_grey);
-        drawOutsideOfRectangle(img_grey,chessBoardCorners, color);
-        //show img to user
-        cv::imshow("Calibration",img_grey);
-        cv::waitKey(20);
-
-        cv::namedWindow("Calibration",CV_WINDOW_NORMAL);
-        cv::resizeWindow("Calibration",800,600);
-*/
-
-        ///这里尝试采用opencv自带的找圆心功能
-        cv::Size patternsize(numOfCornersX, numOfCornersY);
-        cv::bitwise_not(img_grey, img_grey);//反相处理
-        found = cv::findCirclesGrid(img_grey, patternsize, *camCorners,cv::CALIB_CB_SYMMETRIC_GRID);//改为检测圆点
-        ///注意只能用CALIB_CB_SYMMETRIC_GRID方法
-        //found = cv::findChessboardCorners(img_grey, cvSize(numOfCornersX,numOfCornersY), *camCorners, CV_CALIB_CB_ADAPTIVE_THRESH );
-        //cv::drawChessboardCorners(img_copy, patternsize, *camCorners, found);
-        //int key = cv::waitKey(1);
-        //if(key==13)
-            //break;
-        //QMessageBox::information(NULL, NULL, QObject::tr("Press 'Enter' to continue or 'ESC' to repeat the procedure."));
-        ///要实现全自动可以屏蔽下面的while循环
-/*
-        while(found)
-        {
-            cv::imshow("Calibration", img_copy );
-            key = cv::waitKey(1);
-            if(key==27)
-                found=false;
-            if(key==13)
-            break;
-        }
-*/
+        corners.push_back(rectanglePoints[i]);
     }
-    //if corners found find subPixel
-    if(found)
-    {
-        cv::cvtColor(img, img_grey, CV_RGB2GRAY);
-        //find sub pix of the corners
-        cv::cornerSubPix(img_grey, *camCorners, cvSize(20,20), cvSize(-1,-1), cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1));
 
-        if(squareSize.height == 0)
-        {
-            squareSize.height = 20;//这里直接定义了方格长宽，后期改为从set获取
-            squareSize.width = 20;
-        }
-        for(int i = 0; i<numOfCornersY ; i++)
-        {
-            for(int j = 0; j<numOfCornersX; j++)
-            {
-                cv::Point3f p;
-                p.x = j * squareSize.width;
-                p.y = i * squareSize.height;
-                p.z = 0;
-                objCorners->push_back(p);
-            }
-        }
-    }
-    //cv::destroyWindow("Calibration");
-    return found;
+    cv::Mat mask(img.size(),img.type());
+    cv::Mat background(img.size(),img.type());
+
+    mask =  1;
+    cv::fillConvexPoly(mask, corners ,cv::Scalar(0));
+
+    background = color;
+    background.copyTo(img,mask);
 }
 
-
-int CameraCalibration::extractImageCorners()
-{
-    if(calibImgs.size() == 0)
-    {
-        return 0;
-    }
-    imgBoardCornersCam.clear();
-    objBoardCornersCam.clear();
-
-    for(int i = 0; i < numOfCamImgs; i++)
-    {
-        cv::vector<cv::Point2f> cCam;
-        cv::vector<cv::Point3f> cObj;
-        findCornersInCamImg(calibImgs[i], &cCam, &cObj );//为加入对图像旋转的处理，这里可能需要根据i设置横、纵向点数
-        if(cCam.size())
-        {
-            imgBoardCornersCam.push_back(cCam);
-            objBoardCornersCam.push_back(cObj);
-        }
-    }
-
-    /***********为求解基础矩阵，采样点来自第十二组图片（L12，R12）的角点数据*************/
-    if (isleft)
-    {
-        for (int i = 0; i < 99; i++)//放入99个点
-        {
-            findFunLeft.push_back(imgBoardCornersCam[11][i]);
-        }
-    }
-    else
-    {
-        for (int i = 0; i < 99; i++)//放入99个点
-        {
-            findFunRight.push_back(imgBoardCornersCam[11][i]);
-        }
-    }
-
-    return 1;
-}
-
-int CameraCalibration::calibrateCamera()
-{
-    //check if corners for camera calib has been extracted
-    if(imgBoardCornersCam.size() == 0)
-        extractImageCorners();
-
-    cv::vector<cv::Mat> camRotationVectors;
-    cv::vector<cv::Mat> camTranslationVectors;
-
-    cv::calibrateCamera(objBoardCornersCam, imgBoardCornersCam, camImageSize, camMatrix, distortion, camRotationVectors,camTranslationVectors,0,
-        cv::TermCriteria( (cv::TermCriteria::COUNT)+(cv::TermCriteria::EPS), 30, DBL_EPSILON) );
-
-    camCalibrated = true;
-    return 1;
-}
 
 void CameraCalibration::manualMarkCalibBoardCorners(cv::Mat img,cv::vector<cv::Point2f> &imgPoints_out, cv::vector<cv::Point2f> &objPoints_out)
 {
@@ -468,12 +303,210 @@ void CameraCalibration::manualMarkCalibBoardCorners(cv::Mat img,cv::vector<cv::P
 
     cv::destroyWindow("Marked Board");
 }
+*/
+
+
+void CameraCalibration::loadCameraImgs(QString fpath)
+{
+    if (calibImgs.size())
+        calibImgs.clear();
+
+    for(int i = 0; i < 12; i++)
+    {
+        //这里假定每个相机的标定图片数为12，folderPath应包括前缀L、R
+        QString path = fpath;
+        path += QString::number(i+1) + ".png";//这里假定每个相机的标定图片数为12，folderPath应包括前缀L、R
+        cv::Mat img = cv::imread(path.toStdString());
+        if(img.empty())
+        {
+            QMessageBox::warning(NULL, QObject::tr("Images Not Found"), QObject::tr("The camera calibration images are not found."));
+            return;
+        }
+        calibImgs.push_back(img);
+    }
+
+    QString path = fpath;
+    path += QString::number(12) + ".png";//暂时用第12幅图作为外部参数标定图像，以后可以多拍一幅
+    extrImg = cv::imread(path.toStdString());
+    if(extrImg.empty())
+    {
+        QMessageBox::warning(NULL, QObject::tr("Image Not Found"), QObject::tr("The extrinsicts calibration image is missing."));
+        return;
+    }
+    if(!calibImgs[0].empty())
+        camImageSize = calibImgs[0].size();
+}
+
+void CameraCalibration::unloadCameraImgs()
+{
+    for(int i = 0; i < calibImgs.size(); i++)
+        calibImgs[i].release();
+    extrImg.release();
+}
+
+
+void CameraCalibration::undistortCameraImgPoints(cv::vector<cv::Point2f> points_in,cv::vector<cv::Point2f> &points_out)
+{
+    cv::undistortPoints(points_in,points_out,camMatrix,distortion);
+    float fX = camMatrix.at<double>(0,0);
+    float fY = camMatrix.at<double>(1,1);
+    float cX = camMatrix.at<double>(0,2);
+    float cY = camMatrix.at<double>(1,2);
+
+    for(int j=0; j<points_out.size(); j++)
+    {
+        points_out[j].x = (points_out[j].x*fX)+cX;
+        points_out[j].y = (points_out[j].y*fY)+cY;
+    }
+}
+
+
+bool CameraCalibration:: findCornersInCamImg(cv::Mat img, cv::vector<cv::Point2f> &camCorners, cv::vector<cv::Point3f> *objCorners)
+{
+    cv::Mat img_grey;
+    cv::Mat img_copy;
+    img.copyTo(img_copy);
+
+#ifdef TEST_ASY
+    numOfCornersX = 4;
+    numOfCornersY = 11;
+#else
+    numOfCornersX = 11;//这里按标准双目标定板确定横向和纵向方格数目，进一步应改为从set获取
+    numOfCornersY = 9;
+#endif
+
+    bool found = false;
+    cv::cvtColor(img, img_grey, CV_RGB2GRAY);
+    img.copyTo(img_copy);
+
+    ///这里尝试采用opencv自带的找圆心功能
+    cv::Size patternsize(numOfCornersX, numOfCornersY);
+    cv::bitwise_not(img_grey, img_grey);//反相处理
+#ifdef TEST_ASY
+    found = cv::findCirclesGrid(img_grey, patternsize, camCorners,cv::CALIB_CB_ASYMMETRIC_GRID);
+#else
+    found = cv::findCirclesGrid(img_grey, patternsize, camCorners,cv::CALIB_CB_SYMMETRIC_GRID);
+#endif
+    if(!found){
+        QMessageBox::warning(NULL,NULL,tr("Couldn't find circles in current image!"));
+        return false;
+    }
+    ///要实现全自动可以屏蔽下面的while循环
+#ifdef DEBUG
+    cv::drawChessboardCorners(img_copy, patternsize, camCorners, found);
+    int key = cv::waitKey(1);
+    while(found)
+    {
+        cv::imshow("Calibration", img_copy);
+        key = cv::waitKey(1);
+        if(key==27)
+            found=false;
+        if(key==13)
+        break;
+    }
+#endif
+
+    if(found)
+    {
+        if(squareSize.height == 0)
+        {
+            squareSize.height = 20;
+            squareSize.width = 20;
+        }
+#ifdef TEST_ASY
+        for (int i = 0; i < numOfCornersY; i++)
+        {
+            for (int j = 0; j < numOfCornersX; j++)
+            {
+                objCorners->push_back(cv::Point3f(float((2*j + i % 2)*squareSize.width),float(i*squareSize.width),0));
+            }
+        }
+#else
+        for(int i = 0; i<numOfCornersY ; i++){
+            for(int j = 0; j<numOfCornersX; j++){
+                cv::Point3f p;
+                p.x = j * squareSize.width;
+                p.y = i * squareSize.height;
+                p.z = 0;
+                objCorners->push_back(p);
+            }
+        }
+#endif
+        return true;
+    }
+    else
+        return false;
+}
+
+
+int CameraCalibration::extractImageCorners()
+{
+    if(calibImgs.size() == 0)
+        return 0;
+    imgBoardCornersCam.clear();
+    objBoardCornersCam.clear();
+
+    for(int i = 0; i < numOfCamImgs; i++){
+        cv::vector<cv::Point2f> cCam;
+        cv::vector<cv::Point3f> cObj;
+        findCornersInCamImg(calibImgs[i], cCam, &cObj );
+        if(cCam.size()){
+            imgBoardCornersCam.push_back(cCam);
+            objBoardCornersCam.push_back(cObj);
+            if(isleft)
+                imgBoardCornersCamL.push_back(cCam);
+            else
+                imgBoardCornersCamR.push_back(cCam);
+        }
+    }
+
+    /***********为求解基础矩阵，采样点来自第十二组图片（L12，R12）的角点数据*************/
+    if (isleft){
+        for (int i = 0; i < numOfCornersX*numOfCornersY; i++){
+            findFunLeft.push_back(imgBoardCornersCam[11][i]);
+        }
+    }
+    else{
+        for (int i = 0; i < numOfCornersX*numOfCornersY; i++){
+            findFunRight.push_back(imgBoardCornersCam[11][i]);
+        }
+    }
+    return 1;
+}
+
+int CameraCalibration::calibrateCamera()
+{
+    //check if corners for camera calib has been extracted
+    if(imgBoardCornersCam.size() == 0)
+        extractImageCorners();
+
+    cv::vector<cv::Mat> camRotationVectors;
+    cv::vector<cv::Mat> camTranslationVectors;
+
+    rms = cv::calibrateCamera(objBoardCornersCam, imgBoardCornersCam, camImageSize, camMatrix, distortion, camRotationVectors,camTranslationVectors,0,
+        cv::TermCriteria( (cv::TermCriteria::COUNT)+(cv::TermCriteria::EPS), 30, DBL_EPSILON) );
+    //rms = cv::calibrateCamera(objBoardCornersCam, imgBoardCornersCam, camImageSize, camMatrix,
+                                     //distortion, camRotationVectors, camTranslationVectors, CV_CALIB_FIX_K4|CV_CALIB_FIX_K5);
+    if(isleft){
+        undistortCameraImgPoints(findFunLeft,findFunLeft);
+        camMatrixL = camMatrix;
+        distortionL = distortion;
+    }
+    else{
+        undistortCameraImgPoints(findFunRight,findFunRight);
+        camMatrixR = camMatrix;
+        distortionR = distortion;
+    }
+    camCalibrated = true;
+    return 1;
+}
+
 
 bool CameraCalibration::findCameraExtrisics()
 {
     cv::vector<cv::Point2f> imgPoints;
     cv::vector<cv::Point3f> objPoints3D;
-    findCornersInCamImg(extrImg, &imgPoints, &objPoints3D );
+    findCornersInCamImg(extrImg, imgPoints, &objPoints3D );
     cv::Mat rVec;
     //find extrinsics rotation & translation
     bool r = cv::solvePnP(objPoints3D,imgPoints,camMatrix,distortion,rVec,translationVector);
@@ -484,9 +517,14 @@ bool CameraCalibration::findCameraExtrisics()
 void CameraCalibration::findFundamental()
 {
     fundamentalMatrix = cv::findFundamentalMat(findFunLeft, findFunRight, statusMatrix, cv::FM_RANSAC);
-    cv::stereoRectifyUncalibrated(findFunLeft, findFunRight, fundamentalMatrix, camImageSize, H1, H2);
+    //cv::stereoRectifyUncalibrated(findFunLeft, findFunRight, fundamentalMatrix, camImageSize, H1, H2);
+    cv::stereoRectifyUncalibrated(cv::Mat(findFunLeft), cv::Mat(findFunRight), fundamentalMatrix, camImageSize, H1, H2);
     findFunLeft.clear();
     findFunRight.clear();
+#ifdef TEST_STEREO
+    stereoCalibrate(objBoardCornersCam,imgBoardCornersCamL,imgBoardCornersCamR,camMatrixL,distortionL,camMatrixR,distortionR
+                    ,camImageSize,R,T,E,F);
+#endif
 }
 
 void CameraCalibration::setSquareSize(cv::Size size_in_mm)
