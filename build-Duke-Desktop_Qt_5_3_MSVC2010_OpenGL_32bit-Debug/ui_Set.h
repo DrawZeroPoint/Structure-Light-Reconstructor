@@ -155,7 +155,7 @@ public:
 
         cellWidth = new QSpinBox(groupBox);
         cellWidth->setObjectName(QStringLiteral("cellWidth"));
-        cellWidth->setValue(10);
+        cellWidth->setValue(20);
 
         gridLayout->addWidget(cellWidth, 0, 1, 1, 1);
 
@@ -166,7 +166,7 @@ public:
 
         cellHeight = new QSpinBox(groupBox);
         cellHeight->setObjectName(QStringLiteral("cellHeight"));
-        cellHeight->setValue(10);
+        cellHeight->setValue(20);
 
         gridLayout->addWidget(cellHeight, 1, 1, 1, 1);
 
@@ -194,7 +194,7 @@ public:
 
         spinBox_4 = new QSpinBox(groupBox);
         spinBox_4->setObjectName(QStringLiteral("spinBox_4"));
-        spinBox_4->setValue(10);
+        spinBox_4->setValue(8);
 
         gridLayout_3->addWidget(spinBox_4, 1, 1, 1, 1);
 
@@ -464,7 +464,7 @@ public:
         QObject::connect(buttonBox, SIGNAL(accepted()), SetDialog, SLOT(accept()));
         QObject::connect(buttonBox, SIGNAL(rejected()), SetDialog, SLOT(reject()));
 
-        tabWidget->setCurrentIndex(3);
+        tabWidget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(SetDialog);

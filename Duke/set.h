@@ -27,6 +27,8 @@ public:
     int scan_h;
     int cam_w;
     int cam_h;
+    int cell_w;
+    int cell_h;
 
     int black_threshold;
     int white_threshold;

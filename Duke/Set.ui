@@ -59,7 +59,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -99,7 +99,7 @@
           <item row="0" column="1">
            <widget class="QSpinBox" name="cellWidth">
             <property name="value">
-             <number>10</number>
+             <number>20</number>
             </property>
            </widget>
           </item>
@@ -113,7 +113,7 @@
           <item row="1" column="1">
            <widget class="QSpinBox" name="cellHeight">
             <property name="value">
-             <number>10</number>
+             <number>20</number>
             </property>
            </widget>
           </item>
@@ -148,7 +148,7 @@
           <item row="1" column="1">
            <widget class="QSpinBox" name="spinBox_4">
             <property name="value">
-             <number>10</number>
+             <number>8</number>
             </property>
            </widget>
           </item>
