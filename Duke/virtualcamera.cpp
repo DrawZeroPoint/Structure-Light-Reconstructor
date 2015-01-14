@@ -77,7 +77,7 @@ int VirtualCamera::loadMatrix(cv::Mat &matrix, int rows, int cols, std::string f
     }
     if(!matrix.empty())
         matrix.release();
-    matrix = cv::Mat(rows, cols, CV_32F);//cv_32f表示数据精度32-bit ﬂoating-point numbers ( -FLT_MAX..FLT_MAX, INF, NAN )
+    matrix = cv::Mat(rows, cols, CV_32F);
     for(int i = 0; i < rows; i++)
     {
         for(int j = 0; j < cols; j++)

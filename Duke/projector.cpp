@@ -50,7 +50,7 @@ void Projector::showImg(IplImage *img)
 
 void Projector::showMatImg(cv::Mat img)
 {
-    //cv::imshow(pw, img );
+    cv::imshow("Projector Window", img);
 }
 
 void Projector::destoryWindow()
@@ -93,4 +93,10 @@ IplImage* Projector::QImageToIplImage(const QImage *qImage)
     }
     return IplImageBuffer;
     cvReleaseImage(&IplImageBuffer);
+}
+
+void Projector::setCrossVisable(bool flag)
+{
+    crossVisible = flag;
+    this->update();
 }

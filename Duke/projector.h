@@ -29,10 +29,11 @@ public:
     void opencvWindow();
     void destoryWindow();//delete the projector window created by cv after showImg
 
-    bool crossVisible;
+    void setCrossVisable(bool flag);
     void paintEvent(QPaintEvent *event);
 
 private:
+    bool crossVisible;
     int xoffset;
     int yoffset;
     int height;
