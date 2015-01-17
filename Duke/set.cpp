@@ -36,8 +36,10 @@ void Set::createConfigurationFile()//如果是槽函数，那么void声明不可
     proj_h = set->projResV->value();
     scan_w = set->scanResH->value();
     scan_h = set->scanResV->value();
-    cam_w = set->camResH->value();
-    cam_h = set->camResV->value();
+    if (set->resMode0->isChecked()){
+        cam_w = 1280;
+        cam_h = 1024;
+    }
     cell_w = set->cellWidth->value();
     cell_h = set->cellHeight->value();
     black_threshold = set->blackThresholdEdit->value();

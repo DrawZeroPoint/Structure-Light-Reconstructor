@@ -21,6 +21,7 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QTabWidget>
@@ -57,14 +58,8 @@ public:
     QLabel *label_6;
     QSpinBox *boardHeight;
     QWidget *tab_4;
-    QGroupBox *groupBox_8;
-    QGridLayout *gridLayout_14;
-    QGridLayout *gridLayout_15;
-    QLabel *label_13;
-    QSpinBox *camResH;
-    QLabel *label_14;
-    QSpinBox *camResV;
-    QSpacerItem *horizontalSpacer_5;
+    QGroupBox *groupBox_7;
+    QRadioButton *resMode0;
     QWidget *tab_2;
     QGroupBox *groupBox_2;
     QGroupBox *groupBox_3;
@@ -244,49 +239,18 @@ public:
         tabWidget->addTab(tab, QString());
         tab_4 = new QWidget();
         tab_4->setObjectName(QStringLiteral("tab_4"));
-        groupBox_8 = new QGroupBox(tab_4);
-        groupBox_8->setObjectName(QStringLiteral("groupBox_8"));
-        groupBox_8->setGeometry(QRect(10, 9, 411, 101));
+        groupBox_7 = new QGroupBox(tab_4);
+        groupBox_7->setObjectName(QStringLiteral("groupBox_7"));
+        groupBox_7->setGeometry(QRect(10, 9, 411, 121));
         QSizePolicy sizePolicy3(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy3.setHorizontalStretch(0);
         sizePolicy3.setVerticalStretch(0);
-        sizePolicy3.setHeightForWidth(groupBox_8->sizePolicy().hasHeightForWidth());
-        groupBox_8->setSizePolicy(sizePolicy3);
-        gridLayout_14 = new QGridLayout(groupBox_8);
-        gridLayout_14->setObjectName(QStringLiteral("gridLayout_14"));
-        gridLayout_15 = new QGridLayout();
-        gridLayout_15->setObjectName(QStringLiteral("gridLayout_15"));
-        label_13 = new QLabel(groupBox_8);
-        label_13->setObjectName(QStringLiteral("label_13"));
-
-        gridLayout_15->addWidget(label_13, 0, 0, 1, 1);
-
-        camResH = new QSpinBox(groupBox_8);
-        camResH->setObjectName(QStringLiteral("camResH"));
-        camResH->setMaximum(1280);
-        camResH->setValue(1280);
-
-        gridLayout_15->addWidget(camResH, 0, 1, 1, 1);
-
-        label_14 = new QLabel(groupBox_8);
-        label_14->setObjectName(QStringLiteral("label_14"));
-
-        gridLayout_15->addWidget(label_14, 1, 0, 1, 1);
-
-        camResV = new QSpinBox(groupBox_8);
-        camResV->setObjectName(QStringLiteral("camResV"));
-        camResV->setMaximum(1024);
-        camResV->setValue(1024);
-
-        gridLayout_15->addWidget(camResV, 1, 1, 1, 1);
-
-
-        gridLayout_14->addLayout(gridLayout_15, 0, 0, 1, 1);
-
-        horizontalSpacer_5 = new QSpacerItem(194, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        gridLayout_14->addItem(horizontalSpacer_5, 0, 1, 1, 1);
-
+        sizePolicy3.setHeightForWidth(groupBox_7->sizePolicy().hasHeightForWidth());
+        groupBox_7->setSizePolicy(sizePolicy3);
+        resMode0 = new QRadioButton(groupBox_7);
+        resMode0->setObjectName(QStringLiteral("resMode0"));
+        resMode0->setGeometry(QRect(20, 40, 89, 16));
+        resMode0->setChecked(true);
         tabWidget->addTab(tab_4, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QStringLiteral("tab_2"));
@@ -464,7 +428,7 @@ public:
         QObject::connect(buttonBox, SIGNAL(accepted()), SetDialog, SLOT(accept()));
         QObject::connect(buttonBox, SIGNAL(rejected()), SetDialog, SLOT(reject()));
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(2);
 
 
         QMetaObject::connectSlotsByName(SetDialog);
@@ -481,9 +445,8 @@ public:
         label_5->setText(QApplication::translate("SetDialog", "Board Width(mm):", 0));
         label_6->setText(QApplication::translate("SetDialog", "Board Height(mm):", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("SetDialog", "Calibration Board", 0));
-        groupBox_8->setTitle(QApplication::translate("SetDialog", "Camera Resolution", 0));
-        label_13->setText(QApplication::translate("SetDialog", "Horizontal(pixel):", 0));
-        label_14->setText(QApplication::translate("SetDialog", "Vertical(pixel):", 0));
+        groupBox_7->setTitle(QApplication::translate("SetDialog", "Camera Resolution", 0));
+        resMode0->setText(QApplication::translate("SetDialog", "1280X1024", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_4), QApplication::translate("SetDialog", "Camera", 0));
         groupBox_2->setTitle(QApplication::translate("SetDialog", "Project Region", 0));
         groupBox_3->setTitle(QApplication::translate("SetDialog", "Projector Resolution", 0));

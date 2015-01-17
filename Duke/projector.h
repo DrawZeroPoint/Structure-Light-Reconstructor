@@ -16,14 +16,7 @@ class Projector : public QWidget
 public:
     Projector(QWidget *parent, int scanW, int scanH, int projW, int projH, int xos, int yos);
     ~Projector();
-    void showImg(IplImage *img);
     void showMatImg(cv::Mat img);
-
-    ////没有用到的功能
-    QImage *IplImageToQPixmap(const IplImage *img);
-    IplImage* QImageToIplImage(const QImage *qImage);
-    QLabel *imageLabel;//hold image.
-    ////
 
     void displaySwitch(bool isWhite);
     void opencvWindow();

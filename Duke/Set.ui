@@ -59,7 +59,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -224,13 +224,13 @@
       <attribute name="title">
        <string>Camera</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox_8">
+      <widget class="QGroupBox" name="groupBox_7">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>9</y>
          <width>411</width>
-         <height>101</height>
+         <height>121</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -242,59 +242,22 @@
        <property name="title">
         <string>Camera Resolution</string>
        </property>
-       <layout class="QGridLayout" name="gridLayout_14">
-        <item row="0" column="0">
-         <layout class="QGridLayout" name="gridLayout_15">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>Horizontal(pixel):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QSpinBox" name="camResH">
-            <property name="maximum">
-             <number>1280</number>
-            </property>
-            <property name="value">
-             <number>1280</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_14">
-            <property name="text">
-             <string>Vertical(pixel):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QSpinBox" name="camResV">
-            <property name="maximum">
-             <number>1024</number>
-            </property>
-            <property name="value">
-             <number>1024</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="0" column="1">
-         <spacer name="horizontalSpacer_5">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>194</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
+       <widget class="QRadioButton" name="resMode0">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>40</y>
+          <width>89</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>1280X1024</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
       </widget>
      </widget>
      <widget class="QWidget" name="tab_2">

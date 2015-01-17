@@ -295,8 +295,7 @@ bool Reconstruct::getProjPixel(int row, int col, cv::Point &p_out)//for a (x,y) 
     //decode
     yDec = GrayCodes::grayToDec(grayRow);
 
-    if((yDec > proj_h || xDec > proj_w))
-    {
+    if((yDec > proj_h || xDec > proj_w)){
         error = true;//求出的xy坐标超出了投影范围，说明不是投影点，将其遮罩
     }
     p_out.x = xDec;//返回相机照片上像素点在投影仪投影范围内的对应十进制坐标

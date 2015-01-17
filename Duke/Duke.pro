@@ -20,7 +20,8 @@ SOURCES += \
     cameracalibration.cpp \
     dotmatch.cpp \
     multifrequency.cpp \
-    blobdetector.cpp
+    blobdetector.cpp \
+    dahengcamera.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -69,7 +70,8 @@ HEADERS += \
     cameracalibration.h \
     dotmatch.h \
     multifrequency.h \
-    blobdetector.h
+    blobdetector.h \
+    dahengcamera.h
 
 FORMS += \
     mainwindow.ui \

@@ -324,12 +324,10 @@ void DotMatch::matchDot(Mat leftImage,Mat rightImage)
 
     /****如果是第一次扫描，所得到的全部标志点从零编号并保存****/
     cv::vector<cv::vector<float> > featureTemp;
-    if (firstFind)
-    {
+    if (firstFind){
         dotFeature.clear();
         featureTemp = calFeature(dotPositionEven);
-        for (size_t p = 0;p < featureTemp.size(); p++)
-        {
+        for (size_t p = 0;p < featureTemp.size(); p++){
             dotFeature.push_back(featureTemp[p]);
             Point2i corr;
             corr.x = p;
@@ -337,17 +335,14 @@ void DotMatch::matchDot(Mat leftImage,Mat rightImage)
             correspondPointEven.push_back(corr);
         }
     }
-    else
-    {
+    else{
         if (scanNo%2 == 0)
             featureTemp = calFeature(dotPositionEven);
         else
             featureTemp = calFeature(dotPositionOdd);
-
         success = dotClassify(featureTemp);
     }
-    if (success)
-    {
+    if (success){
         firstFind = false;
         markPoint();
         scanNo++;
@@ -361,8 +356,7 @@ bool DotMatch::triangleCalculate()
 {
     cv::Point2f dotLeft;
     cv::Point2f dotRight;
-    for (size_t i = 0; i < dotInOrder.size(); i++)
-    {
+    for (size_t i = 0; i < dotInOrder.size(); i++){
         dotLeft.x = dotInOrder[i][0];
         dotLeft.y = dotInOrder[i][1];
         dotRight.x = dotInOrder[i][2];
@@ -381,8 +375,10 @@ bool DotMatch::triangleCalculate()
         cv::Point3f interPoint;
         bool ok = Utilities::line_lineIntersection(rc->cameras[0].position, ray1Vector,rc->cameras[1].position, ray2Vector, interPoint);
 
-        if(!ok)
-            continue;
+        if(!ok){
+            QMessageBox::warning(NULL,tr("Warning"),tr("Some point can't be matched,try moving the object."));
+            break;
+        }
 
         if (scanNo%2 == 0)
             dotPositionEven.push_back(interPoint);
@@ -390,10 +386,8 @@ bool DotMatch::triangleCalculate()
             dotPositionOdd.push_back(interPoint);
     }
 
-    if (scanNo%2 == 0)
-    {
-        if (dotPositionEven.size() < 3)
-        {
+    if (scanNo%2 == 0){
+        if (dotPositionEven.size() < 3){
             QMessageBox::warning(NULL, tr("Not enough Point"), tr("Point less than 3"));
             firstFind = true;
             return false;
@@ -401,10 +395,8 @@ bool DotMatch::triangleCalculate()
         else
             return true;
     }
-    else
-    {
-        if (dotPositionOdd.size() < 3)
-        {
+    else{
+        if (dotPositionOdd.size() < 3){
             QMessageBox::warning(NULL, tr("Not enough Point"), tr("Point less than 3"));
             firstFind = true;
             return false;
@@ -455,17 +447,14 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
     bool iscon;//判断dotFeature中的j点是否已经被匹配，如果是则continue
 
     vector<int> alreadymatched;
-    for (size_t i = 0; i < featureTemp.size(); i++)
-    {
+    for (size_t i = 0; i < featureTemp.size(); i++){
         size_t j;
         formermatch = 0;
         bestNo = 0;
         matched = false;//初始假设featureTemp中的第i组值与dotfeature中的第j组值不匹配
-        for (j = 0; j < featureSize; j++)
-        {
+        for (j = 0; j < featureSize; j++){
             iscon = false;
-            for (size_t s = 0; s < alreadymatched.size(); ++s)
-            {
+            for (size_t s = 0; s < alreadymatched.size(); ++s){
                 if (j == alreadymatched[s])//dotFeature中已经发生匹配的点不再参与匹配
                     iscon = true;
             }
@@ -473,17 +462,14 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
                 continue;
 
             match = 0;//每次变换dotFeature中的待匹配序列号时，都要将之前的匹配数清零
-            for (size_t p = 0; p < featureTemp[i].size(); p++)
-            {
-                for (size_t q = 0; q < dotFeature[j].size(); q++)
-                {
+            for (size_t p = 0; p < featureTemp[i].size(); p++){
+                for (size_t q = 0; q < dotFeature[j].size(); q++){
                     float td = fabs(featureTemp[i][p] - dotFeature[j][q]);
                     if (td < tolerance)
                         match++;
                 }
             }
-            if (match > formermatch)
-            {
+            if (match > formermatch){
                 bestNo = j;
                 formermatch = match;
             }
@@ -495,37 +481,29 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
             corr.y = i;//当前检测点在dotInOrder中的序号
             alreadymatched.push_back(bestNo);
             if (scanNo%2 == 0)
-            {
                 correspondPointEven.push_back(corr);
-            }
             else
-            {
                 correspondPointOdd.push_back(corr);
-            }
             matched = true;
             validpoint++;
         }
 
-        if (!matched)
-        {
+        if (!matched){
             dotFeatureTemp.push_back(featureTemp[i]);
         }
     }
 
     ////到这里已经找出了在本次扫描及上次扫描中的共有点，并存入dotPositionEven中
     ///  当dotPositionEven[i].size()=2时，说明第i点在两次扫描中都被找到，可用来计算变换矩阵
-    if (validpoint > 3)
-    {
-        for (size_t i  = 0; i < dotFeatureTemp.size(); i++)
-        {
+    if (validpoint > 3){
+        for (size_t i  = 0; i < dotFeatureTemp.size(); i++){
             dotFeature.push_back(dotFeatureTemp[i]);
         }
         dotFeatureTemp.clear();
         calMatrix();
         return true;
     }
-    else
-    {
+    else{
         QMessageBox::warning(NULL,tr("Fail"),tr("Alignment can't continue due to unenough point."));
         return false;
     }
@@ -535,27 +513,21 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 ////通过储存在correspondPointEven及correspondPointOdd中的一致点变换前后坐标计算变换矩阵
 void DotMatch::calMatrix()
 {
-    if (dotPositionEven.size() == 0 || dotPositionOdd.size() == 0)
-    {
+    if (dotPositionEven.size() == 0 || dotPositionOdd.size() == 0){
         QMessageBox::warning(NULL, tr("Not Enough Data"), tr("Accuqaring point position data failed"));
         return;
     }
     cv::vector<Point3f> pFormer;
     cv::vector<Point3f> pLater;
 
-    for (size_t i =0; i < correspondPointOdd.size(); i++)
-    {
-        for (size_t j = 0; j < correspondPointEven.size(); j++)
-        {
-            if (correspondPointOdd[i].x == correspondPointEven[j].x)
-            {
-                if (scanNo%2 == 0)
-                {
+    for (size_t i =0; i < correspondPointOdd.size(); i++){
+        for (size_t j = 0; j < correspondPointEven.size(); j++){
+            if (correspondPointOdd[i].x == correspondPointEven[j].x){
+                if (scanNo%2 == 0){
                     pFormer.push_back(dotPositionOdd[correspondPointOdd[i].y]);
                     pLater.push_back(dotPositionEven[correspondPointEven[j].y]);
                 }
-                else
-                {
+                else{
                     pFormer.push_back(dotPositionEven[correspondPointEven[j].y]);
                     pLater.push_back(dotPositionOdd[correspondPointOdd[i].y]);
                 }
@@ -566,8 +538,7 @@ void DotMatch::calMatrix()
     /********Horn四元数法求解变换矩阵*********/
 
     std::vector<double> inpoints;
-    for(size_t i = 0;i < pFormer.size();i++)
-    {
+    for(size_t i = 0;i < pFormer.size();i++){
         inpoints.push_back(pFormer[i].x);
         inpoints.push_back(pFormer[i].y);
         inpoints.push_back(pFormer[i].z);
@@ -597,12 +568,10 @@ void DotMatch::calMatrix()
     double data[] = {r0,r1,r2,tx,r3,r4,r5,ty,r6,r7,r8,tz};
     cv::Mat outMat(3,4,CV_64F,data);
 
-    if (scanNo == 1)
-    {
+    if (scanNo == 1){
         transFormer = outMat;
     }
-    else if (scanNo > 1)
-    {
+    else if (scanNo > 1){
         cv::Range rangeR(0,3);
         cv::Range rangeT(3,4);
         cv::Mat formerMatR = transFormer(cv::Range::all(),rangeR);
@@ -618,26 +587,21 @@ void DotMatch::calMatrix()
 void DotMatch::markPoint()
 {
     dotForMark.clear();
-    for (size_t i = 0; i < dotInOrder.size(); i++)
-    {
+    for (size_t i = 0; i < dotInOrder.size(); i++){
         /*** eachPoint存储待显示的对应点，内含6个int值，分别为
          * 左点x、y，右点x、y，是否为已知点(1表示已知)，已知点编号
          * ***/
         vector<int> eachPoint;
-        for (int j = 0; j < 4; j++)
-        {
+        for (int j = 0; j < 4; j++){
             int value = dotInOrder[i][j];
             eachPoint.push_back(value);
         }
 
         bool known = false;//表示当前点i是否为已知
 
-        if (scanNo%2 == 0)
-        {
-            for (size_t p = 0; p < correspondPointEven.size(); p++)
-            {
-                if (i == correspondPointEven[p].y)
-                {
+        if (scanNo%2 == 0){
+            for (size_t p = 0; p < correspondPointEven.size(); p++){
+                if (i == correspondPointEven[p].y){
                     eachPoint.push_back(1);
                     eachPoint.push_back(correspondPointEven[p].x);
                     known = true;
@@ -645,12 +609,9 @@ void DotMatch::markPoint()
                 }
             }
         }
-        else
-        {
-            for (size_t p = 0; p < correspondPointOdd.size(); p++)
-            {
-                if (i == correspondPointOdd[p].y)
-                {
+        else{
+            for (size_t p = 0; p < correspondPointOdd.size(); p++){
+                if (i == correspondPointOdd[p].y){
                     eachPoint.push_back(1);
                     eachPoint.push_back(correspondPointOdd[p].x);
                     known = true;
@@ -658,8 +619,7 @@ void DotMatch::markPoint()
                 }
             }
         }
-        if (!known)
-        {
+        if (!known){
             eachPoint.push_back(0);
             eachPoint.push_back(0);
         }
@@ -673,67 +633,51 @@ vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
 {
     vector<Point2f> out;
     Point2f p;
-    for (size_t i = 0; i < vec.size(); i++)
-    {
+    for (size_t i = 0; i < vec.size(); i++){
         p.x = (int)(vec[i][1] + vec[i][2])/2;
         p.y = (int)vec[i][0];
         int xl = 0;
         int xr = 0;
         int yu = 0;
         int yd = 0;
-        if (img.at<uchar>(p.y, p.x) != 0)
-        {
-            while (img.at<uchar>(p.y, (p.x - xl)) > 0)
-            {
+        if (img.at<uchar>(p.y, p.x) != 0){
+            while (img.at<uchar>(p.y, (p.x - xl)) > 0){
                 xl++;
                 if (xl > MIDUP || (p.x - xl) <= 0)
                     break;
             }
-            while (img.at<uchar>(p.y, (p.x + xr)) > 0)
-            {
+            while (img.at<uchar>(p.y, (p.x + xr)) > 0){
                 xr++;
                 if (xr > MIDUP || (p.x + xr) >= img.cols)
                     break;
             }
-            while (img.at<uchar>((p.y + yu), p.x) > 0)
-            {
+            while (img.at<uchar>((p.y + yu), p.x) > 0){
                 yu++;
                 if (yu > MIDUP || (p.y + yu) >= img.rows)
                     break;
             }
-            while (img.at<uchar>((p.y - yd), p.x) > 0)
-            {
+            while (img.at<uchar>((p.y - yd), p.x) > 0){
                 yd++;
                 if (yd > MIDUP || (p.y - yd) <= 0)
                     break;
             }
 
-            if (yd >= MIDUP || yu >= MIDUP || xr >= MIDUP || xl >= MIDUP)
-            {
+            if (yd >= MIDUP || yu >= MIDUP || xr >= MIDUP || xl >= MIDUP){
                 yd = 0;
                 yu = 0;
                 xr = 0;
                 xl = 0;
                 continue;
             }
-            else
-            {
+            else{
                 if (yu >= yd)
-                {
                     p.y = p.y + (yu-yd)/2;
-                }
                 else
-                {
                     p.y = p.y - (yd-yu)/2;
-                }
                 if (xl >= xr)
-                {
                     p.x  = p.x - (xl-xr)/2;
-                }
                 else
-                {
                     p.x = p.x + (xr - xl)/2;
-                }
             out.push_back(p);
             }
         }
