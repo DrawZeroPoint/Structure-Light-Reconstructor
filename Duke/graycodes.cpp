@@ -15,19 +15,10 @@ GrayCodes::GrayCodes(int projW, int projH)
 
 GrayCodes::~GrayCodes()
 {
-    if(imgsLoaded)
-        unload();
+    //if(imgsLoaded)
+        //unload();
 }
 
-int GrayCodes::getNumOfColBits()
-{
-    return numOfColImgs;
-}
-
-int GrayCodes::getNumOfRowBits()
-{
-    return numOfRowImgs;
-}
 
 void GrayCodes::calNumOfImgs()
 {
@@ -36,39 +27,26 @@ void GrayCodes::calNumOfImgs()
     numOfImgs= 2 + 2*numOfColImgs + 2*numOfRowImgs;//the first 2 images are all white and all black images
 }
 
+/*
 void GrayCodes::unload()
 {
-    for(int i=0; i < numOfImgs;i++ )
-    {
-        if(grayCodes[i])
-        {
+    for(int i=0; i < numOfImgs;i++ ){
+        if(grayCodes[i]){
             cvReleaseImage(&grayCodes[i]);
             grayCodes[i]=NULL;
         }
     }
     imgsLoaded=false;
 }
+*/
 
-IplImage* GrayCodes::getImg(int num)
-{
-    if(num<numOfImgs)
-    {
-        currentImgNum = num;
-        return grayCodes[num];
-    }
-    else
-        return NULL;
-}
 
-IplImage* GrayCodes::getNextImg()
+cv::Mat GrayCodes::getNextImg()
 {
-    if(currentImgNum<numOfImgs)
-    {
+    if(currentImgNum<numOfImgs){
         currentImgNum++;
         return grayCodes[currentImgNum - 1];//currentImgNum是从0开始的，++操作后变为1，所以要-1
     }
-    else
-        return NULL;
 }
 
 int GrayCodes::getNumOfImgs()
@@ -76,50 +54,56 @@ int GrayCodes::getNumOfImgs()
     return numOfImgs;
 }
 
+int GrayCodes::getNumOfRowBits()
+{
+    return numOfRowImgs;
+}
+
+int GrayCodes::getNumOfColBits()
+{
+    return numOfColImgs;
+}
+
 void GrayCodes::allocMemForImgs()
 {
-    for(int i=0; i<numOfImgs; i++)
-    {
-        grayCodes[i]=cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
+    for(int i=0; i<numOfImgs; i++){
+        //grayCodes[i]=cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,1);
+        grayCodes[i] = cv::Mat(height,width,CV_8U);
     }
     imgsLoaded=true;
 }
 
 void GrayCodes::generateGrays()
 {
-    if(!imgsLoaded)
-    {
+    if(!imgsLoaded){
         allocMemForImgs();//allocate memory for images
     }
     for (int j=0; j<width; j++) //generate all white and all black images
     {
-        for (int i=0;i<height;i++)
-        {
-            CvScalar pixel_color;
-            pixel_color.val[0] = 255;
-            cvSet2D(grayCodes[0], i, j, pixel_color);
-            pixel_color.val[0] = 0;
-            cvSet2D(grayCodes[1], i, j, pixel_color);
+        for (int i=0;i<height;i++){
+            //CvScalar pixel_color;
+            //pixel_color.val[0] = 255;
+            //cvSet2D(grayCodes[0], i, j, pixel_color);
+            //pixel_color.val[0] = 0;
+            //cvSet2D(grayCodes[1], i, j, pixel_color);
+            grayCodes[0].at<uchar>(i,j) = 255;
+            grayCodes[1].at<uchar>(i,j) = 0;
         }
     }
     int flag=0;
-    for (int j=0; j<width; j++)
-    {
+    for (int j=0; j<width; j++){
         int rem=0, num=j, prevRem=j%2;
-        for (int k=0; k<numOfColImgs; k++)
-        {
+        for (int k=0; k<numOfColImgs; k++){
             num=num/2;
             rem=num%2;
-            if ((rem==0 && prevRem==1) || (rem==1 && prevRem==0))
-            {
+            if ((rem==0 && prevRem==1) || (rem==1 && prevRem==0)){
                 flag=1;
             }
-            else
-            {
+            else{
                 flag= 0;
             }
-            for (int i=0;i<height;i++)
-            {
+            for (int i=0;i<height;i++){
+                /*
                 CvScalar pixel_color;//cvscalar is an array that contain 4 double type elements
                 pixel_color.val[0] = float(flag*255);
                 cvSet2D(grayCodes[2*numOfColImgs-2*k], i, j, pixel_color);
@@ -128,46 +112,49 @@ void GrayCodes::generateGrays()
                 else
                     pixel_color.val[0]=255;
                 cvSet2D(grayCodes[2*numOfColImgs-2*k+1], i, j, pixel_color);
+                */
+                int pixel_color = flag*255;
+                //cvSet2D(grayCodes[2*numOfColImgs-2*k], i, j, pixel_color);
+                grayCodes[2*numOfColImgs-2*k].at<uchar>(i,j) = pixel_color;
+                if(pixel_color > 0)
+                    pixel_color = 0;
+                else
+                    pixel_color = 255;
+                grayCodes[2*numOfColImgs-2*k+1].at<uchar>(i,j) = pixel_color;
             }
             prevRem=rem;
         }
     }
 
-    for (int i=0;i<height;i++)
-    {
+    for (int i=0;i<height;i++){
         int rem=0, num=i, prevRem=i%2;
-        for (int k=0; k<numOfRowImgs; k++)
-        {
+        for (int k=0; k<numOfRowImgs; k++){
             num=num/2;
             rem=num%2;
-            if ((rem==0 && prevRem==1) || (rem==1 && prevRem==0))
-            {
+            if ((rem==0 && prevRem==1) || (rem==1 && prevRem==0)){
                 flag=1;
             }
-            else
-            {
+            else{
                 flag= 0;
             }
-            for (int j=0; j<width; j++)
-            {
-                CvScalar pixel_color;
-                pixel_color.val[0] = float(flag*255);
-                cvSet2D(grayCodes[2*numOfRowImgs-2*k+2*numOfColImgs], i, j, pixel_color);
-                if(pixel_color.val[0]>0)
-                    pixel_color.val[0]=0;
+            for (int j=0; j<width; j++){
+                int pixel_color = flag*255;
+                grayCodes[2*numOfRowImgs-2*k+2*numOfColImgs].at<uchar>(i,j) = pixel_color;
+                if(pixel_color > 0)
+                    pixel_color = 0;
                 else
-                    pixel_color.val[0]=255;
-                cvSet2D(grayCodes[2*numOfRowImgs-2*k+2*numOfColImgs+1], i, j, pixel_color);
+                    pixel_color = 255;
+                grayCodes[2*numOfRowImgs-2*k+2*numOfColImgs+1].at<uchar>(i, j) = pixel_color;
             }
             prevRem=rem;
         }
     }
 }
 
+/*
 void GrayCodes::save()
 {
-    for(int i = 0; i < numOfImgs; i++)
-    {
+    for(int i = 0; i < numOfImgs; i++){
         std::stringstream path;
         if(i+1<10)
             path<<"0";
@@ -175,6 +162,8 @@ void GrayCodes::save()
         cvSaveImage(path.str().c_str(),grayCodes[i]);
     }
 }
+*/
+
 
 int GrayCodes::grayToDec(cv::vector<bool> gray)//convert a gray code sequence to a decimal number
 {
@@ -182,8 +171,7 @@ int GrayCodes::grayToDec(cv::vector<bool> gray)//convert a gray code sequence to
     bool tmp = gray[0];
     if(tmp)
         dec += (int) pow((float)2, int(gray.size() - 1));
-    for(int i = 1; i < gray.size(); i++)
-    {
+    for(int i = 1; i < gray.size(); i++){
         tmp=Utilities::XOR(tmp,gray[i]);
         if(tmp)
             dec+= (int) pow((float)2,int (gray.size() - i - 1) );
