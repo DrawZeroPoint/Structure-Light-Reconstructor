@@ -12,15 +12,7 @@
 #include <QVector>
 #include <QFont>
 
-const HV_RESOLUTION Resolution = RES_MODE0;
-const HV_SNAP_MODE SnapMode = CONTINUATION;
-const HV_BAYER_CONVERT_TYPE ConvertType = BAYER2RGB_NEIGHBOUR1;
-const HV_SNAP_SPEED SnapSpeed = HIGH_SPEED;
-long ADCLevel           = ADC_LEVEL2;
-const int XStart              = 0;//图像左上角点在相机幅面1280X1024上相对于幅面左上角点坐标
-const int YStart              = 0;
-int scanWidth;//扫描区域
-int scanHeight;
+
 bool inEnglish = true;
 int nowProgress = 0;//进度条初始化
 
@@ -38,13 +30,15 @@ MainWindow::MainWindow(QWidget *parent)
     /*****声明全局变量*****/
     saveCount = 1;//Save calib images start with 1
     scanSquenceNo = -1;
-    cameraOpened = false;
     isConfigured = false;
     isProjectorOpened = true;
 
     /****生成计时器并连接*****/
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(readframe()));
+
+    /****声明相机****/
+    DHC = new DaHengCamera(this);
 
     /*****生成OpenGL窗口并加载*****/
     displayModel = new GLWidget(ui->displayWidget);
@@ -75,17 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    if(cameraOpened){
-        OnSnapexStop();
-        OnSnapexClose();
-        HVSTATUS status = STATUS_OK;
-        //	关闭数字摄像机，释放数字摄像机内部资源
-        status = EndHVDevice(m_hhv_1);
-        status = EndHVDevice(m_hhv_2);
-        //	回收图像缓冲区
-        delete []m_pRawBuffer_1;
-        delete []m_pRawBuffer_2;
-    }
+    delete DHC;
     delete pj;
     delete blob;
     delete ui;
@@ -109,134 +93,29 @@ void MainWindow::openproject()
     projectPath = dir;
 }
 
-///---------------------相机-----------------------///
-void MainWindow::exposurecontrol()
+void MainWindow::setexposure()
 {
-    switch (ui->leftExSlider->value()) {
-    case 0:
-        ADCLevel = ADC_LEVEL3;
-        break;
-    case 1:
-        ADCLevel = ADC_LEVEL2;
-        break;
-    case 2:
-        ADCLevel = ADC_LEVEL1;
-        break;
-    case 3:
-        ADCLevel = ADC_LEVEL0;
-        break;
-    }
-    HVADCControl(m_hhv_1, ADC_BITS, ADCLevel);
-    switch (ui->rightExSlider->value()) {
-    case 0:
-        ADCLevel = ADC_LEVEL3;
-        break;
-    case 1:
-        ADCLevel = ADC_LEVEL2;
-        break;
-    case 2:
-        ADCLevel = ADC_LEVEL1;
-        break;
-    case 3:
-        ADCLevel = ADC_LEVEL0;
-        break;
-    }
-    HVADCControl(m_hhv_2, ADC_BITS, ADCLevel);
+    if (DHC->cameraOpened)
+        DHC->daHengExposure(ui->leftExSlider->value(),ui->rightExSlider->value());
+    else
+        return;
 }
 
 void MainWindow::opencamera()
 {
-    HVSTATUS status_1 = STATUS_OK;
-    HVSTATUS status_2 = STATUS_OK;
-    m_pRawBuffer_1	= NULL;
-    m_pRawBuffer_2	= NULL;
-
-    status_1 = BeginHVDevice(1, &m_hhv_1);
-    status_2 = BeginHVDevice(2, &m_hhv_2);
-    if(status_1==STATUS_OK&&status_2==STATUS_OK)
-        cameraOpened = true;
-    else{
-        cameraOpened = false;
-        QMessageBox::warning(NULL, tr("Cameras not found"), tr("Make sure two Daheng cameras have connected to the computer."));
-        return;
-    }
-    HVSetResolution(m_hhv_1, Resolution);//Set the resolution of cameras
-    HVSetResolution(m_hhv_2, Resolution);
-
-    HVSetSnapMode(m_hhv_1, SnapMode);//Snap mode include CONTINUATION、TRIGGER
-    HVSetSnapMode(m_hhv_2, SnapMode);
-
-    HVADCControl(m_hhv_1, ADC_BITS, ADCLevel);//设置ADC的级别
-    HVADCControl(m_hhv_2, ADC_BITS, ADCLevel);
-
-    HVTYPE type = UNKNOWN_TYPE;//获取设备类型
-    int size    = sizeof(HVTYPE);
-    HVGetDeviceInfo(m_hhv_1,DESC_DEVICE_TYPE, &type, &size);//由于两相机型号相同，故只获取一个
-
-    HVSetOutputWindow(m_hhv_1, XStart, YStart, cameraWidth, cameraHeight);
-    HVSetOutputWindow(m_hhv_2, XStart, YStart, cameraWidth, cameraHeight);
-
-    HVSetSnapSpeed(m_hhv_1, SnapSpeed);//设置采集速度
-    HVSetSnapSpeed(m_hhv_2, SnapSpeed);
-
-    m_pRawBuffer_1 = new BYTE[cameraWidth * cameraHeight];
-    m_pRawBuffer_2 = new BYTE[cameraWidth * cameraHeight];
-
-    OnSnapexOpen();
-    OnSnapexStart();
-    timer->start(30);
-
+    DHC->openDaHengCamera(cameraWidth,cameraHeight);
     ui->actionOpenCamera->setDisabled(true);//暂时保证不会启动两次，防止内存溢出
     ui->leftExSlider->setEnabled(true);//激活曝光调整滑块
     ui->rightExSlider->setEnabled(true);
-}
-
-void MainWindow::OnSnapexOpen()
-{
-    HVSTATUS status = STATUS_OK;
-    status = HVOpenSnap(m_hhv_1, SnapThreadCallback, this);
-    status = HVOpenSnap(m_hhv_2, SnapThreadCallback, this);
-}
-
-void MainWindow::OnSnapexStart()
-{
-    HVSTATUS status = STATUS_OK;
-    ppBuf_1[0] = m_pRawBuffer_1;
-    ppBuf_2[0] = m_pRawBuffer_2;
-    status = HVStartSnap(m_hhv_1, ppBuf_1,1);
-    status = HVStartSnap(m_hhv_2, ppBuf_2,1);
-}
-
-void MainWindow::OnSnapexStop()
-{
-    HVSTATUS status = STATUS_OK;
-    status = HVStopSnap(m_hhv_1);
-    status = HVStopSnap(m_hhv_2);
-}
-
-void MainWindow::OnSnapexClose()
-{
-    HVSTATUS status = STATUS_OK;
-    status = HVCloseSnap(m_hhv_1);
-    status = HVCloseSnap(m_hhv_2);
-}
-
-void MainWindow::closeCamera()
-{
-    timer->stop();
-    OnSnapexStop();
-    OnSnapexClose();
-}
-
-int CALLBACK MainWindow::SnapThreadCallback(HV_SNAP_INFO *pInfo)
-{
-    return 1;
+    timer->start();
+    image_1 = QImage(cameraWidth, cameraHeight, QImage::Format_Indexed8);
+    image_2 = QImage(cameraWidth, cameraHeight, QImage::Format_Indexed8);
 }
 
 void MainWindow::readframe()
 {
-    image_1 = QImage(m_pRawBuffer_1, cameraWidth, cameraHeight, QImage::Format_Indexed8);
-    image_2 = QImage(m_pRawBuffer_2, cameraWidth, cameraHeight, QImage::Format_Indexed8);
+    image_1 = QImage(DHC->m_pRawBuffer_1, cameraWidth, cameraHeight, QImage::Format_Indexed8);
+    image_2 = QImage(DHC->m_pRawBuffer_2, cameraWidth, cameraHeight, QImage::Format_Indexed8);
     pimage_1 = QPixmap::fromImage(image_1);
     pimage_2 = QPixmap::fromImage(image_2);
     ui->leftViewLabel->setPixmap(pimage_1);
@@ -256,7 +135,7 @@ void MainWindow::calib()
 
 void MainWindow::capturecalib()
 {
-    if(cameraOpened){
+    if(DHC->cameraOpened){
         captureImage("", saveCount, true);
         ui->currentPhotoLabel->setText(QString::number(saveCount));
         saveCount++;
@@ -274,7 +153,7 @@ void MainWindow::capturecalib()
 
 void MainWindow::redocapture()
 {
-    if(cameraOpened){
+    if(DHC->cameraOpened){
         captureImage("", saveCount - 1, true);
         }
     else
@@ -299,8 +178,7 @@ void MainWindow::captureImage(QString pref, int saveCount,bool dispaly)
                 QPixmap pcopy = pimage_1;
                 QPainter pt(&pcopy);
                 pt.setPen(greencolor);
-                for (size_t i = 0; i < centers.size();i++)
-                {
+                for (size_t i = 0; i < centers.size();i++){
                     drawCross(pt,centers[i].x,centers[i].y);
                 }
                 ui->leftCaptureLabel->setPixmap(pcopy);
@@ -409,7 +287,7 @@ void MainWindow::scan()
     ui->progressBar->reset();
     nowProgress = 0;
 
-    if(!cameraOpened){
+    if(!DHC->cameraOpened){
         QMessageBox::warning(this, tr("Cameras are not Opened"), tr("Cameras are not opened."));
         return;
     }
@@ -442,8 +320,8 @@ void MainWindow::findPoint()
     {
         dm->dotForMark.clear();
     }
-    cv::Mat mat_1 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, m_pRawBuffer_1);//直接从内存缓冲区获得图像数据是可行的
-    cv::Mat mat_2 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, m_pRawBuffer_2);
+    cv::Mat mat_1 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, DHC->m_pRawBuffer_1);//直接从内存缓冲区获得图像数据是可行的
+    cv::Mat mat_2 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, DHC->m_pRawBuffer_2);
     //imshow("d",mat_1);
     //cvWaitKey(10);
     scanSquenceNo = dm->scanNo;
@@ -490,17 +368,16 @@ void MainWindow::startscan()
     ui->progressBar->reset();
     nowProgress = 0;
 
-    closeCamera();
+    DHC->closeCamera();
+    timer->stop();
     pj->displaySwitch(false);
     pj->opencvWindow();
-    if (ui->useGray->isChecked())
-    {
+    if (ui->useGray->isChecked()){
         grayCode = new GrayCodes(projectorWidth,projectorHeight);
         grayCode->generateGrays();
-        pj->showImg(grayCode->getNextImg());
+        pj->showMatImg(grayCode->getNextImg());
     }
-    else
-    {
+    else{
         mf = new MultiFrequency(this, scanWidth, scanHeight);
         mf->generateMutiFreq();
         pj->showMatImg(mf->getNextMultiFreq());
@@ -515,15 +392,13 @@ void MainWindow::startscan()
     addpath_1->mkpath(projChildPath + "/left/" + pref);
     addpath_2->mkpath(projChildPath +"/right/" + pref);
 
-    while(true)
-    {
-        cvWaitKey(100);
-        HVSnapShot(m_hhv_1, ppBuf_1, 1);
-        image_1 = QImage(m_pRawBuffer_1, cameraWidth, cameraHeight, QImage::Format_Indexed8);
+    while(true){
+        cv::waitKey(100);
+        DHC->daHengSnapShot(1);
+        image_1 = QImage(DHC->m_pRawBuffer_1, cameraWidth, cameraHeight, QImage::Format_Indexed8);
         pimage_1 = QPixmap::fromImage(image_1);
-
-        HVSnapShot(m_hhv_2, ppBuf_2, 1);
-        image_2 = QImage(m_pRawBuffer_2, cameraWidth, cameraHeight, QImage::Format_Indexed8);
+        DHC->daHengSnapShot(2);
+        image_2 = QImage(DHC->m_pRawBuffer_2, cameraWidth, cameraHeight, QImage::Format_Indexed8);
         pimage_2 = QPixmap::fromImage(image_2);
 
         captureImage(pref, imgCount, false);
@@ -532,7 +407,7 @@ void MainWindow::startscan()
         if (ui->useGray->isChecked()){
             if(imgCount == grayCode->getNumOfImgs())
                 break;
-            pj->showImg(grayCode->getNextImg());
+            pj->showMatImg(grayCode->getNextImg());
             progressPop(2);
         }
         else{
@@ -542,10 +417,7 @@ void MainWindow::startscan()
             progressPop(7);
         }
     }
-    HVOpenSnap(m_hhv_1,SnapThreadCallback, this);
-    HVOpenSnap(m_hhv_2,SnapThreadCallback, this);
-    HVStartSnap(m_hhv_1,ppBuf_1,1);
-    HVStartSnap(m_hhv_2,ppBuf_2,1);
+    DHC->openDaHengCamera(cameraWidth,cameraHeight);
     timer->start();
     pj->destoryWindow();
     pj->displaySwitch(true);
@@ -576,8 +448,8 @@ void MainWindow::startreconstruct()
 {
     ui->progressBar->reset();
     nowProgress = 0;
-    if(cameraOpened)
-        closeCamera();
+    if(DHC->cameraOpened)
+        DHC->closeCamera();
     if(isConfigured == false){
         if(QMessageBox::warning(this,tr("Warning"), tr("You may want to change the settings, continue with default settings?"),
                 QMessageBox::Yes,QMessageBox::No) == QMessageBox::No)
@@ -668,8 +540,8 @@ void MainWindow::createConnections()
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openproject()));
 
     connect(ui->actionOpenCamera, SIGNAL(triggered()), this, SLOT(opencamera()));
-    connect(ui->leftExSlider,SIGNAL(valueChanged(int)),this,SLOT(exposurecontrol()));
-    connect(ui->rightExSlider,SIGNAL(valueChanged(int)),this,SLOT(exposurecontrol()));
+    connect(ui->leftExSlider,SIGNAL(valueChanged(int)),this,SLOT(setexposure()));
+    connect(ui->rightExSlider,SIGNAL(valueChanged(int)),this,SLOT(setexposure()));
 
     connect(ui->actionProjector,SIGNAL(triggered()),this,SLOT(projectorcontrol()));
 
