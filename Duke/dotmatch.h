@@ -9,9 +9,12 @@
 #include <opencv/highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <math.h>
+
 #include "reconstruct.h"
 #include "virtualcamera.h"
 #include "utilities.h"
+#include "blobdetector.h"
+
 #include <mrpt/scanmatching.h>
 
 using namespace cv;
@@ -55,6 +58,7 @@ private:
 
     vector<Point2f> subPixel(Mat img, vector<vector<float>> vec);
     Reconstruct *rc;
+    BlobDetector *bd;
 
     Mat fundMat;
     Mat Homo1;

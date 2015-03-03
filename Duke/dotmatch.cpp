@@ -27,6 +27,7 @@ DotMatch::DotMatch(QObject *parent, QString projectPath) :
 
 vector<vector<float>> DotMatch::findDot(Mat image)
 {
+    vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
     bwThreshold = OSTU_Region(image);
     Mat bimage = image >= bwThreshold;
 #ifdef DEBUG
@@ -115,7 +116,7 @@ vector<vector<float>> DotMatch::findDot(Mat image)
     imshow("Point Refined",dimage);
     cvWaitKey();
 #endif
-    vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
+    
     for (int i = out.size() - 1; i > -1; i--)
     {
         vector<float> point;
@@ -125,14 +126,10 @@ vector<vector<float>> DotMatch::findDot(Mat image)
     }
 #else
     /****************OpenCV检测******************/
-     vector<vector<Point> > contours;//二层向量，内层为轮廓点集，外层为向量集
-    //Mat bsmooth = bimage;
-    //medianBlur(bimage, bsmooth, 5);
-    //bimage = bsmooth;
-    //imshow("s",bimage);
-    //cvWaitKey(1);
-    findContours(bimage, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
-
+    bd = new BlobDetector();
+    vector<Point2d> centers;
+    bd->findBlobs(bimage, centers);
+/*
     vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
     for(size_t i = 0; i < contours.size()-1; i=i+2)
     {
@@ -172,6 +169,13 @@ vector<vector<float>> DotMatch::findDot(Mat image)
             if (!repeat)
                 dotOutput.push_back(dot);
         }
+    }
+    */
+    for(size_t h = 0;h < centers.size();h++){
+        vector<float> dot;
+        dot.push_back(centers[h].x);
+        dot.push_back(centers[h].y);
+        dotOutput.push_back(dot);
     }
 #endif
     return dotOutput;
@@ -415,7 +419,7 @@ bool DotMatch::triangleCalculate()
 
     if (scanNo%2 == 0){
         if (dotPositionEven.size() < 4){
-            QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point less than 4"));
+            QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point less than 4. Try adjusting the exposure."));
             firstFind = true;
             return false;
         }
