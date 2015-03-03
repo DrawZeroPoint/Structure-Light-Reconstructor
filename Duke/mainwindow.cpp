@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timer, SIGNAL(timeout()), this, SLOT(readframe()));
 
     /****声明相机****/
+    usebc = false;
     DHC = new DaHengCamera(this);
 
     /*****生成OpenGL窗口并加载*****/
@@ -93,6 +94,7 @@ void MainWindow::openproject()
     projectPath = dir;
 }
 
+/// ----------相机控制---------- ///
 void MainWindow::setexposure()
 {
     if (DHC->cameraOpened)
@@ -103,23 +105,41 @@ void MainWindow::setexposure()
 
 void MainWindow::opencamera()
 {
-    DHC->openDaHengCamera(cameraWidth,cameraHeight);
-    ui->actionOpenCamera->setDisabled(true);//暂时保证不会启动两次，防止内存溢出
-    ui->leftExSlider->setEnabled(true);//激活曝光调整滑块
-    ui->rightExSlider->setEnabled(true);
-    timer->start();
-    image_1 = QImage(cameraWidth, cameraHeight, QImage::Format_Indexed8);
-    image_2 = QImage(cameraWidth, cameraHeight, QImage::Format_Indexed8);
+    if (!usebc){
+        DHC->openDaHengCamera(cameraWidth,cameraHeight);
+    }
+    else {
+        BC->openCamera();
+    }
+        ui->actionOpenCamera->setDisabled(true);//暂时保证不会启动两次，防止内存溢出
+        ui->leftExSlider->setEnabled(true);//激活曝光调整滑块
+        ui->rightExSlider->setEnabled(true);
+        timer->start();
+        image_1 = QImage(cameraWidth, cameraHeight, QImage::Format_Indexed8);
+        image_2 = QImage(cameraWidth, cameraHeight, QImage::Format_Indexed8);
 }
 
 void MainWindow::readframe()
 {
+    if (!usebc){
     image_1 = QImage(DHC->m_pRawBuffer_1, cameraWidth, cameraHeight, QImage::Format_Indexed8);
     image_2 = QImage(DHC->m_pRawBuffer_2, cameraWidth, cameraHeight, QImage::Format_Indexed8);
+    }
+    else{
+        image_1 = QImage(BC->pImageBuffer, cameraWidth, cameraHeight, QImage::Format_Indexed8);
+    }
     pimage_1 = QPixmap::fromImage(image_1);
     pimage_2 = QPixmap::fromImage(image_2);
     ui->leftViewLabel->setPixmap(pimage_1);
     ui->rightViewLabel->setPixmap(pimage_2);
+
+}
+
+void MainWindow::usebasler()
+{
+    usebc = true;
+    BC = new BaslerCamera(this);
+
 }
 
 ///-------------------标定-------------------///
@@ -129,6 +149,8 @@ void MainWindow::calib()
     selectPath(PATHCALIB);
     ui->tabWidget->setCurrentIndex(0);//go to calibration page
     ui->explainLabel->setPixmap(":/" + QString::number(saveCount) + ".png");
+    ui->captureButton->setEnabled(true);
+    ui->redoButton->setEnabled(true);
     ui->calibButton->setEnabled(true);
 }
 
@@ -204,6 +226,7 @@ void MainWindow::calibration()
     nowProgress = 0;
     calibrator = new CameraCalibration();
     calibrator->setSquareSize(cvSize(setDialog->cell_w,setDialog->cell_h));
+    calibrator->useSymmetric = ui->useSymmetric->isChecked();
     QString path;
 
     for(int i = 1; i <= 2; i++)
@@ -224,7 +247,8 @@ void MainWindow::calibration()
         progressPop(5);
         calibrator->extractImageCorners();
         progressPop(15);
-        calibrator->calibrateCamera();
+        if(!calibrator->calibrateCamera())
+            return;
         (i==1)?(ui->leftRMS->setText(QString::number(calibrator->rms))):(ui->rightRMS->setText(QString::number(calibrator->rms)));
         progressPop(10);
         calibrator->findCameraExtrisics();
@@ -310,7 +334,8 @@ void MainWindow::pointmatch()
 
 void MainWindow::refindmatch()
 {
-    dm->scanNo--;
+    if (dm->scanNo==0)
+        dm->firstFind = true;
     findPoint();
 }
 
@@ -324,9 +349,22 @@ void MainWindow::findPoint()
     cv::Mat mat_2 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, DHC->m_pRawBuffer_2);
     //imshow("d",mat_1);
     //cvWaitKey(10);
+    bool success = dm->matchDot(mat_1,mat_2);
+
+    if (success){
+        paintPoints();
+        if (QMessageBox::information(NULL,tr("Finished"), tr("Is the result right for reconstruction?"),
+            QMessageBox::Yes,QMessageBox::No)== QMessageBox::Yes){
+            dm->finishMatch();
+            paintPoints();
+        }
+    }
     scanSquenceNo = dm->scanNo;
     ui->scanNoLabel->setText(QString::number(scanSquenceNo));
-    dm->matchDot(mat_1,mat_2);
+}
+
+void MainWindow::paintPoints()
+{
     QPixmap pcopy_1 = pimage_1;
     QPixmap pcopy_2 = pimage_2;
     QPainter pt_1(&pcopy_1);
@@ -364,6 +402,8 @@ void MainWindow::startscan()
         if (QMessageBox::warning(this,tr("Mark Point Need to be Found"), tr("Scan result can't be aligned,continue?")
                                  ,QMessageBox::Yes,QMessageBox::No) == QMessageBox::No)
             return;
+        else
+            scanSquenceNo = 0;
     }
     ui->progressBar->reset();
     nowProgress = 0;
@@ -465,8 +505,8 @@ void MainWindow::startreconstruct()
     reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
     reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
     bool loaded = reconstructor->loadCameras();//load camera matrix
-    if(!loaded)
-    {
+
+    if(!loaded){
         ui->progressBar->reset();
         nowProgress = 0;
         return;
@@ -483,8 +523,7 @@ void MainWindow::startreconstruct()
     progressPop(15);
 
     bool runSucess = reconstructor->runReconstruction();
-    if(!runSucess)
-    {
+    if(!runSucess){
         ui->progressBar->reset();
         nowProgress = 0;
         return;
@@ -495,10 +534,10 @@ void MainWindow::startreconstruct()
     progressPop(10);
 
     if(isExportObj)
-        meshCreator->exportObjMesh(projChildPath + QString::number(scanSquenceNo) + ".obj");
-    if(isExportPly || !(isExportObj || isExportPly))
-    {
-        QString outPlyPath = projChildPath + QString::number(scanSquenceNo) + ".ply";
+        meshCreator->exportObjMesh(projChildPath + QString::number(scanCount) + ".obj");
+
+    if(isExportPly || !(isExportObj || isExportPly)){
+        QString outPlyPath = projChildPath + QString::number(scanCount) + ".ply";
         meshCreator->exportPlyMesh(outPlyPath);
         displayModel->LoadModel(outPlyPath);
     }
@@ -542,6 +581,8 @@ void MainWindow::createConnections()
     connect(ui->actionOpenCamera, SIGNAL(triggered()), this, SLOT(opencamera()));
     connect(ui->leftExSlider,SIGNAL(valueChanged(int)),this,SLOT(setexposure()));
     connect(ui->rightExSlider,SIGNAL(valueChanged(int)),this,SLOT(setexposure()));
+
+    connect(ui->actionBasler, SIGNAL(triggered()), this, SLOT(usebasler()));//暂时用来调试的功能
 
     connect(ui->actionProjector,SIGNAL(triggered()),this,SLOT(projectorcontrol()));
 

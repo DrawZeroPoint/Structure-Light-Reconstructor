@@ -24,7 +24,8 @@ public:
 
     DotMatch(QObject *parent = 0, QString projectPath = NULL);
     vector<vector<float>> findDot(Mat image);
-    void matchDot(Mat limage, Mat rimage);
+    bool matchDot(Mat limage, Mat rimage);
+    void finishMatch();
     int OSTU_Region(cv::Mat &image);
 
     vector<vector<float>> dotInOrder;
@@ -47,6 +48,8 @@ private:
     bool triangleCalculate();
     cv::vector<cv::vector<float> > calFeature(cv::vector<Point3f> dotP);
     bool dotClassify(cv::vector<cv::vector<float> > featureTemp);
+    vector<int> calNeighbor(vector<vector<float> > input, int num);
+    bool checkNeighbor(vector<int> nf, vector<int> nt);
     void calMatrix();
     void markPoint();
 
@@ -68,10 +71,7 @@ private:
     cv::vector<Point2i> correspondPointOdd;
     cv::vector<cv::vector<float>> dotFeature;
     cv::vector<cv::vector<float>> dotFeatureTemp;
-
-signals:
-
-public slots:
+    vector<vector<int>> neighborFeature;
 
 };
 

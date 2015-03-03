@@ -1,27 +1,32 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+//Qt
 #include <QMainWindow>
 #include <QtGui>
-
 #include <QLabel> 
 #include <QImage>
 #include <QTimer>
-
-#include "set.h"
-#include "dotmatch.h"
+//openCV
 #include <opencv/highgui.h>
 #include <opencv/cv.h>
+
+#include "blobdetector.h"
+#include "cameracalibration.h"
+#include "dotmatch.h"
+#include "glwidget.h"
+
 #include "projector.h"
 #include "reconstruct.h"
 #include "meshcreator.h"
-#include "glwidget.h"
-#include "cameracalibration.h"
-#include "blobdetector.h"
+
+#include "set.h"
+
 #include "graycodes.h"
 #include "multifrequency.h"
 
 #include "dahengcamera.h"
+#include "baslercamera.h"
 
 #define WM_SNAP_CHANGE		(WM_USER + 100)
 
@@ -67,11 +72,14 @@ private:
     Projector *pj;
 
     DaHengCamera *DHC;
+    BaslerCamera *BC;
+    bool usebc;
 
     void createConnections();
     void createCentralWindow(QWidget *parent);
     void captureImage(QString pref, int saveCount, bool dispaly);
     void findPoint();
+    void paintPoints();
     void getScreenGeometry();
     void closeCamera();
     void generatePath(int type);
@@ -111,6 +119,8 @@ private slots:
     void opencamera();
     void setexposure();
     void readframe();
+
+    void usebasler();
 
     void selectPath(int PATH);
 

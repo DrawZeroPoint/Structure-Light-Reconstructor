@@ -52,6 +52,7 @@ public:
     QAction *actionSet;
     QAction *actionEnglish;
     QAction *actionChinese;
+    QAction *actionBasler;
     QWidget *centralwidget;
     QGridLayout *gridLayout_2;
     QWidget *centralWidget;
@@ -73,10 +74,6 @@ public:
     QLabel *label_11;
     QSpacerItem *horizontalSpacer_15;
     QLabel *explainLabel;
-    QVBoxLayout *verticalLayout_3;
-    QPushButton *captureButton;
-    QPushButton *redoButton;
-    QPushButton *calibButton;
     QSpacerItem *verticalSpacer_13;
     QVBoxLayout *verticalLayout_4;
     QLabel *label_10;
@@ -85,6 +82,11 @@ public:
     QLabel *leftRMS;
     QLabel *label_13;
     QLabel *rightRMS;
+    QVBoxLayout *verticalLayout_3;
+    QPushButton *captureButton;
+    QPushButton *redoButton;
+    QPushButton *calibButton;
+    QCheckBox *useSymmetric;
     QWidget *tab_2;
     QGridLayout *gridLayout_16;
     QGridLayout *gridLayout_15;
@@ -265,6 +267,8 @@ public:
         icon11.addFile(QStringLiteral(":/china.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionChinese->setIcon(icon11);
         actionChinese->setFont(font);
+        actionBasler = new QAction(MainWindow);
+        actionBasler->setObjectName(QStringLiteral("actionBasler"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QStringLiteral("centralwidget"));
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -427,37 +431,6 @@ public:
 
         gridLayout_17->addWidget(explainLabel, 1, 0, 3, 3);
 
-        verticalLayout_3 = new QVBoxLayout();
-        verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
-        verticalLayout_3->setContentsMargins(4, -1, 0, -1);
-        captureButton = new QPushButton(tab);
-        captureButton->setObjectName(QStringLiteral("captureButton"));
-        QSizePolicy sizePolicy8(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        sizePolicy8.setHorizontalStretch(0);
-        sizePolicy8.setVerticalStretch(0);
-        sizePolicy8.setHeightForWidth(captureButton->sizePolicy().hasHeightForWidth());
-        captureButton->setSizePolicy(sizePolicy8);
-
-        verticalLayout_3->addWidget(captureButton);
-
-        redoButton = new QPushButton(tab);
-        redoButton->setObjectName(QStringLiteral("redoButton"));
-        sizePolicy8.setHeightForWidth(redoButton->sizePolicy().hasHeightForWidth());
-        redoButton->setSizePolicy(sizePolicy8);
-
-        verticalLayout_3->addWidget(redoButton);
-
-        calibButton = new QPushButton(tab);
-        calibButton->setObjectName(QStringLiteral("calibButton"));
-        calibButton->setEnabled(false);
-        sizePolicy8.setHeightForWidth(calibButton->sizePolicy().hasHeightForWidth());
-        calibButton->setSizePolicy(sizePolicy8);
-
-        verticalLayout_3->addWidget(calibButton);
-
-
-        gridLayout_17->addLayout(verticalLayout_3, 1, 3, 1, 1);
-
         verticalSpacer_13 = new QSpacerItem(20, 67, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         gridLayout_17->addItem(verticalSpacer_13, 2, 3, 1, 1);
@@ -502,6 +475,44 @@ public:
 
 
         gridLayout_17->addLayout(verticalLayout_4, 3, 3, 1, 1);
+
+        verticalLayout_3 = new QVBoxLayout();
+        verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
+        verticalLayout_3->setContentsMargins(4, -1, 0, -1);
+        captureButton = new QPushButton(tab);
+        captureButton->setObjectName(QStringLiteral("captureButton"));
+        captureButton->setEnabled(false);
+        QSizePolicy sizePolicy8(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        sizePolicy8.setHorizontalStretch(0);
+        sizePolicy8.setVerticalStretch(0);
+        sizePolicy8.setHeightForWidth(captureButton->sizePolicy().hasHeightForWidth());
+        captureButton->setSizePolicy(sizePolicy8);
+
+        verticalLayout_3->addWidget(captureButton);
+
+        redoButton = new QPushButton(tab);
+        redoButton->setObjectName(QStringLiteral("redoButton"));
+        redoButton->setEnabled(false);
+        sizePolicy8.setHeightForWidth(redoButton->sizePolicy().hasHeightForWidth());
+        redoButton->setSizePolicy(sizePolicy8);
+
+        verticalLayout_3->addWidget(redoButton);
+
+        calibButton = new QPushButton(tab);
+        calibButton->setObjectName(QStringLiteral("calibButton"));
+        calibButton->setEnabled(false);
+        sizePolicy8.setHeightForWidth(calibButton->sizePolicy().hasHeightForWidth());
+        calibButton->setSizePolicy(sizePolicy8);
+
+        verticalLayout_3->addWidget(calibButton);
+
+
+        gridLayout_17->addLayout(verticalLayout_3, 1, 3, 1, 1);
+
+        useSymmetric = new QCheckBox(tab);
+        useSymmetric->setObjectName(QStringLiteral("useSymmetric"));
+
+        gridLayout_17->addWidget(useSymmetric, 1, 4, 1, 1);
 
         tabWidget->addTab(tab, QString());
         tab_2 = new QWidget();
@@ -1105,6 +1116,7 @@ public:
         toolBar->addSeparator();
         toolBar->addAction(actionExit);
         toolBar->addSeparator();
+        toolBar->addAction(actionBasler);
 
         retranslateUi(MainWindow);
         QObject::connect(snapSpeedBox, SIGNAL(valueChanged(int)), spinBox, SLOT(setValue(int)));
@@ -1191,20 +1203,22 @@ public:
 #ifndef QT_NO_TOOLTIP
         actionChinese->setToolTip(QApplication::translate("MainWindow", "zh", 0));
 #endif // QT_NO_TOOLTIP
+        actionBasler->setText(QApplication::translate("MainWindow", "Basler", 0));
         label->setText(QApplication::translate("MainWindow", "Point Size", 0));
         loadTest->setText(QApplication::translate("MainWindow", "Load Test", 0));
         label_9->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Capture images as displayed:</p></body></html>", 0));
         currentPhotoLabel->setText(QApplication::translate("MainWindow", "0", 0));
         label_11->setText(QApplication::translate("MainWindow", "<html><head/><body><p>/12 images have been captured.</p></body></html>", 0));
         explainLabel->setText(QApplication::translate("MainWindow", "Illustration", 0));
-        captureButton->setText(QApplication::translate("MainWindow", "Capture", 0));
-        redoButton->setText(QApplication::translate("MainWindow", "Redo", 0));
-        calibButton->setText(QApplication::translate("MainWindow", "Calibrate", 0));
         label_10->setText(QApplication::translate("MainWindow", "RMS:", 0));
         label_12->setText(QApplication::translate("MainWindow", "Left Camera", 0));
         leftRMS->setText(QApplication::translate("MainWindow", "0", 0));
         label_13->setText(QApplication::translate("MainWindow", "Right Camera", 0));
         rightRMS->setText(QApplication::translate("MainWindow", "0", 0));
+        captureButton->setText(QApplication::translate("MainWindow", "Capture", 0));
+        redoButton->setText(QApplication::translate("MainWindow", "Redo", 0));
+        calibButton->setText(QApplication::translate("MainWindow", "Calibrate", 0));
+        useSymmetric->setText(QApplication::translate("MainWindow", "Use Symmetric Board", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Calibrate", 0));
         findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
         reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));

@@ -128,34 +128,30 @@ bool Reconstruct::loadCamImgs(QString folder, QString prefix, QString suffix)//l
     cv::Mat tmp;
     if(!camImgs.empty())
         unloadCamImgs();
-    for(int i = 0; i < numberOfImgs; i++)
-    {
+    for(int i = 0; i < numberOfImgs; i++){
         QString path;
         path = folder;//这里folder要达到left/right一层
-        path += prefix + QString::number(i,10) + suffix;//图片加前后缀
+        path += prefix + QString::number(i,10) + suffix;
         tmp.release();
 
         tmp = cv::imread(path.toStdString(),0);
-        if(tmp.empty())
-        {
+        if(tmp.empty()){
             QMessageBox::warning(NULL,"Warning","Images not found!");
             break;
         }
         else{
-            if(autoContrast_)//auto contrast
-            {
+            if(autoContrast_){
                 Utilities::autoContrast(tmp,tmp);
             }
-            if(i==0)
-            {
+            if(i==0){
                 //color = tmp;//这里暂时注释掉
             }
             //cv::cvtColor(tmp, tmp, CV_BGR2GRAY);//The function converts an input image from one color space to another
             //这里暂时注释掉，由于源程序处理彩色图像，而这里是灰度图像，cvtColor用来处理彩色图像，故直接用存在问题
             camImgs.push_back(tmp);
         }
-        if(camera->width == 0)
-        {
+
+        if(camera->width == 0){
             camera->height = camImgs[0].rows;
             camera->width = camImgs[0].cols;
         }
@@ -314,8 +310,7 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     int w = proj_w;
     int h = proj_h;
     cv::Mat matTransfer(3,4,CV_32F);
-    if (scanSN_ > 0)
-    {
+    if (scanSN_ > 0){
         /********加载刚体变换矩阵*********/
         QString loadPath = savePath_ + "/scan/transfer_mat" + QString::number(scanSN_) + ".txt";
         camera1.loadMatrix(matTransfer, 3, 4, loadPath.toStdString());
@@ -376,8 +371,7 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 
                     /****以下判断为多次重建得到的点云拼接做准备****/
 
-                    if (scanSN_ > 0)
-                    {
+                    if (scanSN_ > 0){
                         float point[] = {interPoint.x, interPoint.y, interPoint.z, 1};
                         cv::Mat pointMat(4, 1, CV_32F, point);
                         cv::Mat refineMat(3, 1, CV_32F);

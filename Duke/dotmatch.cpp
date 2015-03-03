@@ -7,7 +7,7 @@ int EDGEUP = 8;//水平方向上标志点边缘黑色宽度上限
 int EDGEDOWN = 0;
 int MIDDOWN = 8;
 int MIDUP = 32;
-float tolerance = 40;//判断特征值是否相等时的误差
+float tolerance = 25;//判断特征值是否相等时的误差
 
 DotMatch::DotMatch(QObject *parent, QString projectPath) :
     QObject(parent)
@@ -177,7 +177,7 @@ vector<vector<float>> DotMatch::findDot(Mat image)
     return dotOutput;
 }
 
-void DotMatch::matchDot(Mat leftImage,Mat rightImage)
+bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
 {
     dotInOrder.clear();
     Mat Lcopy = leftImage;
@@ -320,35 +320,61 @@ void DotMatch::matchDot(Mat leftImage,Mat rightImage)
     /****根据当前扫描次数的奇偶性将标记点三维坐标放入dotPositionOdd(Even)****/
     bool success = triangleCalculate();//三角计算或许可以用opencv自带的triangulatePoints()函数
     if (!success)
-        return;
+        return false;
 
     /****如果是第一次扫描，所得到的全部标志点从零编号并保存****/
     cv::vector<cv::vector<float> > featureTemp;
     if (firstFind){
         dotFeature.clear();
+        neighborFeature.clear();
         featureTemp = calFeature(dotPositionEven);
         for (size_t p = 0;p < featureTemp.size(); p++){
             dotFeature.push_back(featureTemp[p]);
+            vector<int> neighborTemp = calNeighbor(featureTemp, p);
+            neighborFeature.push_back(neighborTemp);
             Point2i corr;
             corr.x = p;
             corr.y = p;
             correspondPointEven.push_back(corr);
         }
+        markPoint();
+        return true;
     }
     else{
         if (scanNo%2 == 0)
             featureTemp = calFeature(dotPositionEven);
         else
             featureTemp = calFeature(dotPositionOdd);
-        success = dotClassify(featureTemp);
+        bool enoughpoint = dotClassify(featureTemp);
+        if (enoughpoint){
+            markPoint();
+            return true;
+        }
+        else
+            return false;
     }
-    if (success){
-        firstFind = false;
+}
+
+
+void DotMatch::finishMatch()
+{
+    if (!firstFind){
+        calMatrix();
+        for (size_t i  = 0; i < dotFeatureTemp.size(); i++){
+            dotFeature.push_back(dotFeatureTemp[i]);
+        }
+        ///利用添加了新点的dotFeature计算邻域信息
+        neighborFeature.clear();
+        for (size_t i = 0;i < dotFeature.size();i++){
+            vector<int> neighborTemp = calNeighbor(dotFeature, i);
+            neighborFeature.push_back(neighborTemp);
+        }
+        dotFeatureTemp.clear();
         markPoint();
-        scanNo++;
     }
     else
-        return;
+        firstFind = false;
+    scanNo++;
 }
 
 
@@ -356,6 +382,7 @@ bool DotMatch::triangleCalculate()
 {
     cv::Point2f dotLeft;
     cv::Point2f dotRight;
+    vector<int> dotRemove;//不能成功三角计算的点需要去除，该向量存储待去除点的序号
     for (size_t i = 0; i < dotInOrder.size(); i++){
         dotLeft.x = dotInOrder[i][0];
         dotLeft.y = dotInOrder[i][1];
@@ -376,8 +403,8 @@ bool DotMatch::triangleCalculate()
         bool ok = Utilities::line_lineIntersection(rc->cameras[0].position, ray1Vector,rc->cameras[1].position, ray2Vector, interPoint);
 
         if(!ok){
-            QMessageBox::warning(NULL,tr("Warning"),tr("Some point can't be matched,try moving the object."));
-            break;
+            dotRemove.push_back(i);
+            continue;
         }
 
         if (scanNo%2 == 0)
@@ -387,28 +414,37 @@ bool DotMatch::triangleCalculate()
     }
 
     if (scanNo%2 == 0){
-        if (dotPositionEven.size() < 3){
-            QMessageBox::warning(NULL, tr("Not enough Point"), tr("Point less than 3"));
+        if (dotPositionEven.size() < 4){
+            QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point less than 4"));
             firstFind = true;
             return false;
         }
-        else
+        else{
+            for (size_t r=0;r<dotRemove.size();r++){
+                dotInOrder.erase(dotInOrder.begin()+dotRemove[r]);
+            }
             return true;
+        }
     }
     else{
-        if (dotPositionOdd.size() < 3){
-            QMessageBox::warning(NULL, tr("Not enough Point"), tr("Point less than 3"));
+        if (dotPositionOdd.size() < 4){
+            QMessageBox::warning(NULL, tr("Not enough Point"), tr("Point less than 4"));
             firstFind = true;
             return false;
         }
-        else
+        else{
+            for (size_t r=0;r<dotRemove.size();r++){
+                dotInOrder.erase(dotInOrder.begin()+dotRemove[r]);
+            }
             return true;
+        }
     }
 }
 
-
-//计算每点与其余点之间的距离平方作为该点特征值
-//dotP为标记点空间三维绝对坐标(dotPositionOdd 或 dotPositionEven)
+////_________________________________________________________////
+/// 计算每点与其余点之间的距离平方作为该点特征值
+/// dotP为标记点空间三维绝对坐标(dotPositionOdd 或 dotPositionEven)
+////_________________________________________________________////
 cv::vector<cv::vector<float>> DotMatch::calFeature(cv::vector<Point3f> dotP)
 {
     cv::vector<cv::vector<float>> featureTemp;
@@ -432,83 +468,181 @@ cv::vector<cv::vector<float>> DotMatch::calFeature(cv::vector<Point3f> dotP)
 }
 
 
-////根据当前扫描获得的特征值查找其中的已有点并计算变换矩阵
-/// 并将新点加入dotFeature库
-/// 注意这里的featureTemp中元素的序号与dotPositionOdd 或dotPositionEven是对应的
-
+////__________________________________________________________________////
+/// 根据当前扫描获得的特征值查找其中的已有点并计算变换矩阵                         ////
+/// 并将新点加入dotFeature库                                                                       ////
+/// 注意featureTemp中元素的序号与dotPositionOdd 或dotPositionEven是对应的       ////
+////__________________________________________________________________////
 bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 {
+    vector<Point2i> correspondPoint;
     int match = 0;//表示匹配的特征值个数
-    int validpoint = 0;//表示找到的一致点个数，小于3则不能生成变换矩阵，则应重新获取
+    int validpoint = 0;//表示找到的一致点个数，小于4则不能生成变换矩阵，则应重新获取
     size_t featureSize = dotFeature.size();
-    int formermatch = 0;//记录match最大值
-    int bestNo = 0;//达到最大匹配程度（match值最高）的 j
-    bool matched = false;//表示featureTemp中的 i 点是否与dotFeature中的点匹配
-    bool iscon;//判断dotFeature中的j点是否已经被匹配，如果是则continue
 
-    vector<int> alreadymatched;
+    dotFeatureTemp.clear();
+
+    /***定义featureLib，保存featureTemp中各点所匹配的dotFeature中点的序号及匹配度***/
+    vector<vector<Point2i>> featureLib;//Point2i x值表示dotFeature中点的序号，y值表示匹配度match，凡是匹配度大于2的都保存
+    featureLib.resize(featureTemp.size());
+
+    ///未知点遍历循环开始
     for (size_t i = 0; i < featureTemp.size(); i++){
-        size_t j;
-        formermatch = 0;
-        bestNo = 0;
-        matched = false;//初始假设featureTemp中的第i组值与dotfeature中的第j组值不匹配
-        for (j = 0; j < featureSize; j++){
-            iscon = false;
-            for (size_t s = 0; s < alreadymatched.size(); ++s){
-                if (j == alreadymatched[s])//dotFeature中已经发生匹配的点不再参与匹配
-                    iscon = true;
-            }
-            if (iscon)
-                continue;
+
+        ///已知点遍历循环开始
+        for (size_t j = 0; j < featureSize; j++){
 
             match = 0;//每次变换dotFeature中的待匹配序列号时，都要将之前的匹配数清零
+
+            ///单个未知点特征值遍历循环开始
             for (size_t p = 0; p < featureTemp[i].size(); p++){
+
+                ///单个已知点特征值遍历循环开始
                 for (size_t q = 0; q < dotFeature[j].size(); q++){
                     float td = fabs(featureTemp[i][p] - dotFeature[j][q]);
                     if (td < tolerance)
                         match++;
+                }///循环结束
+
+            }///循环结束
+
+            if (match >= 1)///这里若不做限制则是将featureTemp中每一点与dotFeature中每点的匹配度计算出来
+                                ///匹配度小于1的点认为是全新点
+            {
+                featureLib[i].push_back(Point2i(j,match));
+            }
+        }///已知点遍历循环结束
+
+    }///未知点循环结束
+
+    ///至此featureLib中存储了未知点所对应的可能匹配的已知点及其匹配度，下一步
+    /// 是遍历dotFeature各点，查找与各点具有最大匹配度的i
+
+    for (size_t j = 0;j < featureSize;j++){
+        int bestNum = -1;
+        int formatch = 0;
+        for (size_t i = 0;i < featureLib.size();i++){
+            for (size_t s = 0;s < featureLib[i].size();s++){
+                if (j == featureLib[i][s].x){
+                    if (featureLib[i][s].y > formatch){
+                        bestNum = i;
+                        formatch = featureLib[i][s].y;
+                    }
                 }
             }
-            if (match > formermatch){
-                bestNo = j;
-                formermatch = match;
+        }
+        if (bestNum>=0&&formatch>2){
+            bool needbreak = false;
+            /*
+            for (size_t e = 0;e < featureLib[bestNum].size();e++){
+                if (featureLib[bestNum][e].x != j){
+                    if (featureLib[bestNum][e].y > formatch){
+                        needbreak = true;
+                    }
+                }
             }
-        }
-        if (formermatch >= 2)//这里假设特征值没有相同的，若出现至少两个特征值匹配，说明第i点为原有点j
-        {
-            Point2i corr;
-            corr.x = bestNo;//当前检测点在dotFeature中的序号
-            corr.y = i;//当前检测点在dotInOrder中的序号
-            alreadymatched.push_back(bestNo);
-            if (scanNo%2 == 0)
-                correspondPointEven.push_back(corr);
-            else
-                correspondPointOdd.push_back(corr);
-            matched = true;
-            validpoint++;
-        }
-
-        if (!matched){
-            dotFeatureTemp.push_back(featureTemp[i]);
+*/
+            if (!needbreak){
+                correspondPoint.push_back(Point2i(j,bestNum));
+            }
         }
     }
 
-    ////到这里已经找出了在本次扫描及上次扫描中的共有点，并存入dotPositionEven中
-    ///  当dotPositionEven[i].size()=2时，说明第i点在两次扫描中都被找到，可用来计算变换矩阵
-    if (validpoint > 3){
-        for (size_t i  = 0; i < dotFeatureTemp.size(); i++){
-            dotFeature.push_back(dotFeatureTemp[i]);
+    /// 邻域检查，目的是分辨检出的各点邻域情况是否符合已知，如不符合，则排除该点
+    for (size_t i = 0;i < featureTemp.size();i++){
+        for (size_t c = 0;c < correspondPoint.size();c++){
+            if (i==correspondPoint[c].y){
+                std::sort(featureTemp[i].begin(),featureTemp[i].end());
+                vector<int> neighborTemp;
+                for (size_t e=0;e<featureTemp[i].size();e++){
+                    for (size_t p=0;p<featureTemp.size();p++){
+                        for (size_t q=0;q<featureTemp[p].size();q++){
+                            if (featureTemp[i][e] == featureTemp[p][q] && i!=p){
+                                //说明该组特征值是由i、p两点计算出来的
+                                for (size_t r = 0;r < correspondPoint.size();r++){
+                                    if(p == correspondPoint[r].y){
+                                        neighborTemp.push_back(correspondPoint[r].x);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                bool pass = checkNeighbor(neighborFeature[correspondPoint[c].x], neighborTemp);
+                if (pass){
+                    if (scanNo%2 == 0)
+                        correspondPointEven.push_back(correspondPoint[c]);
+                    else
+                        correspondPointOdd.push_back(correspondPoint[c]);
+                    validpoint++;
+                }
+            }
         }
-        dotFeatureTemp.clear();
-        calMatrix();
+    }
+
+    /// 至此featureTemp中所有被认为是已知的点都与dotFeature中的点一一对应，并被用来计算变换矩阵
+    /// 而有一部分点可能由于匹配度较低，对这些点采取忽略处理，显示为未知点，但不加入dotFeature
+    /// 而对于匹配度小于1的i点，即featureLib[i].size=0，认为是新点，将其特征值加入dotFeatureTemp
+    if (validpoint > 3){
+        for (size_t s = 0;s < featureLib.size();s++){
+            if (featureLib[s].size()==0){
+                dotFeatureTemp.push_back(featureTemp[s]);
+            }
+        }
         return true;
     }
     else{
-        QMessageBox::warning(NULL,tr("Fail"),tr("Alignment can't continue due to unenough point."));
+        QMessageBox::warning(NULL,tr("Dot Classify"),tr("Alignment can't continue due to unenough point."));
         return false;
     }
 }
 
+
+
+vector<int> DotMatch::calNeighbor(vector<vector<float>> input, int num)
+{
+    vector<int> output;
+    std::sort(input[num].begin(),input[num].end());//注意是升序排列，近点在前，远点在后
+    for (size_t e = 0;e < input[num].size();e++){
+        for (size_t j = 0;j < input.size();j++){
+            for (size_t k = 0;k < input[j].size();k++){
+                if (input[num][e] == input[j][k] && num!=j)
+                    output.push_back(j);
+            }
+        }
+    }
+    return output;
+}
+
+bool DotMatch::checkNeighbor(vector<int> nf, vector<int> nt)
+{
+    int error = 0;
+    for (size_t i = 0;i < nt.size();i++){
+        int flag = -1;
+        for (size_t j = 0;j < nf.size();j++){
+            if (nt[i] == nf[j]){
+                flag = j;
+            }
+        }
+        if (flag >= 0){
+            for (size_t p = i;p < nt.size();p++){
+                for (size_t q = 0;q <= flag;q++){
+                    if (nt[p] == nf[q] && q != flag){
+                        nf[q] = -1;//使其不再参与比较
+                        error++;
+                    }
+                }
+            }
+        }
+        else{
+            continue;
+        }
+    }
+    if (error <= 2)
+        return true;//error = 2可能是因对象点误检造成的，不足以说明当前的位置错误
+    else
+        return false;
+}
 
 ////通过储存在correspondPointEven及correspondPointOdd中的一致点变换前后坐标计算变换矩阵
 void DotMatch::calMatrix()
@@ -583,6 +717,8 @@ void DotMatch::calMatrix()
     QString outMatPath = path + "/scan/transfer_mat" + QString::number(scanNo) + ".txt";
     Utilities::exportMat(outMatPath.toLocal8Bit(), transFormer);
 }
+
+
 
 void DotMatch::markPoint()
 {
