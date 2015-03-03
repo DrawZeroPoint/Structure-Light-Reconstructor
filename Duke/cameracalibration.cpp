@@ -367,13 +367,14 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img, cv::vector<cv::Point2f
     cv::Mat img_copy;
     img.copyTo(img_copy);
 
-#ifdef TEST_ASY
-    numOfCornersX = 4;
-    numOfCornersY = 11;
-#else
-    numOfCornersX = 11;//这里按标准双目标定板确定横向和纵向方格数目，进一步应改为从set获取
-    numOfCornersY = 9;
-#endif
+    if(!useSymmetric){
+        numOfCornersX = 4;
+        numOfCornersY = 11;
+    }
+    else{
+        numOfCornersX = 11;//这里按标准双目标定板确定横向和纵向方格数目，进一步应改为从set获取
+        numOfCornersY = 9;
+    }
 
     bool found = false;
     cv::cvtColor(img, img_grey, CV_RGB2GRAY);
@@ -382,13 +383,12 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img, cv::vector<cv::Point2f
     ///这里尝试采用opencv自带的找圆心功能
     cv::Size patternsize(numOfCornersX, numOfCornersY);
     cv::bitwise_not(img_grey, img_grey);//反相处理
-#ifdef TEST_ASY
-    found = cv::findCirclesGrid(img_grey, patternsize, camCorners,cv::CALIB_CB_ASYMMETRIC_GRID);
-#else
-    found = cv::findCirclesGrid(img_grey, patternsize, camCorners,cv::CALIB_CB_SYMMETRIC_GRID);
-#endif
+    if(!useSymmetric)
+        found = cv::findCirclesGrid(img_grey, patternsize, camCorners,cv::CALIB_CB_ASYMMETRIC_GRID);
+    else
+        found = cv::findCirclesGrid(img_grey, patternsize, camCorners,cv::CALIB_CB_SYMMETRIC_GRID);
+
     if(!found){
-        QMessageBox::warning(NULL,NULL,tr("Couldn't find circles in current image!"));
         return false;
     }
     ///要实现全自动可以屏蔽下面的while循环
@@ -413,16 +413,15 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img, cv::vector<cv::Point2f
             squareSize.height = 20;
             squareSize.width = 20;
         }
-#ifdef TEST_ASY
-        for (int i = 0; i < numOfCornersY; i++)
-        {
-            for (int j = 0; j < numOfCornersX; j++)
-            {
+    if(!useSymmetric){
+        for (int i = 0; i < numOfCornersY; i++){
+            for (int j = 0; j < numOfCornersX; j++){
                 objCorners->push_back(cv::Point3f(float((2*j + i % 2)*squareSize.width),float(i*squareSize.width),0));
             }
         }
-#else
-        for(int i = 0; i<numOfCornersY ; i++){
+    }
+    else{
+        for(int i = 0; i<numOfCornersY; i++){
             for(int j = 0; j<numOfCornersX; j++){
                 cv::Point3f p;
                 p.x = j * squareSize.width;
@@ -431,7 +430,7 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img, cv::vector<cv::Point2f
                 objCorners->push_back(p);
             }
         }
-#endif
+    }
         return true;
     }
     else
@@ -449,7 +448,14 @@ int CameraCalibration::extractImageCorners()
     for(int i = 0; i < numOfCamImgs; i++){
         cv::vector<cv::Point2f> cCam;
         cv::vector<cv::Point3f> cObj;
-        findCornersInCamImg(calibImgs[i], cCam, &cObj );
+        bool found = findCornersInCamImg(calibImgs[i], cCam, &cObj );
+
+        if(!found){
+            QString cam = (isleft)?("L"):("R");
+            QMessageBox::warning(NULL,NULL,tr("Couldn't find circles in image ") + cam + QString::number(i+1));
+            return 0;
+        }
+
         if(cCam.size()){
             imgBoardCornersCam.push_back(cCam);
             objBoardCornersCam.push_back(cObj);
@@ -477,8 +483,11 @@ int CameraCalibration::extractImageCorners()
 int CameraCalibration::calibrateCamera()
 {
     //check if corners for camera calib has been extracted
-    if(imgBoardCornersCam.size() == 0)
-        extractImageCorners();
+    if(imgBoardCornersCam.size() != numOfCamImgs){
+        if(!extractImageCorners()){
+            return 0;
+        }
+    }
 
     cv::vector<cv::Mat> camRotationVectors;
     cv::vector<cv::Mat> camTranslationVectors;

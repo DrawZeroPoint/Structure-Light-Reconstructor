@@ -7,7 +7,6 @@
 
 #include <QObject>
 
-#define TEST_ASY
 #define TEST_STEREO//得到的参数明显有问题
 
 #define CAMCALIB_OUT_MATRIX 1
@@ -78,6 +77,7 @@ public:
     cv::vector<cv::Point2f> findFunRight;
 
     bool isleft;
+    bool useSymmetric;//采用对称标定板或非对称标定板
     double rms;
 
 private:
