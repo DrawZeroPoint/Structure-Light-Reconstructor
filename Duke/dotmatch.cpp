@@ -28,8 +28,16 @@ DotMatch::DotMatch(QObject *parent, QString projectPath) :
 vector<vector<float>> DotMatch::findDot(Mat image)
 {
     vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
+    Mat bimage = Mat::zeros(image.size(), CV_8UC1);//二值化后的图像
+
+#ifdef USE_ADAPTIVE_THRESHOLD
+    adaptiveThreshold(image,bimage,255,ADAPTIVE_THRESH_MEAN_C,THRESH_BINARY,21,60);
+    //blocksize较大可以使处理效果趋向二值化，较小则趋向边缘提取；C值的作用在于抑制噪声
+#else
     bwThreshold = OSTU_Region(image);
-    Mat bimage = image >= bwThreshold;
+    bimage = image >= bwThreshold;
+#endif
+
 #ifdef DEBUG
     Mat cimage = Mat::zeros(bimage.size(), CV_8UC3);
     Mat dimage = Mat::zeros(bimage.size(), CV_8UC3);
@@ -37,6 +45,7 @@ vector<vector<float>> DotMatch::findDot(Mat image)
     imshow("Threshold",bimage);
     cvWaitKey();
 #endif
+
 #ifdef USE_FOUR_POINT
     /****************四点匹配法*****************/
     vector<vector<float>> alltemp;
@@ -106,7 +115,9 @@ vector<vector<float>> DotMatch::findDot(Mat image)
     imshow("Point Found",cimage);
     cvWaitKey();
 #endif
+
     vector<Point2f> out = subPixel(bimage, alltemp);//将初步得到的圆心坐标进一步精确
+
 #ifdef DEBUG
     for (size_t i=0; i <out.size();i++)
     {

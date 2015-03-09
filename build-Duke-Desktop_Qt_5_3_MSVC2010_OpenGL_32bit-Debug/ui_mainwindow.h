@@ -66,6 +66,9 @@ public:
     QPushButton *loadTest;
     QSpacerItem *verticalSpacer_15;
     QHBoxLayout *displayLayout;
+    QHBoxLayout *horizontalLayout_2;
+    QLabel *label_2;
+    QProgressBar *progressBar;
     QTabWidget *tabWidget;
     QWidget *tab;
     QGridLayout *gridLayout_17;
@@ -90,13 +93,14 @@ public:
     QLabel *label_14;
     QLabel *StereoRMS;
     QWidget *tab_2;
-    QGridLayout *gridLayout_16;
     QGridLayout *gridLayout_15;
-    QHBoxLayout *horizontalLayout_4;
+    QVBoxLayout *verticalLayout_5;
+    QHBoxLayout *horizontalLayout_3;
     QVBoxLayout *verticalLayout;
     QPushButton *findPointButton;
     QPushButton *reFindButton;
-    QHBoxLayout *horizontalLayout_3;
+    QPushButton *startScanButton;
+    QHBoxLayout *horizontalLayout;
     QLabel *label_3;
     QLabel *scanNoLabel;
     QGroupBox *groupBox_4;
@@ -104,8 +108,7 @@ public:
     QRadioButton *useGray;
     QRadioButton *useMultiFreq;
     QPushButton *multiFreqTest;
-    QPushButton *startScanButton;
-    QSpacerItem *horizontalSpacer_16;
+    QSpacerItem *horizontalSpacer_13;
     QWidget *tab_3;
     QWidget *layoutWidget;
     QVBoxLayout *verticalLayout_2;
@@ -115,9 +118,6 @@ public:
     QLabel *label_4;
     QSpinBox *reconstructionCount;
     QPushButton *reconstructionButton;
-    QHBoxLayout *horizontalLayout_2;
-    QLabel *label_2;
-    QProgressBar *progressBar;
     QMenuBar *menubar;
     QMenu *menuFile;
     QMenu *menuCustomize;
@@ -363,6 +363,26 @@ public:
 
         gridLayout->addWidget(displayWidget, 0, 0, 1, 1);
 
+        horizontalLayout_2 = new QHBoxLayout();
+        horizontalLayout_2->setSpacing(10);
+        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        label_2 = new QLabel(centralWidget);
+        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setStyleSheet(QStringLiteral("font: 75 9pt \"Calibri\";"));
+
+        horizontalLayout_2->addWidget(label_2);
+
+        progressBar = new QProgressBar(centralWidget);
+        progressBar->setObjectName(QStringLiteral("progressBar"));
+        progressBar->setStyleSheet(QStringLiteral("font: 75 9pt \"Calibri\";"));
+        progressBar->setValue(0);
+        progressBar->setInvertedAppearance(false);
+
+        horizontalLayout_2->addWidget(progressBar);
+
+
+        gridLayout->addLayout(horizontalLayout_2, 2, 0, 1, 1);
+
         tabWidget = new QTabWidget(centralWidget);
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
         QSizePolicy sizePolicy5(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
@@ -529,12 +549,12 @@ public:
         tabWidget->addTab(tab, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QStringLiteral("tab_2"));
-        gridLayout_16 = new QGridLayout(tab_2);
-        gridLayout_16->setObjectName(QStringLiteral("gridLayout_16"));
-        gridLayout_15 = new QGridLayout();
+        gridLayout_15 = new QGridLayout(tab_2);
         gridLayout_15->setObjectName(QStringLiteral("gridLayout_15"));
-        horizontalLayout_4 = new QHBoxLayout();
-        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
+        verticalLayout_5 = new QVBoxLayout();
+        verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
+        horizontalLayout_3 = new QHBoxLayout();
+        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
         verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         findPointButton = new QPushButton(tab_2);
@@ -549,26 +569,32 @@ public:
 
         verticalLayout->addWidget(reFindButton);
 
+        startScanButton = new QPushButton(tab_2);
+        startScanButton->setObjectName(QStringLiteral("startScanButton"));
+        startScanButton->setEnabled(false);
 
-        horizontalLayout_4->addLayout(verticalLayout);
+        verticalLayout->addWidget(startScanButton);
 
-        horizontalLayout_3 = new QHBoxLayout();
-        horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
+
+        horizontalLayout_3->addLayout(verticalLayout);
+
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
         label_3 = new QLabel(tab_2);
         label_3->setObjectName(QStringLiteral("label_3"));
 
-        horizontalLayout_3->addWidget(label_3);
+        horizontalLayout->addWidget(label_3);
 
         scanNoLabel = new QLabel(tab_2);
         scanNoLabel->setObjectName(QStringLiteral("scanNoLabel"));
 
-        horizontalLayout_3->addWidget(scanNoLabel);
+        horizontalLayout->addWidget(scanNoLabel);
 
 
-        horizontalLayout_4->addLayout(horizontalLayout_3);
+        horizontalLayout_3->addLayout(horizontalLayout);
 
 
-        gridLayout_15->addLayout(horizontalLayout_4, 0, 0, 1, 2);
+        verticalLayout_5->addLayout(horizontalLayout_3);
 
         groupBox_4 = new QGroupBox(tab_2);
         groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
@@ -586,25 +612,19 @@ public:
         gridLayout_14->addWidget(useMultiFreq, 1, 0, 1, 1);
 
 
-        gridLayout_15->addWidget(groupBox_4, 1, 0, 1, 1);
+        verticalLayout_5->addWidget(groupBox_4);
 
         multiFreqTest = new QPushButton(tab_2);
         multiFreqTest->setObjectName(QStringLiteral("multiFreqTest"));
 
-        gridLayout_15->addWidget(multiFreqTest, 2, 0, 1, 1);
-
-        startScanButton = new QPushButton(tab_2);
-        startScanButton->setObjectName(QStringLiteral("startScanButton"));
-        startScanButton->setEnabled(false);
-
-        gridLayout_15->addWidget(startScanButton, 2, 1, 1, 1);
+        verticalLayout_5->addWidget(multiFreqTest);
 
 
-        gridLayout_16->addLayout(gridLayout_15, 0, 0, 1, 1);
+        gridLayout_15->addLayout(verticalLayout_5, 0, 0, 1, 1);
 
-        horizontalSpacer_16 = new QSpacerItem(132, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        horizontalSpacer_13 = new QSpacerItem(134, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        gridLayout_16->addItem(horizontalSpacer_16, 0, 1, 1, 1);
+        gridLayout_15->addItem(horizontalSpacer_13, 0, 1, 1, 1);
 
         tabWidget->addTab(tab_2, QString());
         tab_3 = new QWidget();
@@ -649,26 +669,6 @@ public:
         tabWidget->addTab(tab_3, QString());
 
         gridLayout->addWidget(tabWidget, 1, 0, 1, 1);
-
-        horizontalLayout_2 = new QHBoxLayout();
-        horizontalLayout_2->setSpacing(10);
-        horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
-        label_2 = new QLabel(centralWidget);
-        label_2->setObjectName(QStringLiteral("label_2"));
-        label_2->setStyleSheet(QStringLiteral("font: 75 9pt \"Calibri\";"));
-
-        horizontalLayout_2->addWidget(label_2);
-
-        progressBar = new QProgressBar(centralWidget);
-        progressBar->setObjectName(QStringLiteral("progressBar"));
-        progressBar->setStyleSheet(QStringLiteral("font: 75 9pt \"Calibri\";"));
-        progressBar->setValue(0);
-        progressBar->setInvertedAppearance(false);
-
-        horizontalLayout_2->addWidget(progressBar);
-
-
-        gridLayout->addLayout(horizontalLayout_2, 2, 0, 1, 1);
 
 
         gridLayout_2->addWidget(centralWidget, 0, 0, 1, 1);
@@ -1135,7 +1135,7 @@ public:
         QObject::connect(spinBox, SIGNAL(valueChanged(int)), snapSpeedBox, SLOT(setValue(int)));
         QObject::connect(manualReconstruction, SIGNAL(clicked(bool)), reconstructionCount, SLOT(setEnabled(bool)));
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -1218,6 +1218,7 @@ public:
         actionBasler->setText(QApplication::translate("MainWindow", "Basler", 0));
         label->setText(QApplication::translate("MainWindow", "Point Size", 0));
         loadTest->setText(QApplication::translate("MainWindow", "Load Test", 0));
+        label_2->setText(QApplication::translate("MainWindow", "Current Operation Processed:", 0));
         label_9->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Capture images as displayed:</p></body></html>", 0));
         currentPhotoLabel->setText(QApplication::translate("MainWindow", "0", 0));
         label_11->setText(QApplication::translate("MainWindow", "<html><head/><body><p>/13 images have been captured.</p></body></html>", 0));
@@ -1236,19 +1237,18 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Calibrate", 0));
         findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
         reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));
+        startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
         label_3->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Current scan count: </p></body></html>", 0));
         scanNoLabel->setText(QApplication::translate("MainWindow", "0", 0));
         groupBox_4->setTitle(QApplication::translate("MainWindow", "Scan Method", 0));
         useGray->setText(QApplication::translate("MainWindow", "GrayCodes", 0));
         useMultiFreq->setText(QApplication::translate("MainWindow", "MultiFrequency", 0));
         multiFreqTest->setText(QApplication::translate("MainWindow", "Test MultiFreq", 0));
-        startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Scan", 0));
         manualReconstruction->setText(QApplication::translate("MainWindow", "Manual reconstruction", 0));
         label_4->setText(QApplication::translate("MainWindow", "Set current reconstruction count to:", 0));
         reconstructionButton->setText(QApplication::translate("MainWindow", "Reconstruction", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("MainWindow", "Reconstruct", 0));
-        label_2->setText(QApplication::translate("MainWindow", "Current Operation Processed:", 0));
         menuFile->setTitle(QApplication::translate("MainWindow", "Project", 0));
         menuCustomize->setTitle(QApplication::translate("MainWindow", "Customize", 0));
         menuLanguage->setTitle(QApplication::translate("MainWindow", "Language", 0));

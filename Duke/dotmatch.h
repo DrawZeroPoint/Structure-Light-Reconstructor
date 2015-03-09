@@ -1,7 +1,9 @@
 #ifndef DOTMATCH_H
 #define DOTMATCH_H
 
+//调试用宏定义
 //#define DEBUG
+#define USE_ADAPTIVE_THRESHOLD
 #define USE_FOUR_POINT
 
 #include <QObject>
