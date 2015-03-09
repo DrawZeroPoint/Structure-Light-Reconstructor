@@ -74,19 +74,21 @@ public:
     QLabel *label_11;
     QSpacerItem *horizontalSpacer_15;
     QLabel *explainLabel;
-    QSpacerItem *verticalSpacer_13;
-    QVBoxLayout *verticalLayout_4;
-    QLabel *label_10;
-    QGridLayout *gridLayout_11;
-    QLabel *label_12;
-    QLabel *leftRMS;
-    QLabel *label_13;
-    QLabel *rightRMS;
     QVBoxLayout *verticalLayout_3;
     QPushButton *captureButton;
     QPushButton *redoButton;
     QPushButton *calibButton;
     QCheckBox *useSymmetric;
+    QSpacerItem *verticalSpacer_13;
+    QVBoxLayout *verticalLayout_4;
+    QLabel *label_10;
+    QGridLayout *gridLayout_11;
+    QLabel *rightRMS;
+    QLabel *label_12;
+    QLabel *leftRMS;
+    QLabel *label_13;
+    QLabel *label_14;
+    QLabel *StereoRMS;
     QWidget *tab_2;
     QGridLayout *gridLayout_16;
     QGridLayout *gridLayout_15;
@@ -431,51 +433,6 @@ public:
 
         gridLayout_17->addWidget(explainLabel, 1, 0, 3, 3);
 
-        verticalSpacer_13 = new QSpacerItem(20, 67, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-        gridLayout_17->addItem(verticalSpacer_13, 2, 3, 1, 1);
-
-        verticalLayout_4 = new QVBoxLayout();
-        verticalLayout_4->setSpacing(2);
-        verticalLayout_4->setObjectName(QStringLiteral("verticalLayout_4"));
-        verticalLayout_4->setContentsMargins(4, -1, -1, -1);
-        label_10 = new QLabel(tab);
-        label_10->setObjectName(QStringLiteral("label_10"));
-        sizePolicy4.setHeightForWidth(label_10->sizePolicy().hasHeightForWidth());
-        label_10->setSizePolicy(sizePolicy4);
-
-        verticalLayout_4->addWidget(label_10);
-
-        gridLayout_11 = new QGridLayout();
-        gridLayout_11->setObjectName(QStringLiteral("gridLayout_11"));
-        gridLayout_11->setHorizontalSpacing(6);
-        gridLayout_11->setVerticalSpacing(2);
-        label_12 = new QLabel(tab);
-        label_12->setObjectName(QStringLiteral("label_12"));
-
-        gridLayout_11->addWidget(label_12, 0, 0, 1, 1);
-
-        leftRMS = new QLabel(tab);
-        leftRMS->setObjectName(QStringLiteral("leftRMS"));
-
-        gridLayout_11->addWidget(leftRMS, 0, 1, 1, 1);
-
-        label_13 = new QLabel(tab);
-        label_13->setObjectName(QStringLiteral("label_13"));
-
-        gridLayout_11->addWidget(label_13, 1, 0, 1, 1);
-
-        rightRMS = new QLabel(tab);
-        rightRMS->setObjectName(QStringLiteral("rightRMS"));
-
-        gridLayout_11->addWidget(rightRMS, 1, 1, 1, 1);
-
-
-        verticalLayout_4->addLayout(gridLayout_11);
-
-
-        gridLayout_17->addLayout(verticalLayout_4, 3, 3, 1, 1);
-
         verticalLayout_3 = new QVBoxLayout();
         verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
         verticalLayout_3->setContentsMargins(4, -1, 0, -1);
@@ -513,6 +470,61 @@ public:
         useSymmetric->setObjectName(QStringLiteral("useSymmetric"));
 
         gridLayout_17->addWidget(useSymmetric, 1, 4, 1, 1);
+
+        verticalSpacer_13 = new QSpacerItem(20, 67, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+        gridLayout_17->addItem(verticalSpacer_13, 2, 3, 1, 1);
+
+        verticalLayout_4 = new QVBoxLayout();
+        verticalLayout_4->setSpacing(2);
+        verticalLayout_4->setObjectName(QStringLiteral("verticalLayout_4"));
+        verticalLayout_4->setContentsMargins(4, -1, -1, -1);
+        label_10 = new QLabel(tab);
+        label_10->setObjectName(QStringLiteral("label_10"));
+        sizePolicy4.setHeightForWidth(label_10->sizePolicy().hasHeightForWidth());
+        label_10->setSizePolicy(sizePolicy4);
+
+        verticalLayout_4->addWidget(label_10);
+
+        gridLayout_11 = new QGridLayout();
+        gridLayout_11->setObjectName(QStringLiteral("gridLayout_11"));
+        gridLayout_11->setHorizontalSpacing(6);
+        gridLayout_11->setVerticalSpacing(2);
+        rightRMS = new QLabel(tab);
+        rightRMS->setObjectName(QStringLiteral("rightRMS"));
+
+        gridLayout_11->addWidget(rightRMS, 1, 1, 1, 1);
+
+        label_12 = new QLabel(tab);
+        label_12->setObjectName(QStringLiteral("label_12"));
+
+        gridLayout_11->addWidget(label_12, 0, 0, 1, 1);
+
+        leftRMS = new QLabel(tab);
+        leftRMS->setObjectName(QStringLiteral("leftRMS"));
+
+        gridLayout_11->addWidget(leftRMS, 0, 1, 1, 1);
+
+        label_13 = new QLabel(tab);
+        label_13->setObjectName(QStringLiteral("label_13"));
+
+        gridLayout_11->addWidget(label_13, 1, 0, 1, 1);
+
+        label_14 = new QLabel(tab);
+        label_14->setObjectName(QStringLiteral("label_14"));
+
+        gridLayout_11->addWidget(label_14, 2, 0, 1, 1);
+
+        StereoRMS = new QLabel(tab);
+        StereoRMS->setObjectName(QStringLiteral("StereoRMS"));
+
+        gridLayout_11->addWidget(StereoRMS, 2, 1, 1, 1);
+
+
+        verticalLayout_4->addLayout(gridLayout_11);
+
+
+        gridLayout_17->addLayout(verticalLayout_4, 3, 3, 1, 1);
 
         tabWidget->addTab(tab, QString());
         tab_2 = new QWidget();
@@ -1208,17 +1220,19 @@ public:
         loadTest->setText(QApplication::translate("MainWindow", "Load Test", 0));
         label_9->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Capture images as displayed:</p></body></html>", 0));
         currentPhotoLabel->setText(QApplication::translate("MainWindow", "0", 0));
-        label_11->setText(QApplication::translate("MainWindow", "<html><head/><body><p>/12 images have been captured.</p></body></html>", 0));
+        label_11->setText(QApplication::translate("MainWindow", "<html><head/><body><p>/13 images have been captured.</p></body></html>", 0));
         explainLabel->setText(QApplication::translate("MainWindow", "Illustration", 0));
-        label_10->setText(QApplication::translate("MainWindow", "RMS:", 0));
-        label_12->setText(QApplication::translate("MainWindow", "Left Camera", 0));
-        leftRMS->setText(QApplication::translate("MainWindow", "0", 0));
-        label_13->setText(QApplication::translate("MainWindow", "Right Camera", 0));
-        rightRMS->setText(QApplication::translate("MainWindow", "0", 0));
         captureButton->setText(QApplication::translate("MainWindow", "Capture", 0));
         redoButton->setText(QApplication::translate("MainWindow", "Redo", 0));
         calibButton->setText(QApplication::translate("MainWindow", "Calibrate", 0));
         useSymmetric->setText(QApplication::translate("MainWindow", "Use Symmetric Board", 0));
+        label_10->setText(QApplication::translate("MainWindow", "RMS:", 0));
+        rightRMS->setText(QApplication::translate("MainWindow", "0", 0));
+        label_12->setText(QApplication::translate("MainWindow", "Left Camera", 0));
+        leftRMS->setText(QApplication::translate("MainWindow", "0", 0));
+        label_13->setText(QApplication::translate("MainWindow", "Right Camera", 0));
+        label_14->setText(QApplication::translate("MainWindow", "Stereo Camera", 0));
+        StereoRMS->setText(QApplication::translate("MainWindow", "0", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Calibrate", 0));
         findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
         reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));

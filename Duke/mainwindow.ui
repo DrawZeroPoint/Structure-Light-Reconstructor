@@ -298,7 +298,7 @@ font: 9pt &quot;Calibri&quot;;</string>
               </sizepolicy>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;/12 images have been captured.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;/13 images have been captured.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -351,80 +351,6 @@ font: 9pt &quot;Calibri&quot;;</string>
               <set>Qt::AlignCenter</set>
              </property>
             </widget>
-           </item>
-           <item row="2" column="3">
-            <spacer name="verticalSpacer_13">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>67</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="3" column="3">
-            <layout class="QVBoxLayout" name="verticalLayout_4">
-             <property name="spacing">
-              <number>2</number>
-             </property>
-             <property name="leftMargin">
-              <number>4</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_10">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>RMS:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <layout class="QGridLayout" name="gridLayout_11">
-               <property name="horizontalSpacing">
-                <number>6</number>
-               </property>
-               <property name="verticalSpacing">
-                <number>2</number>
-               </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_12">
-                 <property name="text">
-                  <string>Left Camera</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLabel" name="leftRMS">
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_13">
-                 <property name="text">
-                  <string>Right Camera</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QLabel" name="rightRMS">
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
            </item>
            <item row="1" column="3">
             <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -490,6 +416,94 @@ font: 9pt &quot;Calibri&quot;;</string>
               <string>Use Symmetric Board</string>
              </property>
             </widget>
+           </item>
+           <item row="2" column="3">
+            <spacer name="verticalSpacer_13">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>67</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="3" column="3">
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <property name="leftMargin">
+              <number>4</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_10">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>RMS:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QGridLayout" name="gridLayout_11">
+               <property name="horizontalSpacing">
+                <number>6</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>2</number>
+               </property>
+               <item row="1" column="1">
+                <widget class="QLabel" name="rightRMS">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Left Camera</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="leftRMS">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>Right Camera</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_14">
+                 <property name="text">
+                  <string>Stereo Camera</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLabel" name="StereoRMS">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
