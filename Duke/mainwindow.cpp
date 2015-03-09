@@ -163,7 +163,7 @@ void MainWindow::capturecalib()
         saveCount++;
         QString explain = ":/" + QString::number(saveCount) + ".png";
         ui->explainLabel->setPixmap(explain);
-        if(saveCount == 13){
+        if(saveCount == CALIBIMGNUM+1){
             saveCount = 1;
             ui->calibButton->setEnabled(true);
         }
@@ -245,10 +245,14 @@ void MainWindow::calibration()
         //load images
         calibrator->loadCameraImgs(path);
         progressPop(5);
-        calibrator->extractImageCorners();
+        if(!calibrator->extractImageCorners()){
+            ui->progressBar->reset();
+            return;
+        }
         progressPop(15);
         if(!calibrator->calibrateCamera())
             return;
+        //显示单个相机标定误差
         (i==1)?(ui->leftRMS->setText(QString::number(calibrator->rms))):(ui->rightRMS->setText(QString::number(calibrator->rms)));
         progressPop(10);
         calibrator->findCameraExtrisics();
@@ -276,7 +280,7 @@ void MainWindow::calibration()
         progressPop(10);
     }
     path = projectPath + "/calib/fundamental_mat.txt";
-    calibrator->findFundamental();
+    calibrator->findFundamental();//计算基础矩阵并进行立体标定（若定义）
     calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_FUNDAMENTAL);
     path = projectPath + "/calib/H1_mat.txt";
     calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_H1);
@@ -285,6 +289,7 @@ void MainWindow::calibration()
     path = projectPath + "/calib/status_mat.txt";
     calibrator->exportTxtFiles(path.toLocal8Bit(), CAMCALIB_OUT_STATUS);
 #ifdef TEST_STEREO
+    ui->StereoRMS->setText(QString::number(calibrator->rms));
     path = projectPath + "/calib/fundamental_stereo.txt";
     calibrator->exportTxtFiles(path.toLocal8Bit(), STEREOCALIB_OUT_F);
     path = projectPath + "/calib/R_stereo.txt";

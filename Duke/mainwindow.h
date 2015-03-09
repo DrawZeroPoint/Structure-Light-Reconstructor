@@ -30,6 +30,8 @@
 
 #define WM_SNAP_CHANGE		(WM_USER + 100)
 
+#define CALIBIMGNUM 13
+
 #define PATHCALIB 0
 #define PATHSCAN 1
 #define PATHRECON 2
