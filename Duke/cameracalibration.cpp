@@ -7,7 +7,7 @@ CameraCalibration::CameraCalibration()
 {
     squareSize.width = 0;
     squareSize.height = 0;
-    numOfCamImgs = 12;
+    numOfCamImgs = 13;
     camCalibrated = false;
 }
 
@@ -311,14 +311,13 @@ void CameraCalibration::loadCameraImgs(QString fpath)
     if (calibImgs.size())
         calibImgs.clear();
 
-    for(int i = 0; i < 12; i++)
+    for(int i = 0; i < numOfCamImgs-1; i++)
     {
-        //这里假定每个相机的标定图片数为12，folderPath应包括前缀L、R
+        //这里假定每个相机的标定图片数为13，folderPath应包括前缀L、R
         QString path = fpath;
-        path += QString::number(i+1) + ".png";//这里假定每个相机的标定图片数为12，folderPath应包括前缀L、R
+        path += QString::number(i+1) + ".png";
         cv::Mat img = cv::imread(path.toStdString());
-        if(img.empty())
-        {
+        if(img.empty()){
             QMessageBox::warning(NULL, QObject::tr("Images Not Found"), QObject::tr("The camera calibration images are not found."));
             return;
         }
@@ -326,11 +325,10 @@ void CameraCalibration::loadCameraImgs(QString fpath)
     }
 
     QString path = fpath;
-    path += QString::number(12) + ".png";//暂时用第12幅图作为外部参数标定图像，以后可以多拍一幅
+    path += QString::number(numOfCamImgs) + ".png";//用第13幅图作为外部参数标定图像
     extrImg = cv::imread(path.toStdString());
-    if(extrImg.empty())
-    {
-        QMessageBox::warning(NULL, QObject::tr("Image Not Found"), QObject::tr("The extrinsicts calibration image is missing."));
+    if(extrImg.empty()){
+        QMessageBox::warning(NULL, QObject::tr("Image Not Found"), QObject::tr("The images for extrinsicts calibration are missing."));
         return;
     }
     if(!calibImgs[0].empty())
@@ -406,10 +404,8 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img, cv::vector<cv::Point2f
     }
 #endif
 
-    if(found)
-    {
-        if(squareSize.height == 0)
-        {
+    if(found){
+        if(squareSize.height == 0){
             squareSize.height = 20;
             squareSize.width = 20;
         }
@@ -445,7 +441,7 @@ int CameraCalibration::extractImageCorners()
     imgBoardCornersCam.clear();
     objBoardCornersCam.clear();
 
-    for(int i = 0; i < numOfCamImgs; i++){
+    for(size_t i = 0; i < calibImgs.size(); i++){
         cv::vector<cv::Point2f> cCam;
         cv::vector<cv::Point3f> cObj;
         bool found = findCornersInCamImg(calibImgs[i], cCam, &cObj );
@@ -483,7 +479,7 @@ int CameraCalibration::extractImageCorners()
 int CameraCalibration::calibrateCamera()
 {
     //check if corners for camera calib has been extracted
-    if(imgBoardCornersCam.size() != numOfCamImgs){
+    if(imgBoardCornersCam.size() != numOfCamImgs-1){
         if(!extractImageCorners()){
             return 0;
         }
@@ -515,7 +511,7 @@ bool CameraCalibration::findCameraExtrisics()
 {
     cv::vector<cv::Point2f> imgPoints;
     cv::vector<cv::Point3f> objPoints3D;
-    findCornersInCamImg(extrImg, imgPoints, &objPoints3D );
+    findCornersInCamImg(extrImg, imgPoints, &objPoints3D);
     cv::Mat rVec;
     //find extrinsics rotation & translation
     bool r = cv::solvePnP(objPoints3D,imgPoints,camMatrix,distortion,rVec,translationVector);
@@ -531,7 +527,7 @@ void CameraCalibration::findFundamental()
     findFunLeft.clear();
     findFunRight.clear();
 #ifdef TEST_STEREO
-    stereoCalibrate(objBoardCornersCam,imgBoardCornersCamL,imgBoardCornersCamR,camMatrixL,distortionL,camMatrixR,distortionR
+    rms = stereoCalibrate(objBoardCornersCam,imgBoardCornersCamL,imgBoardCornersCamR,camMatrixL,distortionL,camMatrixR,distortionR
                     ,camImageSize,R,T,E,F);
 #endif
 }

@@ -6,7 +6,7 @@
 #include <opencv2/calib3d/calib3d.hpp>
 
 #include <QObject>
-
+//#define DEBUG
 #define TEST_STEREO//得到的参数明显有问题
 
 #define CAMCALIB_OUT_MATRIX 1
