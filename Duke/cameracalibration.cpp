@@ -434,10 +434,10 @@ bool CameraCalibration:: findCornersInCamImg(cv::Mat img, cv::vector<cv::Point2f
 }
 
 
-int CameraCalibration::extractImageCorners()
+int CameraCalibration::extractImageCorners()//返回值大于0说明处理不成功，等于零表示处理成功
 {
     if(calibImgs.size() == 0)
-        return 0;
+        return numOfCamImgs+1;
     imgBoardCornersCam.clear();
     objBoardCornersCam.clear();
 
@@ -448,8 +448,14 @@ int CameraCalibration::extractImageCorners()
 
         if(!found){
             QString cam = (isleft)?("L"):("R");
-            QMessageBox::warning(NULL,NULL,tr("Couldn't find circles in image ") + cam + QString::number(i+1));
-            return 0;
+            if(QMessageBox::warning(NULL,NULL,tr("Couldn't find circles in image ") + cam + QString::number(i+1)
+                    + ", Recapture?",
+                    QMessageBox::Yes,
+                    QMessageBox::Cancel) == QMessageBox::Yes){
+                return i+1;
+            }
+            else
+                return 14;//返回未能读取的图像序号
         }
 
         if(cCam.size()){
@@ -473,7 +479,7 @@ int CameraCalibration::extractImageCorners()
             findFunRight.push_back(imgBoardCornersCam[11][i]);
         }
     }
-    return 1;
+    return 0;
 }
 
 int CameraCalibration::calibrateCamera()
