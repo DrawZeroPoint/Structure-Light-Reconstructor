@@ -53,6 +53,7 @@ public:
     QAction *actionEnglish;
     QAction *actionChinese;
     QAction *actionBasler;
+    QAction *actionFocusAssistant;
     QWidget *centralwidget;
     QGridLayout *gridLayout_2;
     QWidget *centralWidget;
@@ -122,6 +123,7 @@ public:
     QMenu *menuFile;
     QMenu *menuCustomize;
     QMenu *menuLanguage;
+    QMenu *menuTools;
     QStatusBar *statusBar;
     QToolBar *toolBar;
     QDockWidget *dockWidget;
@@ -271,6 +273,9 @@ public:
         actionChinese->setFont(font);
         actionBasler = new QAction(MainWindow);
         actionBasler->setObjectName(QStringLiteral("actionBasler"));
+        actionFocusAssistant = new QAction(MainWindow);
+        actionFocusAssistant->setObjectName(QStringLiteral("actionFocusAssistant"));
+        actionFocusAssistant->setEnabled(false);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QStringLiteral("centralwidget"));
         QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -408,8 +413,16 @@ public:
         gridLayout_17->setObjectName(QStringLiteral("gridLayout_17"));
         label_9 = new QLabel(tab);
         label_9->setObjectName(QStringLiteral("label_9"));
-        sizePolicy4.setHeightForWidth(label_9->sizePolicy().hasHeightForWidth());
-        label_9->setSizePolicy(sizePolicy4);
+        sizePolicy1.setHeightForWidth(label_9->sizePolicy().hasHeightForWidth());
+        label_9->setSizePolicy(sizePolicy1);
+        QFont font1;
+        font1.setFamily(QStringLiteral("Calibri"));
+        font1.setPointSize(9);
+        font1.setBold(false);
+        font1.setItalic(false);
+        font1.setWeight(50);
+        label_9->setFont(font1);
+        label_9->setTextFormat(Qt::AutoText);
 
         gridLayout_17->addWidget(label_9, 0, 0, 1, 1);
 
@@ -446,6 +459,8 @@ public:
         explainLabel->setSizePolicy(sizePolicy7);
         explainLabel->setMinimumSize(QSize(100, 200));
         explainLabel->setMaximumSize(QSize(400, 300));
+        explainLabel->setFont(font1);
+        explainLabel->setAutoFillBackground(false);
         explainLabel->setStyleSheet(QStringLiteral("background-color: rgbrgbrgb(238, 238, 238);"));
         explainLabel->setFrameShape(QFrame::NoFrame);
         explainLabel->setScaledContents(true);
@@ -454,6 +469,7 @@ public:
         gridLayout_17->addWidget(explainLabel, 1, 0, 3, 3);
 
         verticalLayout_3 = new QVBoxLayout();
+        verticalLayout_3->setSpacing(10);
         verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
         verticalLayout_3->setContentsMargins(4, -1, 0, -1);
         captureButton = new QPushButton(tab);
@@ -556,6 +572,7 @@ public:
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
         verticalLayout = new QVBoxLayout();
+        verticalLayout->setSpacing(10);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         findPointButton = new QPushButton(tab_2);
         findPointButton->setObjectName(QStringLiteral("findPointButton"));
@@ -602,6 +619,7 @@ public:
         gridLayout_14->setObjectName(QStringLiteral("gridLayout_14"));
         useGray = new QRadioButton(groupBox_4);
         useGray->setObjectName(QStringLiteral("useGray"));
+        useGray->setFont(font1);
         useGray->setChecked(true);
 
         gridLayout_14->addWidget(useGray, 0, 0, 1, 1);
@@ -616,6 +634,8 @@ public:
 
         multiFreqTest = new QPushButton(tab_2);
         multiFreqTest->setObjectName(QStringLiteral("multiFreqTest"));
+        sizePolicy4.setHeightForWidth(multiFreqTest->sizePolicy().hasHeightForWidth());
+        multiFreqTest->setSizePolicy(sizePolicy4);
 
         verticalLayout_5->addWidget(multiFreqTest);
 
@@ -758,9 +778,9 @@ public:
 "color: rgb(0, 0, 0);"));
         menuFile = new QMenu(menubar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
-        QFont font1;
-        font1.setFamily(QStringLiteral("Calibri"));
-        menuFile->setFont(font1);
+        QFont font2;
+        font2.setFamily(QStringLiteral("Calibri"));
+        menuFile->setFont(font2);
         menuFile->setStyleSheet(QLatin1String("color: rgb(0, 0, 0);\n"
 "background-color: rgb(130, 197, 255);\n"
 "selection-background-color: rgb(255, 255, 255);"));
@@ -771,6 +791,8 @@ public:
         menuLanguage = new QMenu(menuCustomize);
         menuLanguage->setObjectName(QStringLiteral("menuLanguage"));
         menuLanguage->setFont(font);
+        menuTools = new QMenu(menubar);
+        menuTools->setObjectName(QStringLiteral("menuTools"));
         MainWindow->setMenuBar(menubar);
         statusBar = new QStatusBar(MainWindow);
         statusBar->setObjectName(QStringLiteral("statusBar"));
@@ -1105,6 +1127,7 @@ public:
 
         menubar->addAction(menuFile->menuAction());
         menubar->addAction(menuCustomize->menuAction());
+        menubar->addAction(menuTools->menuAction());
         menuFile->addAction(actionNew);
         menuFile->addAction(actionOpen);
         menuFile->addSeparator();
@@ -1112,6 +1135,7 @@ public:
         menuCustomize->addAction(menuLanguage->menuAction());
         menuLanguage->addAction(actionEnglish);
         menuLanguage->addAction(actionChinese);
+        menuTools->addAction(actionFocusAssistant);
         toolBar->addAction(actionNew);
         toolBar->addSeparator();
         toolBar->addAction(actionOpenCamera);
@@ -1216,6 +1240,7 @@ public:
         actionChinese->setToolTip(QApplication::translate("MainWindow", "zh", 0));
 #endif // QT_NO_TOOLTIP
         actionBasler->setText(QApplication::translate("MainWindow", "Basler", 0));
+        actionFocusAssistant->setText(QApplication::translate("MainWindow", "Focus Assistant", 0));
         label->setText(QApplication::translate("MainWindow", "Point Size", 0));
         loadTest->setText(QApplication::translate("MainWindow", "Load Test", 0));
         label_2->setText(QApplication::translate("MainWindow", "Current Operation Processed:", 0));
@@ -1252,6 +1277,7 @@ public:
         menuFile->setTitle(QApplication::translate("MainWindow", "Project", 0));
         menuCustomize->setTitle(QApplication::translate("MainWindow", "Customize", 0));
         menuLanguage->setTitle(QApplication::translate("MainWindow", "Language", 0));
+        menuTools->setTitle(QApplication::translate("MainWindow", "Tools", 0));
         toolBar->setWindowTitle(QApplication::translate("MainWindow", "toolBar", 0));
         dockWidget->setWindowTitle(QApplication::translate("MainWindow", "Left Camera", 0));
         leftViewLabel->setText(QApplication::translate("MainWindow", "View", 0));

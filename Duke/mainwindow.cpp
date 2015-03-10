@@ -41,6 +41,10 @@ MainWindow::MainWindow(QWidget *parent)
     usebc = false;
     DHC = new DaHengCamera(this);
 
+    /****生成对焦辅助窗口****/
+    fa = new FocusAssistant();
+    showFocus = false;
+
     /*****生成OpenGL窗口并加载*****/
     displayModel = new GLWidget(ui->displayWidget);
     ui->displayLayout->addWidget(displayModel);
@@ -72,6 +76,7 @@ MainWindow::~MainWindow()
 {
     delete DHC;
     delete pj;
+    delete fa;
     delete blob;
     delete ui;
 }
@@ -114,9 +119,22 @@ void MainWindow::opencamera()
         ui->actionOpenCamera->setDisabled(true);//暂时保证不会启动两次，防止内存溢出
         ui->leftExSlider->setEnabled(true);//激活曝光调整滑块
         ui->rightExSlider->setEnabled(true);
+        ui->actionFocusAssistant->setEnabled(true);//激活对焦辅助
         timer->start();
         image_1 = QImage(cameraWidth, cameraHeight, QImage::Format_Indexed8);
         image_2 = QImage(cameraWidth, cameraHeight, QImage::Format_Indexed8);
+}
+
+void MainWindow::startfocusassistant()
+{
+    fa->showFullScreen();
+    showFocus = true;
+    connect(fa, SIGNAL(winhide()), this, SLOT(closefocus()));
+}
+
+void MainWindow::closefocus()
+{
+    showFocus = false;
 }
 
 void MainWindow::readframe()
@@ -132,7 +150,12 @@ void MainWindow::readframe()
     pimage_2 = QPixmap::fromImage(image_2);
     ui->leftViewLabel->setPixmap(pimage_1);
     ui->rightViewLabel->setPixmap(pimage_2);
-
+    if(showFocus){
+        if(fa->displayLeft)
+            fa->playImage(pimage_1);
+        else
+            fa->playImage(pimage_2);
+    }
 }
 
 void MainWindow::usebasler()
@@ -245,8 +268,11 @@ void MainWindow::calibration()
         //load images
         calibrator->loadCameraImgs(path);
         progressPop(5);
-        if(!calibrator->extractImageCorners()){
+        int reval = calibrator->extractImageCorners();
+        if(reval){
             ui->progressBar->reset();
+            if(reval != CALIBIMGNUM+1)
+                saveCount = reval;
             return;
         }
         progressPop(15);
@@ -584,6 +610,7 @@ void MainWindow::createConnections()
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openproject()));
 
     connect(ui->actionOpenCamera, SIGNAL(triggered()), this, SLOT(opencamera()));
+    connect(ui->actionFocusAssistant, SIGNAL(triggered()), this, SLOT(startfocusassistant()));
     connect(ui->leftExSlider,SIGNAL(valueChanged(int)),this,SLOT(setexposure()));
     connect(ui->rightExSlider,SIGNAL(valueChanged(int)),this,SLOT(setexposure()));
 
@@ -614,6 +641,7 @@ void MainWindow::createConnections()
     connect(ui->loadTest, SIGNAL(clicked()), this, SLOT(loadTestModel()));
 
     connect(ui->actionExit, SIGNAL(triggered()), pj, SLOT(close()));//解决投影窗口不能关掉的问题
+    connect(ui->actionExit, SIGNAL(triggered()), fa, SLOT(close()));
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
 }
 

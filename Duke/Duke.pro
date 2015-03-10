@@ -22,7 +22,8 @@ SOURCES += \
     multifrequency.cpp \
     blobdetector.cpp \
     dahengcamera.cpp \
-    baslercamera.cpp
+    baslercamera.cpp \
+    focusassistant.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -83,11 +84,13 @@ HEADERS += \
     multifrequency.h \
     blobdetector.h \
     dahengcamera.h \
-    baslercamera.h
+    baslercamera.h \
+    focusassistant.h
 
 FORMS += \
     mainwindow.ui \
-    Set.ui
+    Set.ui \
+    focusassistant.ui
 
 TRANSLATIONS += en.ts zh.ts
 

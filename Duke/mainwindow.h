@@ -21,6 +21,7 @@
 #include "meshcreator.h"
 
 #include "set.h"
+#include "focusassistant.h"
 
 #include "graycodes.h"
 #include "multifrequency.h"
@@ -47,6 +48,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    FocusAssistant *fa;
     Set *setDialog;
     DotMatch *dm;
     GLWidget *displayModel;
@@ -76,6 +78,7 @@ private:
     DaHengCamera *DHC;
     BaslerCamera *BC;
     bool usebc;
+    bool showFocus;
 
     void createConnections();
     void createCentralWindow(QWidget *parent);
@@ -119,6 +122,8 @@ private slots:
     void openproject();
 
     void opencamera();
+    void startfocusassistant();
+    void closefocus();
     void setexposure();
     void readframe();
 
