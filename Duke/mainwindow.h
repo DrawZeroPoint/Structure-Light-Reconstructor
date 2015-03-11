@@ -65,7 +65,7 @@ public:
     int cameraWidth;//相机分辨率
     int cameraHeight;
 
-    int scanSquenceNo;//表示当前正在进行的扫描序列数，从0开始
+    int scanSN;//表示当前正在进行的扫描序列数，从0开始
 
 private:
     Ui::MainWindow *ui;
@@ -74,6 +74,7 @@ private:
     GrayCodes *grayCode;
     MultiFrequency *mf;
     Projector *pj;
+    Reconstruct *reconstructor;
 
     DaHengCamera *DHC;
     BaslerCamera *BC;

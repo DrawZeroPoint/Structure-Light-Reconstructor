@@ -615,12 +615,12 @@ font: 9pt &quot;Calibri&quot;;</string>
                  <item>
                   <widget class="QLabel" name="label_3">
                    <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Current scan count: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Already scaned count: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="scanNoLabel">
+                  <widget class="QLabel" name="scanSNLabel">
                    <property name="text">
                     <string>0</string>
                    </property>

@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     /*****声明全局变量*****/
     saveCount = 1;//Save calib images start with 1
-    scanSquenceNo = -1;
+    scanSN = -1;
     isConfigured = false;
     isProjectorOpened = true;
 
@@ -365,7 +365,7 @@ void MainWindow::pointmatch()
 
 void MainWindow::refindmatch()
 {
-    if (dm->scanNo==0)
+    if (dm->scanSN==0)
         dm->firstFind = true;
     findPoint();
 }
@@ -386,12 +386,12 @@ void MainWindow::findPoint()
         paintPoints();
         if (QMessageBox::information(NULL,tr("Finished"), tr("Is the result right for reconstruction?"),
             QMessageBox::Yes,QMessageBox::No)== QMessageBox::Yes){
+            scanSN = dm->scanSN;//这里不能放在finishMatch后面
+            ui->scanSNLabel->setText(QString::number(scanSN+1));//表示已经进行了的扫描次数（实际是查找点次数）
             dm->finishMatch();
             paintPoints();
         }
     }
-    scanSquenceNo = dm->scanNo;
-    ui->scanNoLabel->setText(QString::number(scanSquenceNo));
 }
 
 void MainWindow::paintPoints()
@@ -428,13 +428,13 @@ void MainWindow::paintPoints()
 
 void MainWindow::startscan()
 {
-    if (scanSquenceNo < 0)
+    if (scanSN < 0)
     {
         if (QMessageBox::warning(this,tr("Mark Point Need to be Found"), tr("Scan result can't be aligned,continue?")
                                  ,QMessageBox::Yes,QMessageBox::No) == QMessageBox::No)
             return;
         else
-            scanSquenceNo = 0;
+            scanSN = 0;
     }
     ui->progressBar->reset();
     nowProgress = 0;
@@ -444,7 +444,7 @@ void MainWindow::startscan()
     pj->displaySwitch(false);
     pj->opencvWindow();
     if (ui->useGray->isChecked()){
-        grayCode = new GrayCodes(projectorWidth,projectorHeight);
+        grayCode = new GrayCodes(scanWidth,scanHeight);
         grayCode->generateGrays();
         pj->showMatImg(grayCode->getNextImg());
     }
@@ -457,7 +457,7 @@ void MainWindow::startscan()
 
     int imgCount = 0;
 
-    QString pref = QString::number(scanSquenceNo) + "/";
+    QString pref = QString::number(scanSN) + "/";
     QDir *addpath_1 = new QDir;
     QDir *addpath_2 = new QDir;
     addpath_1->mkpath(projChildPath + "/left/" + pref);
@@ -529,9 +529,9 @@ void MainWindow::startreconstruct()
             isConfigured = true;
     }
 
-    Reconstruct *reconstructor= new Reconstruct();
-    int scanCount = (ui->manualReconstruction->isChecked())?(ui->reconstructionCount->value()):(scanSquenceNo);
-    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, scanCount, isAutoContrast, projectPath);
+    reconstructor = new Reconstruct();
+    reconstructor->scanSN = (ui->manualReconstruction->isChecked())?(ui->reconstructionCount->value()):(scanSN);
+    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, isAutoContrast, projectPath);
 
     reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
     reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
@@ -565,10 +565,10 @@ void MainWindow::startreconstruct()
     progressPop(10);
 
     if(isExportObj)
-        meshCreator->exportObjMesh(projChildPath + QString::number(scanCount) + ".obj");
+        meshCreator->exportObjMesh(projChildPath + QString::number(reconstructor->scanSN) + ".obj");
 
     if(isExportPly || !(isExportObj || isExportPly)){
-        QString outPlyPath = projChildPath + QString::number(scanCount) + ".ply";
+        QString outPlyPath = projChildPath + QString::number(reconstructor->scanSN) + ".ply";
         meshCreator->exportPlyMesh(outPlyPath);
         displayModel->LoadModel(outPlyPath);
     }

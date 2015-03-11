@@ -8,7 +8,7 @@
 #include "pointcloudimage.h"
 #include "set.h"
 
-#define USE_STEREOCALIB_DATA
+//#define USE_STEREOCALIB_DATA
 
 class Reconstruct
 {
@@ -33,8 +33,9 @@ public:
 
     void cam2WorldSpace(VirtualCamera cam, cv::Point3f &p);
 
-    void getParameters(int scanw, int scanh,  int camw, int camh, int scanSN, bool autocontrast, QString savePath);
+    void getParameters(int scanw, int scanh,  int camw, int camh, bool autocontrast, QString savePath);
     QString savePath_;//same as projectPath
+    int scanSN;//表示当前重建的扫描数据序列号，也是输出模型的序列号
 
 private:
     int numOfCams;
@@ -68,16 +69,15 @@ private:
     bool raySampling_;
     int cameraWidth;
     int cameraHeight;
-    int scanSN_;//表示当前重建的扫描数据序列号，也是输出模型的序列号
 
     //access
     int Reconstruct::ac(int x,int y)
     {
-        return x*proj_h + y;
+        return x*scan_h + y;
     }
 
-    int proj_w;
-    int proj_h;
+    int scan_w;
+    int scan_h;
 };
 
 #endif // RECONSTRUCT_H

@@ -1,13 +1,13 @@
 #include "graycodes.h"
 
-GrayCodes::GrayCodes(int projW, int projH)
+GrayCodes::GrayCodes(int scanW, int scanH)
 {
     for (int i=0; i<GRAY_MAX_NUM; i++)
     {
         grayCodes[i]=NULL;//Initialize
     }
-    height = projH;
-    width = projW;
+    height = scanH;
+    width = scanW;
     imgsLoaded = false;
     calNumOfImgs();//calculate the number of the vertical and horizontal stripe images
     currentImgNum = 0;

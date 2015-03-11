@@ -102,11 +102,13 @@ bool Reconstruct::loadCameras()//Load calibration data into camera[i]
         cameras[i].loadTranslationVector(path);
 
         path = savePath_;
+/*
 #ifndef USE_STEREOCALIB_DATA
         path += "/calib/fundamental_mat.txt";
 #else
-        path += "/calib/fundamental_stereo.txt";
-#endif
+*/
+        path += "/calib/fundamental_stereo.txt";//测试表明，采用立体标定得到的F效果好于单独标定得到的
+//#endif
         cameras[i].loadFundamentalMatrix(path);
 
         path = savePath_;
@@ -200,7 +202,7 @@ void Reconstruct::computeShadows()
 bool Reconstruct::runReconstruction()
 {
     bool runSucess = false;
-    GrayCodes grays(proj_w, proj_h);//proj_w proj_h get var getparameter
+    GrayCodes grays(scan_w, scan_h);//scan_w scan_h get var getparameter
     numOfColBits = grays.getNumOfColBits();
     numOfRowBits = grays.getNumOfRowBits();
     numberOfImgs = grays.getNumOfImgs();
@@ -211,7 +213,7 @@ bool Reconstruct::runReconstruction()
         cam2WorldSpace(cameras[i],cameras[i].position);
         camera = &cameras[i];//将position属性已转化到世界坐标系的cameras[i]赋给camera
                                        //在此之前camera相当于一个temp，注意二者单复数有区别
-        camsPixels[i] = new cv::vector<cv::Point>[proj_h*proj_w];
+        camsPixels[i] = new cv::vector<cv::Point>[scan_h*scan_w];
         camPixels = camsPixels[i];
         runSucess = loadCamImgs(scanFolder[i], imgPrefix[i], imgSuffix);
         ///截至这一步，实例camera的position、width、height属性已被赋值，camera对应cameras[i]
@@ -227,7 +229,7 @@ bool Reconstruct::runReconstruction()
         }
     }
     if(runSucess){
-        points3DProjView = new PointCloudImage( proj_w, proj_h , false ); //最后一个bool值代表是否上色，这里改为false
+        points3DProjView = new PointCloudImage( scan_w, scan_h , false ); //最后一个bool值代表是否上色，这里改为false
         for(int i = 0; i < numOfCams; i++)
         {
             for(int j = i + 1; j < numOfCams; j++)
@@ -291,7 +293,7 @@ bool Reconstruct::getProjPixel(int row, int col, cv::Point &p_out)//for a (x,y) 
     //decode
     yDec = GrayCodes::grayToDec(grayRow);
 
-    if((yDec > proj_h || xDec > proj_w)){
+    if((yDec > scan_h || xDec > scan_w)){
         error = true;//求出的xy坐标超出了投影范围，说明不是投影点，将其遮罩
     }
     p_out.x = xDec;//返回相机照片上像素点在投影仪投影范围内的对应十进制坐标
@@ -307,19 +309,17 @@ void Reconstruct::setCalibPath(QString folder, int cam_no )
 
 void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera camera1, cv::vector<cv::Point> *cam2Pixels, VirtualCamera camera2, int cam1index, int cam2index)
 {
-    int w = proj_w;
-    int h = proj_h;
+    int w = scan_w;
+    int h = scan_h;
     cv::Mat matTransfer(3,4,CV_32F);
-    if (scanSN_ > 0){
+    if (scanSN > 0){
         /********加载刚体变换矩阵*********/
-        QString loadPath = savePath_ + "/scan/transfer_mat" + QString::number(scanSN_) + ".txt";
+        QString loadPath = savePath_ + "/scan/transfer_mat" + QString::number(scanSN) + ".txt";
         camera1.loadMatrix(matTransfer, 3, 4, loadPath.toStdString());
     }
 
-    for(int i = 0; i < w; i++)
-    {
-        for(int j = 0; j < h; j++)
-        {
+    for(int i = 0; i < w; i++){
+        for(int j = 0; j < h; j++){
             /*
             if(load != (int) (((j + (float)i * h)/((float)w * h)) * 100))
             {
@@ -371,7 +371,7 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 
                     /****以下判断为多次重建得到的点云拼接做准备****/
 
-                    if (scanSN_ > 0){
+                    if (scanSN > 0){
                         float point[] = {interPoint.x, interPoint.y, interPoint.z, 1};
                         cv::Mat pointMat(4, 1, CV_32F, point);
                         cv::Mat refineMat(3, 1, CV_32F);
@@ -391,15 +391,14 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
     }
 }
 
-void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, int scanSN, bool autocontrast, QString savePath)
+void Reconstruct::getParameters(int scanw, int scanh, int camw, int camh, bool autocontrast, QString savePath)
 {
-    proj_w = scanw;
-    proj_h = scanh;
+    scan_w = scanw;
+    scan_h = scanh;
     cameraWidth = camw;
     cameraHeight = camh;
     autoContrast_ = autocontrast;
     savePath_ = savePath;//equal to projectPath
-    scanSN_ = scanSN;
 
     for(int i = 0; i < 2; i++)
     {

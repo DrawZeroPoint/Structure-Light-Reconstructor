@@ -7,13 +7,14 @@ int EDGEUP = 8;//水平方向上标志点边缘黑色宽度上限
 int EDGEDOWN = 0;
 int MIDDOWN = 8;
 int MIDUP = 32;
+float EPIPOLARERROR = 0.05;//特征点匹配时极线误差上界
 float tolerance = 25;//判断特征值是否相等时的误差
 
 DotMatch::DotMatch(QObject *parent, QString projectPath) :
     QObject(parent)
 {
     firstFind = true;//第一次查找标志点默认为基准点
-    scanNo = 0;//表示扫描的次数，0表示第一次扫描
+    scanSN = 0;//表示扫描的次数，0表示第一次扫描
 
     rc = new Reconstruct;
     rc->calibFolder = new QString[2];
@@ -197,7 +198,7 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
     dotInOrder.clear();
     Mat Lcopy = leftImage;
     Mat Rcopy = rightImage;
-    if (scanNo%2 == 0){
+    if (scanSN%2 == 0){
         dotPositionEven.clear();
         correspondPointEven.clear();
     }
@@ -288,7 +289,7 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
             //float zrl = rtol.at<float>(0,0);
             if (fabs(dotLeft[i][1] - dotRight[j][1]) > YDISTANCE)
                 continue;
-            if(fabs(zlr) > 0.1)//|| abs(zrl) > 0.9
+            if(fabs(zlr) > EPIPOLARERROR)//|| abs(zrl) > 0.9
                 continue;
 
             /****判断当前点相对于上一点X坐标的正负，如正负不同，则不是对应点****/
@@ -356,7 +357,7 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
         return true;
     }
     else{
-        if (scanNo%2 == 0)
+        if (scanSN%2 == 0)
             featureTemp = calFeature(dotPositionEven);
         else
             featureTemp = calFeature(dotPositionOdd);
@@ -389,7 +390,7 @@ void DotMatch::finishMatch()
     }
     else
         firstFind = false;
-    scanNo++;
+    scanSN++;
 }
 
 
@@ -422,13 +423,13 @@ bool DotMatch::triangleCalculate()
             continue;
         }
 
-        if (scanNo%2 == 0)
+        if (scanSN%2 == 0)
             dotPositionEven.push_back(interPoint);
         else
             dotPositionOdd.push_back(interPoint);
     }
 
-    if (scanNo%2 == 0){
+    if (scanSN%2 == 0){
         if (dotPositionEven.size() < 4){
             QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point less than 4. Try adjusting the exposure."));
             firstFind = true;
@@ -585,7 +586,7 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
                 }
                 bool pass = checkNeighbor(neighborFeature[correspondPoint[c].x], neighborTemp);
                 if (pass){
-                    if (scanNo%2 == 0)
+                    if (scanSN%2 == 0)
                         correspondPointEven.push_back(correspondPoint[c]);
                     else
                         correspondPointOdd.push_back(correspondPoint[c]);
@@ -672,7 +673,7 @@ void DotMatch::calMatrix()
     for (size_t i =0; i < correspondPointOdd.size(); i++){
         for (size_t j = 0; j < correspondPointEven.size(); j++){
             if (correspondPointOdd[i].x == correspondPointEven[j].x){
-                if (scanNo%2 == 0){
+                if (scanSN%2 == 0){
                     pFormer.push_back(dotPositionOdd[correspondPointOdd[i].y]);
                     pLater.push_back(dotPositionEven[correspondPointEven[j].y]);
                 }
@@ -717,10 +718,10 @@ void DotMatch::calMatrix()
     double data[] = {r0,r1,r2,tx,r3,r4,r5,ty,r6,r7,r8,tz};
     cv::Mat outMat(3,4,CV_64F,data);
 
-    if (scanNo == 1){
+    if (scanSN == 1){
         transFormer = outMat;
     }
-    else if (scanNo > 1){
+    else if (scanSN > 1){
         cv::Range rangeR(0,3);
         cv::Range rangeT(3,4);
         cv::Mat formerMatR = transFormer(cv::Range::all(),rangeR);
@@ -729,7 +730,7 @@ void DotMatch::calMatrix()
         transFormer(cv::Range::all(),rangeT) = formerMatT + outMat(cv::Range::all(),rangeT);
     }
 
-    QString outMatPath = path + "/scan/transfer_mat" + QString::number(scanNo) + ".txt";
+    QString outMatPath = path + "/scan/transfer_mat" + QString::number(scanSN) + ".txt";
     Utilities::exportMat(outMatPath.toLocal8Bit(), transFormer);
 }
 
@@ -750,7 +751,7 @@ void DotMatch::markPoint()
 
         bool known = false;//表示当前点i是否为已知
 
-        if (scanNo%2 == 0){
+        if (scanSN%2 == 0){
             for (size_t p = 0; p < correspondPointEven.size(); p++){
                 if (i == correspondPointEven[p].y){
                     eachPoint.push_back(1);

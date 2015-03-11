@@ -14,7 +14,7 @@ using std::ofstream;
 class GrayCodes
 {
 public:
-    GrayCodes(int projW, int projH);
+    GrayCodes(int scanW, int scanH);
     ~GrayCodes();
 
     //void unload();

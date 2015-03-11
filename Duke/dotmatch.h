@@ -45,7 +45,7 @@ public:
 
     int bwThreshold;
     bool firstFind;
-    int scanNo;
+    int scanSN;
 
 private:
     QString path;

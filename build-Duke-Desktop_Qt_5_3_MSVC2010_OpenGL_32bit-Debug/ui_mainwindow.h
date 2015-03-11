@@ -103,7 +103,7 @@ public:
     QPushButton *startScanButton;
     QHBoxLayout *horizontalLayout;
     QLabel *label_3;
-    QLabel *scanNoLabel;
+    QLabel *scanSNLabel;
     QGroupBox *groupBox_4;
     QGridLayout *gridLayout_14;
     QRadioButton *useGray;
@@ -602,10 +602,10 @@ public:
 
         horizontalLayout->addWidget(label_3);
 
-        scanNoLabel = new QLabel(tab_2);
-        scanNoLabel->setObjectName(QStringLiteral("scanNoLabel"));
+        scanSNLabel = new QLabel(tab_2);
+        scanSNLabel->setObjectName(QStringLiteral("scanSNLabel"));
 
-        horizontalLayout->addWidget(scanNoLabel);
+        horizontalLayout->addWidget(scanSNLabel);
 
 
         horizontalLayout_3->addLayout(horizontalLayout);
@@ -1263,8 +1263,8 @@ public:
         findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
         reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));
         startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
-        label_3->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Current scan count: </p></body></html>", 0));
-        scanNoLabel->setText(QApplication::translate("MainWindow", "0", 0));
+        label_3->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Already scaned count: </p></body></html>", 0));
+        scanSNLabel->setText(QApplication::translate("MainWindow", "0", 0));
         groupBox_4->setTitle(QApplication::translate("MainWindow", "Scan Method", 0));
         useGray->setText(QApplication::translate("MainWindow", "GrayCodes", 0));
         useMultiFreq->setText(QApplication::translate("MainWindow", "MultiFrequency", 0));
