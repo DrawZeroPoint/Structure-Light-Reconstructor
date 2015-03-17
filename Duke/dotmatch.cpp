@@ -214,8 +214,6 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
             rc->cameras[1].position = cv::Point3f(0,0,0);
             rc->cam2WorldSpace(rc->cameras[1], rc->cameras[1].position);
             fundMat = rc->cameras[0].fundamentalMatrix;
-            Homo1 = rc->cameras[0].homoMat1;
-            Homo2 = rc->cameras[0].homoMat2;
         }
     }
     ////找出左右图像中的标志点
@@ -289,7 +287,7 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
             //float zrl = rtol.at<float>(0,0);
             if (fabs(dotLeft[i][1] - dotRight[j][1]) > YDISTANCE)
                 continue;
-            if(fabs(zlr) > EPIPOLARERROR)//|| abs(zrl) > 0.9
+            if(fabs(zlr) > EPIPOLARERROR)
                 continue;
 
             /****判断当前点相对于上一点X坐标的正负，如正负不同，则不是对应点****/
@@ -314,16 +312,7 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
             dot.push_back(dotLeft[i][1]);
             dot.push_back(dotRight[j][0]);
             dot.push_back(dotRight[j][1]);
-#ifdef DEBUG
-            cv::Mat O1(1,3,CV_32F);
-            cv::Mat O2(1,3,CV_32F);
-            O1 = plmat*Homo1;
-            O2 = prmat*Homo2;
-            float x1 = O1.at<float>(0,0);
-            float y1 = O1.at<float>(0,1);
-            float x2 = O2.at<float>(0,0);
-            float y2 = O2.at<float>(0,1);
-#endif
+
             dotInOrder.push_back(dot);//每个元素都是包含4个float的向量，依次为左x，y；右x，y
 
             alreadymatched.push_back(i);
@@ -422,7 +411,7 @@ bool DotMatch::triangleCalculate()
             dotRemove.push_back(i);
             continue;
         }
-
+        //能到达这里的dotInOrder[i]都是通过了三角计算的，因此由其计算得到的interPoint可以存入dotPosition
         if (scanSN%2 == 0)
             dotPositionEven.push_back(interPoint);
         else
@@ -432,7 +421,7 @@ bool DotMatch::triangleCalculate()
     if (scanSN%2 == 0){
         if (dotPositionEven.size() < 4){
             QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point less than 4. Try adjusting the exposure."));
-            firstFind = true;
+            //firstFind = true;这里完全重置似无必要
             return false;
         }
         else{
@@ -444,8 +433,8 @@ bool DotMatch::triangleCalculate()
     }
     else{
         if (dotPositionOdd.size() < 4){
-            QMessageBox::warning(NULL, tr("Not enough Point"), tr("Point less than 4"));
-            firstFind = true;
+            QMessageBox::warning(NULL, tr("Not enough Point"), tr("Point less than 4. Try adjusting the exposure."));
+            //firstFind = true;
             return false;
         }
         else{
@@ -614,7 +603,12 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 }
 
 
-
+////__________________________________________________________________////
+/// 邻域计算函数，作用是根据标记点特征（即该点与其余点的距离）                   ////
+/// 将其余点按照与该点由近及远的顺序排列，形成一个各点序号的整数数列          ////
+/// 并将这一数列作为该点的一个特征，之后检测若疑似为该点但邻域检查出错       ////
+/// 则否定检测结果                                                                                     ////
+////__________________________________________________________________////
 vector<int> DotMatch::calNeighbor(vector<vector<float>> input, int num)
 {
     vector<int> output;
@@ -689,8 +683,8 @@ void DotMatch::calMatrix()
 
     std::vector<double> inpoints;
     for(size_t i = 0;i < pFormer.size();i++){
-        inpoints.push_back(pFormer[i].x);
-        inpoints.push_back(pFormer[i].y);
+        inpoints.push_back(pFormer[i].x);//经过验证，前面的点为基准，后面的点为待移动点
+        inpoints.push_back(pFormer[i].y);//求解出的矩阵是将后面的坐标对齐到前面
         inpoints.push_back(pFormer[i].z);
         inpoints.push_back(pLater[i].x);
         inpoints.push_back(pLater[i].y);
@@ -716,22 +710,42 @@ void DotMatch::calMatrix()
     double r7 = 2*(k*j+w*i);//Horn原论文此处疑有误，正确的参考www.j3d.org/matrix_faq/matrfaq_latest.html
     double r8 = pow(w,2)-pow(i,2)-pow(j,2)+pow(k,2);
     double data[] = {r0,r1,r2,tx,r3,r4,r5,ty,r6,r7,r8,tz};
-    cv::Mat outMat(3,4,CV_64F,data);
+    cv::Mat outMat(3,4,CV_64FC1,data);
+
+    cv::Range rangeR(0,3);
+    cv::Range rangeT(3,4);
 
     if (scanSN == 1){
-        transFormer = outMat;
-    }
-    else if (scanSN > 1){
-        cv::Range rangeR(0,3);
-        cv::Range rangeT(3,4);
-        cv::Mat formerMatR = transFormer(cv::Range::all(),rangeR);
-        cv::Mat formerMatT = transFormer(cv::Range::all(),rangeT);
-        transFormer(cv::Range::all(),rangeR) = formerMatR * outMat(cv::Range::all(),rangeR);
-        transFormer(cv::Range::all(),rangeT) = formerMatT + outMat(cv::Range::all(),rangeT);
-    }
+        Mat transFormer(3,4,CV_64FC1);
+        transFormer = outMat(cv::Range::all(),cv::Range::all());
 
-    QString outMatPath = path + "/scan/transfer_mat" + QString::number(scanSN) + ".txt";
-    Utilities::exportMat(outMatPath.toLocal8Bit(), transFormer);
+        ///从实验的情况来看，如果一个矩阵是继承自其他矩阵的局部块，那么若要利用该矩阵进行计算
+        /// 必须对所引用的局部块进行深拷贝
+        matRotation = transFormer(cv::Range::all(),rangeR).clone();
+        matTransform = transFormer(cv::Range::all(),rangeT).clone();
+
+        QString outTransPath = path + "/scan/transfer_mat1" + ".txt";
+        Utilities::exportMat(outTransPath.toLocal8Bit(), transFormer);
+    }
+    else {
+        Mat transR(3,3,CV_64FC1);//存放待输出矩阵的R部分
+        Mat transT(3,1,CV_64FC1);//存放待输出矩阵的T部分
+        Mat outR(3,3,CV_64FC1);//表示outMat的R部分
+        Mat outT(3,1,CV_64FC1);//outMat的T部分
+
+        outR = outMat(cv::Range::all(),rangeR).clone();//从outMat深拷贝
+        outT = outMat(cv::Range::all(),rangeT).clone();
+
+        ///在以下计算中，等号左值为初始化了的空矩阵，右值全部来自于局部块的深拷贝
+        /// 因此不依赖于原矩阵的值，因此计算能够成立，而直接采用局部块进行计算是不行的！
+        transR = matRotation * outR;//例如，当scanSN=2时，=R1*R2
+        transT = matRotation * outT + matTransform;//=R1*T2+T1
+        matRotation = transR;//更新数值为R1*R2
+        matTransform = transT;//更新数值为//R1*T2+T1
+
+        QString outTransPath = path + "/scan/transfer_mat" + QString::number(scanSN) + ".txt";
+        Utilities::exportMatParts(outTransPath.toLocal8Bit(), transR, transT);
+    }
 }
 
 

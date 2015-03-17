@@ -65,7 +65,9 @@ private:
     Mat fundMat;
     Mat Homo1;
     Mat Homo2;
-    Mat transFormer;
+
+    Mat matRotation;//保存广义旋转矩阵
+    Mat matTransform;//保存广义平移向量
     cv::vector<Point3f> dotPositionEven;//偶数次扫描所得点的绝对坐标
     cv::vector<Point3f> dotPositionOdd;//奇数次扫描所得点的绝对坐标
 
