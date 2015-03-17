@@ -313,7 +313,7 @@ public:
         scanResH = new QSpinBox(groupBox_4);
         scanResH->setObjectName(QStringLiteral("scanResH"));
         scanResH->setMaximum(1280);
-        scanResH->setValue(800);
+        scanResH->setValue(1280);
 
         gridLayout_9->addWidget(scanResH, 0, 1, 1, 1);
 
@@ -325,7 +325,7 @@ public:
         scanResV = new QSpinBox(groupBox_4);
         scanResV->setObjectName(QStringLiteral("scanResV"));
         scanResV->setMaximum(1024);
-        scanResV->setValue(800);
+        scanResV->setValue(1024);
 
         gridLayout_9->addWidget(scanResV, 1, 1, 1, 1);
 

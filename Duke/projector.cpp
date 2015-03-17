@@ -37,7 +37,7 @@ void Projector::paintEvent(QPaintEvent *event)
 
 void Projector::opencvWindow()
 {
-    cvNamedWindow("Projector Window",CV_WINDOW_AUTOSIZE|CV_WINDOW_KEEPRATIO|CV_WINDOW_NORMAL);
+    cvNamedWindow("Projector Window",CV_WINDOW_AUTOSIZE|CV_WINDOW_KEEPRATIO|CV_GUI_NORMAL);
     cvResizeWindow("Projector Window",width,height);
     cvMoveWindow("Projector Window", xoffset, yoffset);
 }

@@ -163,14 +163,11 @@ bool Reconstruct::loadCamImgs(QString folder, QString prefix, QString suffix)//l
 
 void Reconstruct::unloadCamImgs()//unload camera images
 {
-    if(camImgs.size())
-    {
-        for(int i = 0; i<numberOfImgs; i++)
-        {
+    if(camImgs.size()){
+        for(int i = 0; i<numberOfImgs; i++){
             camImgs[i].release();
         }
     }
-    color.release();
     camImgs.clear();
 }
 
@@ -311,11 +308,11 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 {
     int w = scan_w;
     int h = scan_h;
-    cv::Mat matTransfer(3,4,CV_32F);
+    cv::Mat matCoordTrans(3,4,CV_32F);//定义变换矩阵将当前次扫描坐标系对齐至首次扫描坐标系
     if (scanSN > 0){
         /********加载刚体变换矩阵*********/
         QString loadPath = savePath_ + "/scan/transfer_mat" + QString::number(scanSN) + ".txt";
-        camera1.loadMatrix(matTransfer, 3, 4, loadPath.toStdString());
+        camera1.loadMatrix(matCoordTrans, 3, 4, loadPath.toStdString());
     }
 
     for(int i = 0; i < w; i++){
@@ -375,7 +372,7 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
                         float point[] = {interPoint.x, interPoint.y, interPoint.z, 1};
                         cv::Mat pointMat(4, 1, CV_32F, point);
                         cv::Mat refineMat(3, 1, CV_32F);
-                        refineMat = matTransfer * pointMat;
+                        refineMat = matCoordTrans * pointMat;
                         refinedPoint.x = refineMat.at<float>(0, 0);
                         refinedPoint.y = refineMat.at<float>(1, 0);
                         refinedPoint.z = refineMat.at<float>(2, 0);

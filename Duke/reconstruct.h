@@ -60,7 +60,6 @@ private:
     int whiteThreshold;
     cv::vector<cv::Mat> camImgs;
     cv::vector<cv::Mat> colorImgs;
-    cv::Mat color;
     cv::Mat mask;					//matrix with vals 0 and 1 , CV_8U , uchar
     cv::Mat decRows;
     cv::Mat decCols;
