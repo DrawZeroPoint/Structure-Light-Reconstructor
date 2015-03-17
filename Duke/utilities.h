@@ -34,6 +34,7 @@ public:
     static void				autoContrast(cv::Mat img_in, cv::Mat &img_out);
     static void				autoContrast(IplImage *img_in, IplImage *img_out);
     static void				exportMat(const char *path, cv::Mat m);
+    static void               exportMatParts(const char *path, cv::Mat partR, cv::Mat partT);//将R、T矩阵合并输出，要求R、T行相等
     static bool				line_lineIntersection(cv::Point3f p1, cv::Vec3f v1, cv::Point3f p2,cv::Vec3f v2,cv::Point3f &p);
     static int				accessMat(cv::Mat m, int x, int y, int i);
     static int				accessMat(cv::Mat m, int x, int y);

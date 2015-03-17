@@ -377,6 +377,25 @@ void Utilities::exportMat(const char *path, cv::Mat m)
     out.close();
 }
 
+void Utilities::exportMatParts(const char *path, cv::Mat partR, cv::Mat partT)
+{
+    std:: ofstream out;
+    out.open(path);
+
+    for(int row = 0; row < partR.rows; row++)
+    {
+        for(int col = 0; col < partR.cols+1; col++)
+        {
+            if (col < partR.cols)
+                out<< Utilities::matGet2D(partR, row, col)<<"\t";
+            else
+                out<< Utilities::matGet2D(partT, row, 0)<<"\t";
+        }
+        out<<"\n";
+    }
+    out.close();
+}
+
 bool Utilities::line_lineIntersection(cv::Point3f p1, cv::Vec3f v1, cv::Point3f p2,cv::Vec3f v2,cv::Point3f &p)
 {
     cv::Vec3f v12;
