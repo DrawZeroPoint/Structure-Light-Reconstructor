@@ -89,7 +89,8 @@ void MainWindow::newproject()
         for(int i = 0;i<3;i++){
             generatePath(i);
         }
-        dm = new DotMatch(this, projectPath);
+        dm = new DotMatch(this, projectPath, ui->matchAssistant->isChecked());
+        connect(dm,SIGNAL(receivedmanualmatch()),this,SLOT(finishmanualmatch()));
     }
 }
 
@@ -360,12 +361,13 @@ void MainWindow::scan()
 
 void MainWindow::pointmatch()
 {
+    dm->blocksize = ui->binarySlider->value();
     findPoint();
 }
 
 void MainWindow::refindmatch()
 {
-    if (dm->scanSN==0)
+    if (dm->scanSN == 0)
         dm->firstFind = true;
     findPoint();
 }
@@ -382,16 +384,29 @@ void MainWindow::findPoint()
     //cvWaitKey(10);
     bool success = dm->matchDot(mat_1,mat_2);
 
-    if (success){
-        paintPoints();
-        if (QMessageBox::information(NULL,tr("Finished"), tr("Is the result right for reconstruction?"),
-            QMessageBox::Yes,QMessageBox::No)== QMessageBox::Yes){
-            scanSN = dm->scanSN;//这里不能放在finishMatch后面
-            ui->scanSNLabel->setText(QString::number(scanSN+1));//表示已经进行了的扫描次数（实际是查找点次数）
-            dm->finishMatch();
-            paintPoints();
+    ///保证运行activeManual时mm已经生成
+    if (dm->scanSN != 0){
+        if (ui->matchAssistant->isChecked()){
+            dm->activeManual();
         }
     }
+    else{
+        if (success){
+            paintPoints();
+            if (QMessageBox::information(NULL,tr("Finished"), tr("Is the result right for reconstruction?"),
+                QMessageBox::Yes,QMessageBox::No)== QMessageBox::Yes){
+                finishmanualmatch();
+            }
+        }
+    }
+}
+
+void MainWindow::finishmanualmatch()
+{
+    scanSN = dm->scanSN;//这里不能放在finishMatch后面
+    ui->scanSNLabel->setText(QString::number(scanSN+1));//表示已经进行了的扫描次数（实际是查找点次数）
+    dm->finishMatch();
+    paintPoints();
 }
 
 void MainWindow::paintPoints()

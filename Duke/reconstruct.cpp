@@ -57,7 +57,6 @@ void Reconstruct::decodePaterns()
             if(mask.at<uchar>(row, col))//if the pixel is not shadow reconstruct
             {    
                 bool error = getProjPixel(row, col, projPixel);//get the projector pixel for camera (i,j) pixel
-                                                                        ///projPixel前是否应该加&？
                 if(error)
                 {
                     mask.at<uchar>(row, col) = 0;//进一步补充遮罩区域，相机视野内不属于投影区域的部分都被过滤掉
@@ -83,7 +82,7 @@ bool Reconstruct::loadCameras()//Load calibration data into camera[i]
             break;
         path = calibFolder[i];
         path += "cam_distortion.txt";
-        cameras[i].loadDistortion(path);//注意loaddistortion方法加载一个5X1矩阵，而不是说明书里的3X1
+        cameras[i].loadDistortion(path);//注意loaddistortion方法加载一个5X1矩阵
 #else
         path += "cam_stereo.txt";
         loaded = cameras[i].loadCameraMatrix(path);//defined in visualcamera

@@ -23,7 +23,8 @@ SOURCES += \
     blobdetector.cpp \
     dahengcamera.cpp \
     baslercamera.cpp \
-    focusassistant.cpp
+    focusassistant.cpp \
+    manualmatch.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -49,6 +50,8 @@ LIBS += -LD:\mrpt\lib\
 -lopencv_imgproc249d\
 -lopencv_features2d249d\
 -lopencv_calib3d249d\
+-lopencv_nonfree249d\
+-lopencv_flann249d\
 -lHVDAILT\
 -lHVExtend\
 -lHVUtil\
@@ -85,12 +88,14 @@ HEADERS += \
     blobdetector.h \
     dahengcamera.h \
     baslercamera.h \
-    focusassistant.h
+    focusassistant.h \
+    manualmatch.h
 
 FORMS += \
     mainwindow.ui \
     Set.ui \
-    focusassistant.ui
+    focusassistant.ui \
+    manualmatch.ui
 
 TRANSLATIONS += en.ts zh.ts
 

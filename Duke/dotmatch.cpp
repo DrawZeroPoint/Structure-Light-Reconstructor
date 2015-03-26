@@ -3,14 +3,15 @@
 
 bool cameraLoaded = false;
 int YDISTANCE = 15;//两相机标志点Y向距离小于该值认为是同一点
-int EDGEUP = 8;//水平方向上标志点边缘黑色宽度上限
+int EDGEUP = 10;//水平方向上标志点边缘黑色宽度上限
 int EDGEDOWN = 0;
 int MIDDOWN = 8;
-int MIDUP = 32;
-float EPIPOLARERROR = 0.05;//特征点匹配时极线误差上界
-float tolerance = 25;//判断特征值是否相等时的误差
+int MIDUP = 40;
+float EPIPOLARERROR = 0.1;//特征点匹配时极线误差上界
+float tolerance = 100;//判断特征值是否相等时的误差
+float disError = 600;//判断疑似点是否为上次扫描点的偏差平方上界（暂定）
 
-DotMatch::DotMatch(QObject *parent, QString projectPath) :
+DotMatch::DotMatch(QObject *parent, QString projectPath, bool useManual) :
     QObject(parent)
 {
     firstFind = true;//第一次查找标志点默认为基准点
@@ -24,6 +25,11 @@ DotMatch::DotMatch(QObject *parent, QString projectPath) :
     rc->cameras = new  VirtualCamera[2];
 
     path = projectPath;
+    useManualMatch = useManual;
+}
+
+DotMatch::~DotMatch()
+{
 }
 
 vector<vector<float>> DotMatch::findDot(Mat image)
@@ -32,7 +38,7 @@ vector<vector<float>> DotMatch::findDot(Mat image)
     Mat bimage = Mat::zeros(image.size(), CV_8UC1);//二值化后的图像
 
 #ifdef USE_ADAPTIVE_THRESHOLD
-    adaptiveThreshold(image,bimage,255,ADAPTIVE_THRESH_MEAN_C,THRESH_BINARY,21,60);
+    adaptiveThreshold(image,bimage,255,ADAPTIVE_THRESH_MEAN_C,THRESH_BINARY,blocksize,60);
     //blocksize较大可以使处理效果趋向二值化，较小则趋向边缘提取；C值的作用在于抑制噪声
 #else
     bwThreshold = OSTU_Region(image);
@@ -53,8 +59,8 @@ vector<vector<float>> DotMatch::findDot(Mat image)
 
     for (int i = 0; i < bimage.rows; i++)
     {
-        vector<float> ptemp;
-        ptemp.push_back(i);//?
+        vector<int> ptemp;
+        ptemp.push_back(i);//表示对第i行进行处理
         for (int j = 0; j < bimage.cols - 1; j++)
         {
             if ((bimage.at<uchar>(i, j + 1) - bimage.at<uchar>(i, j)) > 0){
@@ -71,7 +77,7 @@ vector<vector<float>> DotMatch::findDot(Mat image)
                 int d2 = ptemp[p+2] - ptemp[p+1];
                 int d3 = ptemp[p+3] - ptemp[p+2];
                 if (d1 > EDGEDOWN && d1 < EDGEUP && d2 >MIDDOWN && d2 < MIDUP && d3 > EDGEDOWN && d3 < EDGEUP){
-                    int pointCount = alltemp.size();//表示alltemp中已经存在的点数
+                    size_t pointCount = alltemp.size();//表示alltemp中已经存在的点数
                     int match = -1;
                     vector<float> localtemp;//包含3个元素，y值，x左值，x右值
                     localtemp.push_back(ptemp[0]);//y
@@ -193,6 +199,12 @@ vector<vector<float>> DotMatch::findDot(Mat image)
     return dotOutput;
 }
 
+
+////__________________________________////
+/// 外部调用函数
+/// 对左右图像标记点进行匹配
+/// 输入为8位灰度图像
+////__________________________________////
 bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
 {
     dotInOrder.clear();
@@ -219,6 +231,63 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
     ////找出左右图像中的标志点
     vector<vector<float>> dotLeft = findDot(leftImage);
     vector<vector<float>> dotRight = findDot(rightImage);
+
+#ifdef TEST_SURF
+    vector<KeyPoint> leftkeypoints;
+    vector<KeyPoint> rightkeypoints;
+    //当出现无法解析的外部符号时，看lib库是否添加了
+    SURF detector(5000);//参数越大找到的角点越少
+    detector.detect(leftImage,leftkeypoints);
+    detector.detect(rightImage,rightkeypoints);
+    /*
+    for (size_t i=0; i <leftkeypoints.size();i++){
+        circle(Lcopy,leftkeypoints[i].pt,20,Scalar(0,255,0));
+    }
+    cvNamedWindow("Point Found",CV_WINDOW_NORMAL);
+    imshow("Point Found",Lcopy);
+    cv::waitKey();
+    */
+    SurfDescriptorExtractor extractor;
+    Mat descriptors_1, descriptors_2;
+    extractor.compute( leftImage, leftkeypoints, descriptors_1 );
+    extractor.compute( leftImage, rightkeypoints, descriptors_2 );
+
+    // Matching descriptor vectors using FLANN matcher
+    FlannBasedMatcher matcher;
+    vector< DMatch > matches;
+    matcher.match( descriptors_1, descriptors_2, matches );
+
+    double max_dist = 0; double min_dist = 100;
+
+    //-- Quick calculation of max and min distances between keypoints
+    for( int i = 0; i < descriptors_1.rows; i++ )
+    { double dist = matches[i].distance;
+      if( dist < min_dist ) min_dist = dist;
+      if( dist > max_dist ) max_dist = dist;
+    }
+
+    //-- Draw only "good" matches (i.e. whose distance is less than 2*min_dist,
+    //-- or a small arbitary value ( 0.02 ) in the event that min_dist is very
+    //-- small)
+    //-- PS.- radiusMatch can also be used here.
+    vector< DMatch > good_matches;
+
+    for( int i = 0; i < descriptors_1.rows; i++ )
+    { if( matches[i].distance <= max(2*min_dist, 0.02) )
+      { good_matches.push_back( matches[i]); }
+    }
+
+    Mat img_matches;
+    drawMatches( leftImage, leftkeypoints, rightImage, rightkeypoints,
+                 good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+                 vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+
+    //-- Show detected matches
+    cvNamedWindow("Good Matches",CV_WINDOW_NORMAL);
+    imshow( "Good Matches", img_matches );
+    cv::waitKey();
+#endif
+
 #ifdef DEBUG
     cv::vector<Point2f> dl, dr;
     for (size_t i = 0;i < dotLeft.size(); i++)
@@ -262,63 +331,58 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
 #endif
     ////判断两相机所摄标志点的对应关系
     int k = 0;//dotInOrder中现存点个数
-    int nowMatch = 0;//防止dotRight中的同一点与dotLeft中的不同点重复对应
-    vector<int> alreadymatched;
+    vector<int> rightmatched;//存储每次匹配点后右图像中被匹配点的序号
     for(size_t i = 0; i < dotLeft.size(); i++)
     {
-        bool breakflag = false;
-        for (size_t s = 0;s < alreadymatched.size();s++)
+        float error = 2*EPIPOLARERROR;
+        int bestJ = -1;//与i点最为符合的j点
+        for(size_t j = 0; j < dotRight.size();j++)
         {
-            if (i == alreadymatched[s])
-                breakflag = true;
-        }
-        if (breakflag)
-            break;
-        for(size_t j = nowMatch; j < dotRight.size();j++)
-        {
+            if (isBelongTo(j, rightmatched))
+                continue;
+
             float pleft[] = {dotLeft[i][0], dotLeft[i][1], 1.0};//齐次坐标
             float pright[] = {dotRight[j][0], dotRight[j][1], 1.0};
             cv::Mat plmat(1, 3, CV_32F, pleft);
             cv::Mat prmat(1, 3, CV_32F, pright);
 
-            cv::Mat ltor = prmat * fundMat * plmat.t();
-            //cv::Mat rtol = ld * fundMat.t() * rd.t();
-            float zlr = ltor.at<float>(0,0);
-            //float zrl = rtol.at<float>(0,0);
-            if (fabs(dotLeft[i][1] - dotRight[j][1]) > YDISTANCE)
-                continue;
-            if(fabs(zlr) > EPIPOLARERROR)
-                continue;
-
-            /****判断当前点相对于上一点X坐标的正负，如正负不同，则不是对应点****/
-            if (k != 0){
-                bool isbreak = false;
-                for (int p = 0;p < k;p++){
-                    int checkLefft = dotLeft[i][0] - dotInOrder[p][0];
-                    int checkRight = dotRight[j][0] - dotInOrder[p][2];
-                    if(checkLefft * checkRight <= 0){
-                        isbreak = true;
-                        break;
+            cv::Mat ltor = prmat * fundMat * plmat.t();//cv::Mat rtol = ld * fundMat.t() * rd.t();
+            float zlr = ltor.at<float>(0,0);//float zrl = rtol.at<float>(0,0);
+            //if (fabs(dotLeft[i][1] - dotRight[j][1]) > YDISTANCE)
+                //continue;
+            if(fabs(zlr) < EPIPOLARERROR && fabs(zlr) < error){
+                //判断当前点相对于上一点X坐标的正负，如正负不同，则不是对应点
+                if (k != 0){
+                    bool isbreak = false;
+                    for (int p = 0;p < k;p++){
+                        int checkLefft = dotLeft[i][0] - dotInOrder[p][0];
+                        int checkRight = dotRight[j][0] - dotInOrder[p][2];
+                        if(checkLefft * checkRight < -128){//此处阈值取值范围为0~负无穷，过小可能导致错匹配，较大可能导致漏检，可以考虑设为用户变量
+                            isbreak = true;
+                            break;
+                        }
+                    }
+                    if (!isbreak){
+                        bestJ = j;
+                        error = fabs(zlr);
                     }
                 }
-                if (isbreak){
-                    nowMatch++;
-                    break;
+                else{
+                    bestJ = j;
+                    error = fabs(zlr);
                 }
             }
-
+        }
+        if (bestJ >= 0){
             vector<float> dot;
             dot.push_back(dotLeft[i][0]);
             dot.push_back(dotLeft[i][1]);
-            dot.push_back(dotRight[j][0]);
-            dot.push_back(dotRight[j][1]);
-
+            dot.push_back(dotRight[bestJ][0]);
+            dot.push_back(dotRight[bestJ][1]);
             dotInOrder.push_back(dot);//每个元素都是包含4个float的向量，依次为左x，y；右x，y
 
-            alreadymatched.push_back(i);
+            rightmatched.push_back(bestJ);
             k++;
-            nowMatch++;
-            break;
         }
     }
 
@@ -351,6 +415,11 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
         else
             featureTemp = calFeature(dotPositionOdd);
         bool enoughpoint = dotClassify(featureTemp);
+
+        ///如果使用手工匹配，则传入图像及参数
+        if (useManualMatch)
+            setUpManual(leftImage,rightImage);
+
         if (enoughpoint){
             markPoint();
             return true;
@@ -360,22 +429,87 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
     }
 }
 
+void DotMatch::setUpManual(Mat LImage, Mat RImage)
+{
+    mm = new ManualMatch();
+    connect(mm,SIGNAL(outputdata()),this,SLOT(onfinishmanual()));
+    mm->leftImage = LImage;
+    mm->rightImage = RImage;
+    mm->correspond.clear();
+    mm->dotInOrder.clear();
+    if (scanSN%2 == 0)
+        for (size_t c = 0; c < correspondPointEven.size(); c++){
+            mm->correspond.push_back(correspondPointEven[c]);
+        }
+    else
+        for (size_t c = 0; c < correspondPointOdd.size(); c++){
+            mm->correspond.push_back(correspondPointOdd[c]);
+        }
+    for (size_t d = 0; d < dotInOrder.size(); d++){
+        Point2f ptleft, ptright;
+        ptleft.x = dotInOrder[d][0];
+        ptleft.y = dotInOrder[d][1];
+        ptright.x = dotInOrder[d][2];
+        ptright.y = dotInOrder[d][3];
+        cv::vector<cv::Point2f> temp;
+        temp.push_back(ptleft);
+        temp.push_back(ptright);
+        mm->dotInOrder.push_back(temp);
+    }
+}
 
+
+////______________________________////
+/// \brief DotMatch::activeManual
+/// 启动手动识别窗口，外部调用
+////______________________________////
+void DotMatch::activeManual()
+{
+    mm->move(60,20);
+    mm->show();
+    mm->setImage();
+}
+
+void DotMatch::onfinishmanual()
+{
+    if (scanSN%2 == 0){
+        correspondPointEven.clear();
+        for (size_t e = 0; e < mm->refinedCorr.size(); e++){
+            correspondPointEven.push_back(mm->refinedCorr[e]);
+        }
+    }
+    else{
+        correspondPointOdd.clear();
+        for (size_t o = 0; o < mm->refinedCorr.size(); o++){
+            correspondPointOdd.push_back(mm->refinedCorr[o]);
+        }
+    }
+    delete mm;
+    emit receivedmanualmatch();
+}
+
+////_______________________________////
+///               匹配点后续处理                ///
+////_______________________________////
 void DotMatch::finishMatch()
 {
     if (!firstFind){
         calMatrix();
-        for (size_t i  = 0; i < dotFeatureTemp.size(); i++){
-            dotFeature.push_back(dotFeatureTemp[i]);
+
+        if (scanSN%2 == 0){
+            updateDot(correspondPointEven, dotPositionEven, dotPositionOdd);
         }
-        ///利用添加了新点的dotFeature计算邻域信息
+        else {
+            updateDot(correspondPointOdd, dotPositionOdd, dotPositionEven);
+        }
+
+        ///利用更新后的dotFeature计算邻域信息
         neighborFeature.clear();
         for (size_t i = 0;i < dotFeature.size();i++){
             vector<int> neighborTemp = calNeighbor(dotFeature, i);
             neighborFeature.push_back(neighborTemp);
         }
-        dotFeatureTemp.clear();
-        markPoint();
+        markPoint();//这里再次标记是有必要的，因为之前更新了correspondPoint，因此应反映这些更新
     }
     else
         firstFind = false;
@@ -383,11 +517,134 @@ void DotMatch::finishMatch()
 }
 
 
+////______________________________________________________________////
+/// 由finishMatch内部调用                                                                       ///
+/// 根据计算出的变换矩阵更新已知点数据 dotPositionCurrent 以及 dotFeature   ///
+////______________________________________________________________////
+void DotMatch::updateDot(cv::vector<Point2i> correspondPointCurrent, cv::vector<Point3f> &dotPositionCurrent, cv::vector<Point3f> dotPositionFormer)
+{
+    ///对所有已知点分类进行处理
+    cv::vector<Point3f> updatedDotPosition;//用来暂存更新后的标记点绝对坐标
+    updatedDotPosition.resize(dotFeature.size()+20);//暂时认为新增标记点个数不大于20
+    for (size_t s = 0; s < updatedDotPosition.size(); s++){
+        updatedDotPosition[s] = Point3f(0,0,1000);//设置点初值为z=1000，作为是否后来被赋值的判别条件
+    }
+
+    vector<int> pointKnown;//存储当前次扫描已确认的已知点
+
+    /// (1)检出的已知点，其唯一编号可根据correspondPointCurrent确定，坐标值可根据dotPosition确定
+    /// 将两项写入updatedDotPosition中的对应位置
+    for (size_t i = 0; i < correspondPointCurrent.size(); i++){
+        updatedDotPosition[correspondPointCurrent[i].x] = dotPositionCurrent[correspondPointCurrent[i].y];
+        pointKnown.push_back(correspondPointCurrent[i].y);
+    }
+
+    ///(2)未被检出的已知点
+    ///注意这里的i由于采用的是dotFeature的序号，因此是指已知点的唯一编号，而此时dotFeature还没有进行坐标更新和添加新点
+    for (size_t ID = 0; ID < dotFeature.size(); ID++){
+        bool Iisdetected = false;//判断dotFeature中的ID号点是否被关联
+        for (size_t j = 0; j < correspondPointCurrent.size(); j++){
+            if (ID == correspondPointCurrent[j].x){
+                //如果correspondPointCurrent中出现了唯一编号ID，说明ID点被找到并被匹配了
+                Iisdetected = true;
+                break;
+            }
+        }
+        if (!Iisdetected){
+            //若i点未被关联，则在当前扫描下可能是未探测到或被识别为疑似点
+            ///对i点在当前坐标系下计算坐标以便进一步判断
+            //获得i点上一次扫描时的坐标
+
+            float ixf = dotPositionFormer[ID].x;
+            float iyf = dotPositionFormer[ID].y;
+            float izf = dotPositionFormer[ID].z;
+
+            ///注意pointf将要赋给元素类型为64FC1的矩阵，因此其元素在赋值前必须转换为double型，否则计算出错！
+            double pointf[] = {ixf, iyf, izf};
+            Mat pointFormer(3,1,CV_64FC1,pointf);//表示i点在先前次扫描坐标系下的坐标
+            Mat pointLater(3,1,CV_64FC1);
+
+            pointLater = outRInv * pointFormer + outTInv;//直接通过Horn变换获得变换矩阵
+
+            double ixl = pointLater.at<double>(0, 0);
+            double iyl = pointLater.at<double>(1, 0);
+            double izl = pointLater.at<double>(2, 0);
+
+            ///判断i点是否为未被探测到的已知点
+            bool match = false;//表示ID点是否与疑似点k建立了匹配，默认为否
+            int matchNum = 0;//表示与ID点match的最佳k值
+            for (size_t k = 0; k < dotPositionCurrent.size(); k++){
+                float formerError = 2*disError;//表示上一k点与ID点距离偏差
+                if (isBelongTo(k, pointKnown))
+                    continue;  //通过判断表明k点为疑似点
+
+                double distance = pow((ixl - dotPositionCurrent[k].x), 2) + pow((iyl - dotPositionCurrent[k].y), 2) + pow((izl - dotPositionCurrent[k].z), 2);
+                if (distance < disError && distance < formerError){
+                    //初步认为k点可能为ID点，但还需要通过邻域检查
+                    vector<vector<float>> currentFeature = calFeature(dotPositionCurrent);//计算当前次扫描各点的特征值
+                    vector<int> neighborOfK = calNeighbor(currentFeature, k);//利用各点特征值得到k点临近点信息
+                    vector<int> filteredNeighbor;//储存k点与所有已知点的远近信息
+                    for (size_t z = 0; z < neighborOfK.size(); z++){
+                        //将不是已知的点过滤掉
+                        if (isBelongTo(neighborOfK[z], pointKnown))
+                            filteredNeighbor.push_back(neighborOfK[z]);
+                    }
+                    if (checkNeighbor(neighborFeature[ID], filteredNeighbor)){
+                        //如果邻域检查返回值为真，说明k点邻域情况与ID点相同，表明k点更可能是ID点
+                        updatedDotPosition[ID] = dotPositionCurrent[k];
+                        formerError = distance;
+                        matchNum = k;
+                        match = true;//说明疑似点k即原ID点
+                    }
+                }
+            }
+
+            if (match){
+                pointKnown.push_back(matchNum);
+            }
+            else{
+                //说明i点与任意k点都不匹配，即i点在当前次扫描中未被看到
+                updatedDotPosition[ID].x = ixl;
+                updatedDotPosition[ID].y = iyl;
+                updatedDotPosition[ID].z = izl;
+            }
+        }
+    }
+
+    ///(3)确定为全新点的点
+    size_t offset = 0;
+    for (size_t m = 0; m < dotPositionCurrent.size(); m++){
+        if (isBelongTo(m, pointKnown))
+            continue;
+        //通过测试的点应为真正的全新点
+        updatedDotPosition[dotFeature.size() + offset] = dotPositionCurrent[m];
+        offset++;
+    }
+
+    ///最后将updateDotPosition中的数值赋给dotPosition
+    dotPositionCurrent.clear();
+    for (size_t n = 0; n < updatedDotPosition.size(); n++){
+        if (updatedDotPosition[n].z != 1000){
+            dotPositionCurrent.push_back(updatedDotPosition[n]);
+        }
+        else
+            break;
+    }
+
+    ///利用新的dotPosition计算dotFeature
+    dotFeature.clear();
+    dotFeature = calFeature(dotPositionCurrent);
+}
+
+
+////______________________________////
+///                  三角计算                     ///
+////______________________________////
 bool DotMatch::triangleCalculate()
 {
     cv::Point2f dotLeft;
     cv::Point2f dotRight;
-    vector<int> dotRemove;//不能成功三角计算的点需要去除，该向量存储待去除点的序号
+    dotRemove.clear();
     for (size_t i = 0; i < dotInOrder.size(); i++){
         dotLeft.x = dotInOrder[i][0];
         dotLeft.y = dotInOrder[i][1];
@@ -409,9 +666,11 @@ bool DotMatch::triangleCalculate()
 
         if(!ok){
             dotRemove.push_back(i);
+            QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point ") + QString::number(i) + tr(" calculation failed."));
             continue;
         }
         //能到达这里的dotInOrder[i]都是通过了三角计算的，因此由其计算得到的interPoint可以存入dotPosition
+        //需要注意的是，如果真的出现了i点不能计算交叉点的情况，那么将导致dotPosition中点的序号与点的对应关系与dotInOrder中不同
         if (scanSN%2 == 0)
             dotPositionEven.push_back(interPoint);
         else
@@ -421,20 +680,18 @@ bool DotMatch::triangleCalculate()
     if (scanSN%2 == 0){
         if (dotPositionEven.size() < 4){
             QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point less than 4. Try adjusting the exposure."));
-            //firstFind = true;这里完全重置似无必要
             return false;
         }
         else{
             for (size_t r=0;r<dotRemove.size();r++){
-                dotInOrder.erase(dotInOrder.begin()+dotRemove[r]);
+                dotInOrder.erase(dotInOrder.begin()+dotRemove[r]);//通过这一操作使得dotPosition与dotInOrder序号代表点再次一致
             }
             return true;
         }
     }
     else{
         if (dotPositionOdd.size() < 4){
-            QMessageBox::warning(NULL, tr("Not enough Point"), tr("Point less than 4. Try adjusting the exposure."));
-            //firstFind = true;
+            QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point less than 4. Try adjusting the exposure."));
             return false;
         }
         else{
@@ -485,8 +742,6 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
     int validpoint = 0;//表示找到的一致点个数，小于4则不能生成变换矩阵，则应重新获取
     size_t featureSize = dotFeature.size();
 
-    dotFeatureTemp.clear();
-
     /***定义featureLib，保存featureTemp中各点所匹配的dotFeature中点的序号及匹配度***/
     vector<vector<Point2i>> featureLib;//Point2i x值表示dotFeature中点的序号，y值表示匹配度match，凡是匹配度大于2的都保存
     featureLib.resize(featureTemp.size());
@@ -495,7 +750,7 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
     for (size_t i = 0; i < featureTemp.size(); i++){
 
         ///已知点遍历循环开始
-        for (size_t j = 0; j < featureSize; j++){
+        for (size_t ID = 0; ID < featureSize; ID++){
 
             match = 0;//每次变换dotFeature中的待匹配序列号时，都要将之前的匹配数清零
 
@@ -503,8 +758,8 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
             for (size_t p = 0; p < featureTemp[i].size(); p++){
 
                 ///单个已知点特征值遍历循环开始
-                for (size_t q = 0; q < dotFeature[j].size(); q++){
-                    float td = fabs(featureTemp[i][p] - dotFeature[j][q]);
+                for (size_t q = 0; q < dotFeature[ID].size(); q++){
+                    float td = fabs(featureTemp[i][p] - dotFeature[ID][q]);
                     if (td < tolerance)
                         match++;
                 }///循环结束
@@ -514,21 +769,21 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
             if (match >= 1)///这里若不做限制则是将featureTemp中每一点与dotFeature中每点的匹配度计算出来
                                 ///匹配度小于1的点认为是全新点
             {
-                featureLib[i].push_back(Point2i(j,match));
+                featureLib[i].push_back(Point2i(ID,match));
             }
         }///已知点遍历循环结束
 
     }///未知点循环结束
 
     ///至此featureLib中存储了未知点所对应的可能匹配的已知点及其匹配度，下一步
-    /// 是遍历dotFeature各点，查找与各点具有最大匹配度的i
+    /// 是遍历dotFeature各点，查找与各点具有最大匹配度的ID
 
-    for (size_t j = 0;j < featureSize;j++){
+    for (size_t ID = 0;ID < featureSize;ID++){
         int bestNum = -1;
         int formatch = 0;
         for (size_t i = 0;i < featureLib.size();i++){
             for (size_t s = 0;s < featureLib[i].size();s++){
-                if (j == featureLib[i][s].x){
+                if (ID == featureLib[i][s].x){
                     if (featureLib[i][s].y > formatch){
                         bestNum = i;
                         formatch = featureLib[i][s].y;
@@ -536,44 +791,45 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
                 }
             }
         }
-        if (bestNum>=0&&formatch>2){
-            bool needbreak = false;
-            /*
-            for (size_t e = 0;e < featureLib[bestNum].size();e++){
-                if (featureLib[bestNum][e].x != j){
-                    if (featureLib[bestNum][e].y > formatch){
-                        needbreak = true;
-                    }
-                }
-            }
-*/
-            if (!needbreak){
-                correspondPoint.push_back(Point2i(j,bestNum));
-            }
+        if (bestNum >= 0 && formatch >= 2){//添加了等于2，进一步降低条件
+            correspondPoint.push_back(Point2i(ID,bestNum));
         }
     }
 
     /// 邻域检查，目的是分辨检出的各点邻域情况是否符合已知，如不符合，则排除该点
-    for (size_t i = 0;i < featureTemp.size();i++){
-        for (size_t c = 0;c < correspondPoint.size();c++){
-            if (i==correspondPoint[c].y){
-                std::sort(featureTemp[i].begin(),featureTemp[i].end());
+    for (size_t i = 0;i < featureTemp.size();i++){//1、遍历featureTemp开始，标号i
+
+        for (size_t c = 0;c < correspondPoint.size();c++){//2、遍历correspondPoint开始，标号c
+
+            if (i == correspondPoint[c].y){//如果featureTemp中序号为i的点对应已知点，则继续
+
+                std::sort(featureTemp[i].begin(),featureTemp[i].end());//对featureTemp[i]中i点与featureTemp中其余各点的距离由小到大进行排序
                 vector<int> neighborTemp;
-                for (size_t e=0;e<featureTemp[i].size();e++){
-                    for (size_t p=0;p<featureTemp.size();p++){
-                        for (size_t q=0;q<featureTemp[p].size();q++){
-                            if (featureTemp[i][e] == featureTemp[p][q] && i!=p){
-                                //说明该组特征值是由i、p两点计算出来的
-                                for (size_t r = 0;r < correspondPoint.size();r++){
-                                    if(p == correspondPoint[r].y){
+
+                for (size_t e = 0;e < featureTemp[i].size();e++){//3、遍历featureTemp[i]中各个距离值
+
+                    for (size_t p = 0;p < featureTemp.size();p++){//4、再次遍历featureTemp开始
+
+                        for (size_t q = 0;q < featureTemp[p].size();q++){//5、遍历featureTemp[p]中各值
+
+                            if (featureTemp[i][e] == featureTemp[p][q] && i!=p){//若p点q值等于i点e值，且i不等于p，说明该组特征值是由i、p两点计算出来的
+
+                                for (size_t r = 0;r < correspondPoint.size();r++){//6、再次遍历correspondPoint
+                                    if(p == correspondPoint[r].y){//若p点也对应已知点
+                                        /// 将p点对应的已知点ID推入neighborTemp，由于之前对featureTemp[i]进行了排序，因此已知点推入的先后顺序
+                                        /// 反映了这些已知点与i点的远近
                                         neighborTemp.push_back(correspondPoint[r].x);
                                     }
-                                }
+
+                                }//6
                             }
-                        }
-                    }
-                }
-                bool pass = checkNeighbor(neighborFeature[correspondPoint[c].x], neighborTemp);
+                        }//5
+                    }//4
+                }//3
+
+                /// 至此获得了i点与本次扫描获得的所有其余已知点按由近及远顺序的排列，同时i点也被认为对应已知点correspondPoint[c].x
+                bool pass = true;
+                //pass = checkNeighbor(neighborFeature[correspondPoint[c].x], neighborTemp);
                 if (pass){
                     if (scanSN%2 == 0)
                         correspondPointEven.push_back(correspondPoint[c]);
@@ -582,18 +838,11 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
                     validpoint++;
                 }
             }
-        }
-    }
+        }//2、遍历correspondPoint结束，标号c
+    }//1、遍历featureTemp结束，标号i
 
     /// 至此featureTemp中所有被认为是已知的点都与dotFeature中的点一一对应，并被用来计算变换矩阵
-    /// 而有一部分点可能由于匹配度较低，对这些点采取忽略处理，显示为未知点，但不加入dotFeature
-    /// 而对于匹配度小于1的i点，即featureLib[i].size=0，认为是新点，将其特征值加入dotFeatureTemp
     if (validpoint > 3){
-        for (size_t s = 0;s < featureLib.size();s++){
-            if (featureLib[s].size()==0){
-                dotFeatureTemp.push_back(featureTemp[s]);
-            }
-        }
         return true;
     }
     else{
@@ -624,21 +873,27 @@ vector<int> DotMatch::calNeighbor(vector<vector<float>> input, int num)
     return output;
 }
 
-bool DotMatch::checkNeighbor(vector<int> nf, vector<int> nt)
+////______________________________________________////
+/// \brief DotMatch::checkNeighbor                                  ////
+/// \param referance 作为参考的序列                              ////
+/// \param needcheck 被检查的序列                               ////
+/// \return 是否通过检查                                              ////
+////______________________________________________////
+bool DotMatch::checkNeighbor(vector<int> referance, vector<int> needcheck)
 {
     int error = 0;
-    for (size_t i = 0;i < nt.size();i++){
+    for (size_t i = 0;i < needcheck.size();i++){
         int flag = -1;
-        for (size_t j = 0;j < nf.size();j++){
-            if (nt[i] == nf[j]){
+        for (size_t j = 0;j < referance.size();j++){
+            if (needcheck[i] == referance[j]){
                 flag = j;
             }
         }
         if (flag >= 0){
-            for (size_t p = i;p < nt.size();p++){
+            for (size_t p = i;p < needcheck.size();p++){
                 for (size_t q = 0;q <= flag;q++){
-                    if (nt[p] == nf[q] && q != flag){
-                        nf[q] = -1;//使其不再参与比较
+                    if (needcheck[p] == referance[q] && q != flag){
+                        referance[q] = -1;//使其不再参与比较
                         error++;
                     }
                 }
@@ -648,13 +903,15 @@ bool DotMatch::checkNeighbor(vector<int> nf, vector<int> nt)
             continue;
         }
     }
-    if (error <= 2)
+    if (error < 2)
         return true;//error = 2可能是因对象点误检造成的，不足以说明当前的位置错误
     else
         return false;
 }
 
-////通过储存在correspondPointEven及correspondPointOdd中的一致点变换前后坐标计算变换矩阵
+////______________________________________________________________________________////
+/// 通过储存在correspondPointEven及correspondPointOdd中的一致点变换前后坐标计算变换矩阵   ////
+////______________________________________________________________________________////
 void DotMatch::calMatrix()
 {
     if (dotPositionEven.size() == 0 || dotPositionOdd.size() == 0){
@@ -664,24 +921,46 @@ void DotMatch::calMatrix()
     cv::vector<Point3f> pFormer;
     cv::vector<Point3f> pLater;
 
-    for (size_t i =0; i < correspondPointOdd.size(); i++){
-        for (size_t j = 0; j < correspondPointEven.size(); j++){
-            if (correspondPointOdd[i].x == correspondPointEven[j].x){
-                if (scanSN%2 == 0){
-                    pFormer.push_back(dotPositionOdd[correspondPointOdd[i].y]);
-                    pLater.push_back(dotPositionEven[correspondPointEven[j].y]);
-                }
-                else{
-                    pFormer.push_back(dotPositionEven[correspondPointEven[j].y]);
-                    pLater.push_back(dotPositionOdd[correspondPointOdd[i].y]);
+    if (!useManualMatch){//配合updateDotPosition的方法
+        /// 不使用manualmatch时，当前次correspondPoint仅包含之前扫描添加的已知点，不包含
+        /// 当次扫描添加的已知点，因此与之前已知点是子集关系，其中所有已知点在之前都已被发现
+        if (scanSN%2 == 0){
+            for (size_t j = 0; j < correspondPointEven.size(); j++){
+                pLater.push_back(dotPositionEven[correspondPointEven[j].y]);//Even中点的顺序为检出顺序
+                pFormer.push_back(dotPositionOdd[correspondPointEven[j].x]);//Odd中的点是按照ID排序
+            }
+        }
+        else{
+            for (size_t j = 0; j < correspondPointOdd.size(); j++){
+                pLater.push_back(dotPositionOdd[correspondPointOdd[j].y]);
+                pFormer.push_back(dotPositionEven[correspondPointOdd[j].x]);
+            }
+        }
+    }
+    else{
+        /// 若采用manualmatch，当前次correspondPoint中还包含当次扫描标记的已知点，这些点在之前
+        /// 的扫描中没有出现，也就没有其之前的坐标，因此二者是交集，只能取交集的部分做计算
+        for (size_t i =0; i < correspondPointOdd.size(); i++){
+            for (size_t j = 0; j < correspondPointEven.size(); j++){
+                if (correspondPointOdd[i].x == correspondPointEven[j].x){
+                    if (scanSN%2 == 0){
+                        pFormer.push_back(dotPositionOdd[correspondPointOdd[i].y]);
+                        pLater.push_back(dotPositionEven[correspondPointEven[j].y]);
+                    }
+                    else{
+                        pFormer.push_back(dotPositionEven[correspondPointEven[j].y]);
+                        pLater.push_back(dotPositionOdd[correspondPointOdd[i].y]);
+                    }
                 }
             }
         }
     }
 
-    /********Horn四元数法求解变换矩阵*********/
-
+    //Horn四元数法求解变换矩阵
     std::vector<double> inpoints;
+    std::vector<double> outQuaternion;
+    outQuaternion.resize(7);//如果不首先确定大小，可能产生和指针有关的问题
+
     for(size_t i = 0;i < pFormer.size();i++){
         inpoints.push_back(pFormer[i].x);//经过验证，前面的点为基准，后面的点为待移动点
         inpoints.push_back(pFormer[i].y);//求解出的矩阵是将后面的坐标对齐到前面
@@ -690,9 +969,8 @@ void DotMatch::calMatrix()
         inpoints.push_back(pLater[i].y);
         inpoints.push_back(pLater[i].z);
     }
-    std::vector<double> outQuaternion;
-    outQuaternion.resize(7);//如果不首先确定大小，可能产生和指针有关的问题
-    double flag = mrpt::scanmatching::HornMethod(inpoints,outQuaternion);
+
+    mrpt::scanmatching::HornMethod(inpoints,outQuaternion);
     double tx = outQuaternion[0];
     double ty = outQuaternion[1];
     double tz = outQuaternion[2];
@@ -710,10 +988,48 @@ void DotMatch::calMatrix()
     double r7 = 2*(k*j+w*i);//Horn原论文此处疑有误，正确的参考www.j3d.org/matrix_faq/matrfaq_latest.html
     double r8 = pow(w,2)-pow(i,2)-pow(j,2)+pow(k,2);
     double data[] = {r0,r1,r2,tx,r3,r4,r5,ty,r6,r7,r8,tz};
-    cv::Mat outMat(3,4,CV_64FC1,data);
+    Mat outMat(3,4,CV_64FC1,data);
+
+    inpoints.clear();
+    outQuaternion.clear();
+    outQuaternion.resize(7);//如果不首先确定大小，可能产生和指针有关的问题
+
+    for(size_t i = 0;i < pLater.size();i++){
+        inpoints.push_back(pLater[i].x);//经过验证，前面的点为基准，后面的点为待移动点
+        inpoints.push_back(pLater[i].y);//求解出的矩阵是将后面的坐标对齐到前面
+        inpoints.push_back(pLater[i].z);
+        inpoints.push_back(pFormer[i].x);
+        inpoints.push_back(pFormer[i].y);
+        inpoints.push_back(pFormer[i].z);
+    }
+
+    mrpt::scanmatching::HornMethod(inpoints,outQuaternion);
+    tx = outQuaternion[0];
+    ty = outQuaternion[1];
+    tz = outQuaternion[2];
+    w = outQuaternion[3];
+    i = outQuaternion[4];
+    j = outQuaternion[5];
+    k = outQuaternion[6];
+    r0 = pow(w,2)+pow(i,2)-pow(j,2)-pow(k,2);
+    r1 = 2*(i*j-w*k);
+    r2 = 2*(i*k+w*j);
+    r3 = 2*(i*j+w*k);
+    r4 = pow(w,2)-pow(i,2)+pow(j,2)-pow(k,2);
+    r5 = 2*(j*k-w*i);
+    r6 = 2*(k*i-w*j);
+    r7 = 2*(k*j+w*i);//Horn原论文此处疑有误，正确的参考www.j3d.org/matrix_faq/matrfaq_latest.html
+    r8 = pow(w,2)-pow(i,2)-pow(j,2)+pow(k,2);
+    double datainv[] = {r0,r1,r2,tx,r3,r4,r5,ty,r6,r7,r8,tz};
+    Mat outMatInv(3,4,CV_64FC1,datainv);
 
     cv::Range rangeR(0,3);
     cv::Range rangeT(3,4);
+
+    outR = outMat(cv::Range::all(),rangeR).clone();//注意必须对等号右侧深拷贝才能使用
+    outT = outMat(cv::Range::all(),rangeT).clone();
+    outRInv = outMatInv(cv::Range::all(),rangeR).clone();
+    outTInv = outMatInv(cv::Range::all(),rangeT).clone();
 
     if (scanSN == 1){
         Mat transFormer(3,4,CV_64FC1);
@@ -730,11 +1046,6 @@ void DotMatch::calMatrix()
     else {
         Mat transR(3,3,CV_64FC1);//存放待输出矩阵的R部分
         Mat transT(3,1,CV_64FC1);//存放待输出矩阵的T部分
-        Mat outR(3,3,CV_64FC1);//表示outMat的R部分
-        Mat outT(3,1,CV_64FC1);//outMat的T部分
-
-        outR = outMat(cv::Range::all(),rangeR).clone();//从outMat深拷贝
-        outT = outMat(cv::Range::all(),rangeT).clone();
 
         ///在以下计算中，等号左值为初始化了的空矩阵，右值全部来自于局部块的深拷贝
         /// 因此不依赖于原矩阵的值，因此计算能够成立，而直接采用局部块进行计算是不行的！
@@ -748,16 +1059,58 @@ void DotMatch::calMatrix()
     }
 }
 
+/*
+////__________________________////
+///         由calMatrix内部调用         ///
+///         Horn法求解变换矩阵        ///
+////__________________________////
+void DotMatch::hornTransform(double &data[], cv::vector<Point3f> target, cv::vector<Point3f> move)
+{
+    std::vector<double> inpoints;
+    for(size_t i = 0;i < target.size();i++){
+        inpoints.push_back(target[i].x);//经过验证，前面的点为基准，后面的点为待移动点
+        inpoints.push_back(target[i].y);//求解出的矩阵是将后面的坐标对齐到前面
+        inpoints.push_back(target[i].z);
+        inpoints.push_back(move[i].x);
+        inpoints.push_back(move[i].y);
+        inpoints.push_back(move[i].z);
+    }
+    std::vector<double> outQuaternion;
+    outQuaternion.resize(7);//如果不首先确定大小，可能产生和指针有关的问题
+    mrpt::scanmatching::HornMethod(inpoints,outQuaternion);
+    double tx = outQuaternion[0];
+    double ty = outQuaternion[1];
+    double tz = outQuaternion[2];
+    double w = outQuaternion[3];
+    double i = outQuaternion[4];
+    double j = outQuaternion[5];
+    double k = outQuaternion[6];
+    double r0 = pow(w,2)+pow(i,2)-pow(j,2)-pow(k,2);
+    double r1 = 2*(i*j-w*k);
+    double r2 = 2*(i*k+w*j);
+    double r3 = 2*(i*j+w*k);
+    double r4 = pow(w,2)-pow(i,2)+pow(j,2)-pow(k,2);
+    double r5 = 2*(j*k-w*i);
+    double r6 = 2*(k*i-w*j);
+    double r7 = 2*(k*j+w*i);//Horn原论文此处疑有误，正确的参考www.j3d.org/matrix_faq/matrfaq_latest.html
+    double r8 = pow(w,2)-pow(i,2)-pow(j,2)+pow(k,2);
+    data[] = {r0,r1,r2,tx,r3,r4,r5,ty,r6,r7,r8,tz};
+}
+*/
 
-
+////___________________________////
+/// \brief DotMatch::markPoint          ///
+/// 内部调用函数                          ///
+/// 为全局变量dotForMark赋值         ///
+////___________________________////
 void DotMatch::markPoint()
 {
     dotForMark.clear();
     for (size_t i = 0; i < dotInOrder.size(); i++){
-        /*** eachPoint存储待显示的对应点，内含6个int值，分别为
-         * 左点x、y，右点x、y，是否为已知点(1表示已知)，已知点编号
-         * ***/
+
+        /// eachPoint存储待显示的对应点，内含6个int值，依次为左点x、y，右点x、y，是否为已知点(1表示已知)，已知点编号
         vector<int> eachPoint;
+
         for (int j = 0; j < 4; j++){
             int value = dotInOrder[i][j];
             eachPoint.push_back(value);
@@ -789,7 +1142,6 @@ void DotMatch::markPoint()
             eachPoint.push_back(0);
             eachPoint.push_back(0);
         }
-
         dotForMark.push_back(eachPoint);
     }
 }
@@ -853,7 +1205,9 @@ vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
 
 
 
-/************大津法求解二值化阈值************/
+////________________________________////
+///  大津法求解二值化阈值                      ///
+////________________________________////
 int DotMatch::OSTU_Region(cv::Mat& image)
 {
     assert(image.channels() == 1);
@@ -917,5 +1271,19 @@ int DotMatch::OSTU_Region(cv::Mat& image)
     return threshold;
 }
 
+////_________________________________////
+/// \brief DotMatch::isBelongTo
+/// \param e
+/// \param C
+/// \return e是否属于集合C
+////_________________________________////
+bool DotMatch::isBelongTo(size_t e, vector<int> C)
+{
+    for (size_t i = 0; i < C.size(); i++){
+        if (e == C[i])
+            return true;
+    }
+    return false;
+}
 
 
