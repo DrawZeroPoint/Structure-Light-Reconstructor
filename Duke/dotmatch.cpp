@@ -200,11 +200,10 @@ vector<vector<float>> DotMatch::findDot(Mat image)
 }
 
 
-////__________________________________////
-/// 外部调用函数
-/// 对左右图像标记点进行匹配
-/// 输入为8位灰度图像
-////__________________________________////
+////____________________________________________________________////
+/// 由MainWindow外部调用函数，对左右图像标记点进行匹配
+/// 输入为8位灰度图像，返回是否成功匹配图像
+////____________________________________________________________////
 bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
 {
     dotInOrder.clear();
@@ -414,13 +413,12 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
             featureTemp = calFeature(dotPositionEven);
         else
             featureTemp = calFeature(dotPositionOdd);
+
         bool enoughpoint = dotClassify(featureTemp);
-
-        ///如果使用手工匹配，则传入图像及参数
-        if (useManualMatch)
-            setUpManual(leftImage,rightImage);
-
         if (enoughpoint){
+            ///如果使用手工匹配，则传入图像及参数
+            if (useManualMatch)
+                setUpManual(leftImage,rightImage);
             markPoint();
             return true;
         }
@@ -429,6 +427,12 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
     }
 }
 
+////_____________________________________________________////
+/// \brief DotMatch::setUpManual
+/// \param LImage 左相机标记点查找图像
+/// \param RImage 右相机图像
+/// 由matchDot进行内部调用，生成ManualMatch实例并初始化
+////_____________________________________________________////
 void DotMatch::setUpManual(Mat LImage, Mat RImage)
 {
     mm = new ManualMatch();
@@ -459,17 +463,23 @@ void DotMatch::setUpManual(Mat LImage, Mat RImage)
 }
 
 
-////______________________________////
+////___________________________________________________////
 /// \brief DotMatch::activeManual
 /// 启动手动识别窗口，外部调用
-////______________________________////
+////___________________________________________________////
 void DotMatch::activeManual()
 {
-    mm->move(60,20);
+    mm->move(60,0);
     mm->show();
     mm->setImage();
 }
 
+////______________________________________________________////
+/// \brief DotMatch::onfinishmanual
+/// 槽函数，由click手工标定面板的finish按钮触发，并按照标记结果
+/// 对correspondPoint重新赋值，同时发射receivedmanualmatch信号
+/// 由MainWindow的finishmanualmatch槽接收
+////______________________________________________________////
 void DotMatch::onfinishmanual()
 {
     if (scanSN%2 == 0){
@@ -488,9 +498,10 @@ void DotMatch::onfinishmanual()
     emit receivedmanualmatch();
 }
 
-////_______________________________////
-///               匹配点后续处理                ///
-////_______________________________////
+////________________________________________________________////
+/// 由MainWindow外部调用，进行匹配点后续处理，包括计算变换矩阵
+/// 更新标记点坐标、邻域信息及扫描序列递增
+////________________________________________________________////
 void DotMatch::finishMatch()
 {
     if (!firstFind){
@@ -525,10 +536,8 @@ void DotMatch::updateDot(cv::vector<Point2i> correspondPointCurrent, cv::vector<
 {
     ///对所有已知点分类进行处理
     cv::vector<Point3f> updatedDotPosition;//用来暂存更新后的标记点绝对坐标
-    updatedDotPosition.resize(dotFeature.size()+20);//暂时认为新增标记点个数不大于20
-    for (size_t s = 0; s < updatedDotPosition.size(); s++){
-        updatedDotPosition[s] = Point3f(0,0,1000);//设置点初值为z=1000，作为是否后来被赋值的判别条件
-    }
+    ///暂时认为新增标记点个数不大于20，设置点初值为z=1000，作为是否后来被赋值的判别条件
+    updatedDotPosition.resize(dotFeature.size()+20, Point3f(0,0,1000));
 
     vector<int> pointKnown;//存储当前次扫描已确认的已知点
 
@@ -637,9 +646,9 @@ void DotMatch::updateDot(cv::vector<Point2i> correspondPointCurrent, cv::vector<
 }
 
 
-////______________________________////
-///                  三角计算                     ///
-////______________________________////
+////_____________________________________________________________////
+///  由matchDot内部调用，进行三角计算
+////_____________________________________________________________////
 bool DotMatch::triangleCalculate()
 {
     cv::Point2f dotLeft;
@@ -775,7 +784,7 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 
     }///未知点循环结束
 
-    ///至此featureLib中存储了未知点所对应的可能匹配的已知点及其匹配度，下一步
+    /// 至此featureLib中存储了未知点所对应的可能匹配的已知点及其匹配度，下一步
     /// 是遍历dotFeature各点，查找与各点具有最大匹配度的ID
 
     for (size_t ID = 0;ID < featureSize;ID++){
@@ -873,12 +882,12 @@ vector<int> DotMatch::calNeighbor(vector<vector<float>> input, int num)
     return output;
 }
 
-////______________________________________________////
-/// \brief DotMatch::checkNeighbor                                  ////
-/// \param referance 作为参考的序列                              ////
-/// \param needcheck 被检查的序列                               ////
-/// \return 是否通过检查                                              ////
-////______________________________________________////
+////____________________________________________________________////
+/// \brief DotMatch::checkNeighbor
+/// \param referance 作为参考的序列
+/// \param needcheck 被检查的序列
+/// \return 是否通过检查
+////____________________________________________________________////
 bool DotMatch::checkNeighbor(vector<int> referance, vector<int> needcheck)
 {
     int error = 0;
@@ -910,7 +919,7 @@ bool DotMatch::checkNeighbor(vector<int> referance, vector<int> needcheck)
 }
 
 ////______________________________________________________________________________////
-/// 通过储存在correspondPointEven及correspondPointOdd中的一致点变换前后坐标计算变换矩阵   ////
+/// 通过储存在correspondPointEven及correspondPointOdd中的一致点变换前后坐标计算变换矩阵
 ////______________________________________________________________________________////
 void DotMatch::calMatrix()
 {
@@ -940,15 +949,15 @@ void DotMatch::calMatrix()
     else{
         /// 若采用manualmatch，当前次correspondPoint中还包含当次扫描标记的已知点，这些点在之前
         /// 的扫描中没有出现，也就没有其之前的坐标，因此二者是交集，只能取交集的部分做计算
-        for (size_t i =0; i < correspondPointOdd.size(); i++){
+        for (size_t i = 0; i < correspondPointOdd.size(); i++){
             for (size_t j = 0; j < correspondPointEven.size(); j++){
                 if (correspondPointOdd[i].x == correspondPointEven[j].x){
                     if (scanSN%2 == 0){
-                        pFormer.push_back(dotPositionOdd[correspondPointOdd[i].y]);
+                        pFormer.push_back(dotPositionOdd[correspondPointOdd[i].x]);//这里做了改动，由y改为x
                         pLater.push_back(dotPositionEven[correspondPointEven[j].y]);
                     }
                     else{
-                        pFormer.push_back(dotPositionEven[correspondPointEven[j].y]);
+                        pFormer.push_back(dotPositionEven[correspondPointEven[j].x]);
                         pLater.push_back(dotPositionOdd[correspondPointOdd[i].y]);
                     }
                 }
@@ -1047,7 +1056,7 @@ void DotMatch::calMatrix()
         Mat transR(3,3,CV_64FC1);//存放待输出矩阵的R部分
         Mat transT(3,1,CV_64FC1);//存放待输出矩阵的T部分
 
-        ///在以下计算中，等号左值为初始化了的空矩阵，右值全部来自于局部块的深拷贝
+        /// 在以下计算中，等号左值为初始化了的空矩阵，右值全部来自于局部块的深拷贝
         /// 因此不依赖于原矩阵的值，因此计算能够成立，而直接采用局部块进行计算是不行的！
         transR = matRotation * outR;//例如，当scanSN=2时，=R1*R2
         transT = matRotation * outT + matTransform;//=R1*T2+T1
@@ -1098,17 +1107,18 @@ void DotMatch::hornTransform(double &data[], cv::vector<Point3f> target, cv::vec
 }
 */
 
-////___________________________////
-/// \brief DotMatch::markPoint          ///
-/// 内部调用函数                          ///
-/// 为全局变量dotForMark赋值         ///
-////___________________________////
+////_________________________________________________________////
+/// \brief DotMatch::markPoint
+/// 内部调用函数
+/// 为全局变量dotForMark赋值
+////_________________________________________________________////
 void DotMatch::markPoint()
 {
     dotForMark.clear();
     for (size_t i = 0; i < dotInOrder.size(); i++){
 
-        /// eachPoint存储待显示的对应点，内含6个int值，依次为左点x、y，右点x、y，是否为已知点(1表示已知)，已知点编号
+        /// eachPoint存储待显示的对应点，内含6个int值，
+        /// 依次为左点x、y，右点x、y，是否为已知点(1表示已知)，已知点编号
         vector<int> eachPoint;
 
         for (int j = 0; j < 4; j++){
@@ -1146,7 +1156,12 @@ void DotMatch::markPoint()
     }
 }
 
-
+////____________________________________________________________________////
+/// \由findDot内部调用，用于对四点法找到的标记点进一步精确化
+/// \param img 包含标记点的二值图像
+/// \param vec 标记点坐标向量，每个vector<float>中依次为y值，x左值，x右值
+/// \return 精细化后的标记点坐标
+////____________________________________________________________________////
 vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
 {
     vector<Point2f> out;
@@ -1205,9 +1220,9 @@ vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
 
 
 
-////________________________________////
-///  大津法求解二值化阈值                      ///
-////________________________________////
+////______________________________________________________////
+///  大津法求解二值化阈值
+////______________________________________________________////
 int DotMatch::OSTU_Region(cv::Mat& image)
 {
     assert(image.channels() == 1);

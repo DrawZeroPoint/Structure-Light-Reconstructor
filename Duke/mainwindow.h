@@ -142,6 +142,7 @@ private slots:
     void scan();
     void pointmatch();
     void refindmatch();
+    void showhidemanual();
     void finishmanualmatch();
     void startscan();
     void testmulitfreq();

@@ -690,6 +690,7 @@ public:
 
         manualWindow = new QPushButton(tab_2);
         manualWindow->setObjectName(QStringLiteral("manualWindow"));
+        manualWindow->setEnabled(false);
 
         verticalLayout_5->addWidget(manualWindow);
 

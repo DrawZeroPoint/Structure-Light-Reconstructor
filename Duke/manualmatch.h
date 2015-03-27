@@ -43,7 +43,7 @@ private slots:
     void finish();//点击完成标记按钮触发的动作
     void reset();//点击重置标记按钮触发的动作
 signals:
-    void outputdata();
+    void outputdata();//由finish按钮所发出的信号，作用是通知dotmatch对refinedCorr进行处理，使用onfinishmanual()槽
 };
 
 #endif // MANUALMATCH_H

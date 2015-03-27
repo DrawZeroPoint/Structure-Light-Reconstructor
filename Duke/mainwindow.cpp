@@ -12,7 +12,6 @@
 #include <QVector>
 #include <QFont>
 
-
 bool inEnglish = true;
 int nowProgress = 0;//进度条初始化
 
@@ -382,22 +381,22 @@ void MainWindow::findPoint()
     cv::Mat mat_2 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, DHC->m_pRawBuffer_2);
     //imshow("d",mat_1);
     //cvWaitKey(10);
-    bool success = dm->matchDot(mat_1,mat_2);
-
-    ///保证运行activeManual时mm已经生成
-    if (dm->scanSN != 0){
-        if (ui->matchAssistant->isChecked()){
-            dm->activeManual();
-        }
-    }
-    else{
-        if (success){
-            paintPoints();
-            if (QMessageBox::information(NULL,tr("Finished"), tr("Is the result right for reconstruction?"),
-                QMessageBox::Yes,QMessageBox::No)== QMessageBox::Yes){
-                finishmanualmatch();
+    bool success = dm->matchDot(mat_1,mat_2);//在这一步生成了mm
+    if (success){
+        ///保证运行activeManual时mm已经生成
+        if (dm->scanSN != 0){
+            if (ui->matchAssistant->isChecked()){
+                dm->activeManual();
+                ui->manualWindow->setEnabled(true);
+                connect(ui->manualWindow,SIGNAL(clicked()),this,SLOT(showhidemanual()));
             }
         }
+        else{
+            paintPoints();
+            if (QMessageBox::information(NULL,tr("Finished"), tr("Is the result right for reconstruction?"),
+                QMessageBox::Yes,QMessageBox::No)== QMessageBox::Yes)
+                finishmanualmatch();
+         }
     }
 }
 
@@ -407,6 +406,14 @@ void MainWindow::finishmanualmatch()
     ui->scanSNLabel->setText(QString::number(scanSN+1));//表示已经进行了的扫描次数（实际是查找点次数）
     dm->finishMatch();
     paintPoints();
+}
+
+void MainWindow::showhidemanual()
+{
+    if (!dm->mm->isHidden())
+        dm->mm->hide();
+    else
+        dm->mm->show();
 }
 
 void MainWindow::paintPoints()

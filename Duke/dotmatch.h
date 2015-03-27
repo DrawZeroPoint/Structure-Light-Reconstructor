@@ -43,6 +43,9 @@ public:
 
     DotMatch(QObject *parent = 0, QString projectPath = NULL, bool useManual = true);
     ~DotMatch();
+
+    ManualMatch *mm;
+
     vector<vector<float>> findDot(Mat image);
     bool matchDot(Mat limage, Mat rimage);
     void setUpManual(Mat LImage, Mat RImage);//初始化手工标记窗口
@@ -71,8 +74,6 @@ public:
 private:
     QString path;
     bool useManualMatch;
-
-    ManualMatch *mm;
 
     bool triangleCalculate();
     cv::vector<cv::vector<float> > calFeature(cv::vector<Point3f> dotP);
@@ -111,7 +112,7 @@ private slots:
     void onfinishmanual();
 
 signals:
-    void receivedmanualmatch();
+    void receivedmanualmatch();//由槽函数onfinishmanual()发出，通知MainWindow执行finishmanualmatch()槽，在该槽中又调用了finishMatch
 
 };
 

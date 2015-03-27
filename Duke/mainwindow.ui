@@ -735,6 +735,9 @@ font: 9pt &quot;Calibri&quot;;</string>
              </item>
              <item>
               <widget class="QPushButton" name="manualWindow">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string>Show/Hide Manual Window</string>
                </property>
