@@ -80,6 +80,7 @@ bool Reconstruct::loadCameras()//Load calibration data into camera[i]
         loaded = cameras[i].loadCameraMatrix(path);//defined in visualcamera
         if(!loaded)
             break;
+
         path = calibFolder[i];
         path += "cam_distortion.txt";
         cameras[i].loadDistortion(path);//注意loaddistortion方法加载一个5X1矩阵
@@ -101,13 +102,7 @@ bool Reconstruct::loadCameras()//Load calibration data into camera[i]
         cameras[i].loadTranslationVector(path);
 
         path = savePath_;
-/*
-#ifndef USE_STEREOCALIB_DATA
-        path += "/calib/fundamental_mat.txt";
-#else
-*/
         path += "/calib/fundamental_stereo.txt";//测试表明，采用立体标定得到的F效果好于单独标定得到的
-//#endif
         cameras[i].loadFundamentalMatrix(path);
 
         path = savePath_;
@@ -364,9 +359,14 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 
                     if(!ok)
                         continue;
+                    float X = interPoint.x;
+                    float Y = interPoint.y;
+                    float Z = interPoint.z;
+                    interPoint.z = -Z;
+                    interPoint.x = -Y;
+                    interPoint.y = -X;
 
-                    /****以下判断为多次重建得到的点云拼接做准备****/
-
+                            //以下判断为多次重建得到的点云拼接做准备
                     if (scanSN > 0){
                         float point[] = {interPoint.x, interPoint.y, interPoint.z, 1};
                         cv::Mat pointMat(4, 1, CV_32F, point);

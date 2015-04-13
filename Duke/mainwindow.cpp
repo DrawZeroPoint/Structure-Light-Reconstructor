@@ -468,7 +468,7 @@ void MainWindow::startscan()
     if (ui->useGray->isChecked()){
         grayCode = new GrayCodes(scanWidth,scanHeight);
         grayCode->generateGrays();
-        pj->showMatImg(grayCode->getNextImg());
+        pj->showMatImg(grayCode->grayCodes[0]);
     }
     else{
         mf = new MultiFrequency(this, scanWidth, scanHeight);
@@ -500,7 +500,7 @@ void MainWindow::startscan()
         if (ui->useGray->isChecked()){
             if(imgCount == grayCode->getNumOfImgs())
                 break;
-            pj->showMatImg(grayCode->getNextImg());
+            pj->showMatImg(grayCode->grayCodes[imgCount]);
             progressPop(2);
         }
         else{

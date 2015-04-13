@@ -1351,7 +1351,7 @@ public:
         QObject::connect(manualReconstruction, SIGNAL(clicked(bool)), reconstructionCount, SLOT(setEnabled(bool)));
         QObject::connect(binarySlider, SIGNAL(valueChanged(int)), btvalue, SLOT(setNum(int)));
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -1438,7 +1438,7 @@ public:
         label_2->setText(QApplication::translate("MainWindow", "Current Operation Processed:", 0));
         label_9->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Capture images as displayed:</p></body></html>", 0));
         currentPhotoLabel->setText(QApplication::translate("MainWindow", "0", 0));
-        label_11->setText(QApplication::translate("MainWindow", "<html><head/><body><p>/13 images have been captured.</p></body></html>", 0));
+        label_11->setText(QApplication::translate("MainWindow", "<html><head/><body><p>/14 images have been captured.</p></body></html>", 0));
         explainLabel->setText(QApplication::translate("MainWindow", "Illustration", 0));
         captureButton->setText(QApplication::translate("MainWindow", "Capture", 0));
         redoButton->setText(QApplication::translate("MainWindow", "Redo", 0));

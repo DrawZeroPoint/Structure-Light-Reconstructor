@@ -7,7 +7,7 @@ CameraCalibration::CameraCalibration()
 {
     squareSize.width = 0;
     squareSize.height = 0;
-    numOfCamImgs = 13;
+    numOfCamImgs = 14;
     camCalibrated = false;
 }
 
@@ -325,7 +325,7 @@ void CameraCalibration::loadCameraImgs(QString fpath)
     }
 
     QString path = fpath;
-    path += QString::number(numOfCamImgs) + ".png";//用第13幅图作为外部参数标定图像
+    path += "1.png";//用第1幅图作为外部参数标定图像
     extrImg = cv::imread(path.toStdString());
     if(extrImg.empty()){
         QMessageBox::warning(NULL, QObject::tr("Image Not Found"), QObject::tr("The images for extrinsicts calibration are missing."));
@@ -455,7 +455,7 @@ int CameraCalibration::extractImageCorners()//返回值大于0说明处理不成
                 return i+1;
             }
             else
-                return 14;//返回未能读取的图像序号
+                return numOfCamImgs+1;//返回未能读取的图像序号
         }
 
         if(cCam.size()){
