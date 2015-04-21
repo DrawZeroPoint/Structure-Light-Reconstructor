@@ -120,7 +120,8 @@ class Triangle{
 public:
     Triangle(int Vertex_0, int Vertex_1, int Vertex_2, float distance_12, float distance_02, float distance_01);
 
-    bool copmareTriangle(Triangle tri_known, Triangle tri_unknown, vector<Point2i> &corr, float &error);//比较两三角形是否相等
+    static bool copmareTriangle(Triangle tri_known, Triangle tri_unknown, vector<Point2i> &corr, float &error);//比较两三角形是否相等
+    static float calDistance(Point3f point_1,Point3f point_2);
 
     int ver_0;
     int ver_1;
