@@ -78,7 +78,7 @@ private:
     bool triangleCalculate();
     cv::vector<cv::vector<float> > calFeature(cv::vector<Point3f> dotP);
     bool dotClassify(cv::vector<cv::vector<float> > featureTemp);
-    void updateDot(cv::vector<Point2i> correspondPoint, cv::vector<Point3f> &dotPositionCurrent, cv::vector<Point3f> dotPositionFormer);
+    void updateDot(cv::vector<Point2i> &correspondPoint, cv::vector<Point3f> &dotPositionCurrent, cv::vector<Point3f> dotPositionFormer);
     vector<int> calNeighbor(vector<vector<float> > input, int num);
     bool checkNeighbor(vector<int> referance, vector<int> needcheck);
     void calMatrix();
@@ -114,6 +114,20 @@ private slots:
 signals:
     void receivedmanualmatch();//由槽函数onfinishmanual()发出，通知MainWindow执行finishmanualmatch()槽，在该槽中又调用了finishMatch
 
+};
+
+class Triangle{
+public:
+    Triangle(int Vertex_0, int Vertex_1, int Vertex_2, float distance_12, float distance_02, float distance_01);
+
+    bool copmareTriangle(Triangle tri_known, Triangle tri_unknown, vector<Point2i> &corr, float &error);//比较两三角形是否相等
+
+    int ver_0;
+    int ver_1;
+    int ver_2;
+    float dis_0;
+    float dis_1;
+    float dis_2;
 };
 
 #endif // DOTMATCH_H

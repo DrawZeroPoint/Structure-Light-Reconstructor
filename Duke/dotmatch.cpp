@@ -8,8 +8,7 @@ int EDGEDOWN = 0;
 int MIDDOWN = 8;
 int MIDUP = 40;
 float EPIPOLARERROR = 0.1;//特征点匹配时极线误差上界
-float tolerance = 100;//判断特征值是否相等时的误差
-float disError = 600;//判断疑似点是否为上次扫描点的偏差平方上界（暂定）
+float tolerance = 2;//判断特征值是否相等时的误差
 
 DotMatch::DotMatch(QObject *parent, QString projectPath, bool useManual) :
     QObject(parent)
@@ -143,7 +142,7 @@ vector<vector<float>> DotMatch::findDot(Mat image)
         dotOutput.push_back(point);
     }
 #else
-    /****************OpenCV检测******************/
+    ///OpenCV检测
     bd = new BlobDetector();
     vector<Point2d> centers;
     bd->findBlobs(bimage, centers);
@@ -385,12 +384,12 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
         }
     }
 
-    /****根据当前扫描次数的奇偶性将标记点三维坐标放入dotPositionOdd(Even)****/
+    ///根据当前扫描次数的奇偶性将标记点三维坐标放入dotPositionOdd(Even)
     bool success = triangleCalculate();//三角计算或许可以用opencv自带的triangulatePoints()函数
     if (!success)
         return false;
 
-    /****如果是第一次扫描，所得到的全部标志点从零编号并保存****/
+    ///如果是第一次扫描，所得到的全部标志点从零编号并保存
     cv::vector<cv::vector<float> > featureTemp;
     if (firstFind){
         dotFeature.clear();
@@ -532,14 +531,14 @@ void DotMatch::finishMatch()
 /// 由finishMatch内部调用                                                                       ///
 /// 根据计算出的变换矩阵更新已知点数据 dotPositionCurrent 以及 dotFeature   ///
 ////______________________________________________________________////
-void DotMatch::updateDot(cv::vector<Point2i> correspondPointCurrent, cv::vector<Point3f> &dotPositionCurrent, cv::vector<Point3f> dotPositionFormer)
+void DotMatch::updateDot(cv::vector<Point2i> &correspondPointCurrent, cv::vector<Point3f> &dotPositionCurrent, cv::vector<Point3f> dotPositionFormer)
 {
     ///对所有已知点分类进行处理
     cv::vector<Point3f> updatedDotPosition;//用来暂存更新后的标记点绝对坐标
     ///暂时认为新增标记点个数不大于20，设置点初值为z=1000，作为是否后来被赋值的判别条件
     updatedDotPosition.resize(dotFeature.size()+20, Point3f(0,0,1000));
 
-    vector<int> pointKnown;//存储当前次扫描已确认的已知点
+    vector<int> pointKnown;//存储当前次扫描确认为已知的点
 
     /// (1)检出的已知点，其唯一编号可根据correspondPointCurrent确定，坐标值可根据dotPosition确定
     /// 将两项写入updatedDotPosition中的对应位置
@@ -583,12 +582,13 @@ void DotMatch::updateDot(cv::vector<Point2i> correspondPointCurrent, cv::vector<
             bool match = false;//表示ID点是否与疑似点k建立了匹配，默认为否
             int matchNum = 0;//表示与ID点match的最佳k值
             for (size_t k = 0; k < dotPositionCurrent.size(); k++){
-                float formerError = 2*disError;//表示上一k点与ID点距离偏差
+                float formerError = 2*tolerance;//表示上一k点与ID点距离偏差
                 if (isBelongTo(k, pointKnown))
                     continue;  //通过判断表明k点为疑似点
 
                 double distance = pow((ixl - dotPositionCurrent[k].x), 2) + pow((iyl - dotPositionCurrent[k].y), 2) + pow((izl - dotPositionCurrent[k].z), 2);
-                if (distance < disError && distance < formerError){
+                distance = sqrt(distance);//求得的偏差为实际距离，单位mm
+                if (distance < tolerance && distance < formerError){
                     //初步认为k点可能为ID点，但还需要通过邻域检查
                     vector<vector<float>> currentFeature = calFeature(dotPositionCurrent);//计算当前次扫描各点的特征值
                     vector<int> neighborOfK = calNeighbor(currentFeature, k);//利用各点特征值得到k点临近点信息
@@ -604,6 +604,7 @@ void DotMatch::updateDot(cv::vector<Point2i> correspondPointCurrent, cv::vector<
                         formerError = distance;
                         matchNum = k;
                         match = true;//说明疑似点k即原ID点
+                        correspondPointCurrent.push_back(Point2i(ID,k));
                     }
                 }
             }
@@ -728,7 +729,7 @@ cv::vector<cv::vector<float>> DotMatch::calFeature(cv::vector<Point3f> dotP)
             float yd = dotP[i].y - dotP[j].y;
             float zd = dotP[i].z - dotP[j].z;
             float disIJ = pow(xd, 2) + pow(yd, 2) + pow(zd, 2);
-
+            disIJ = sqrtf(disIJ);//存储的特征值为实际距离，单位mm
             featureTemp[i].push_back(disIJ);
             featureTemp[j].push_back(disIJ);
         }
@@ -751,7 +752,7 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
     int validpoint = 0;//表示找到的一致点个数，小于4则不能生成变换矩阵，则应重新获取
     size_t featureSize = dotFeature.size();
 
-    /***定义featureLib，保存featureTemp中各点所匹配的dotFeature中点的序号及匹配度***/
+    ///定义featureLib，保存featureTemp中各点所匹配的dotFeature中点的序号及匹配度
     vector<vector<Point2i>> featureLib;//Point2i x值表示dotFeature中点的序号，y值表示匹配度match，凡是匹配度大于2的都保存
     featureLib.resize(featureTemp.size());
 
@@ -766,11 +767,16 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
             ///单个未知点特征值遍历循环开始
             for (size_t p = 0; p < featureTemp[i].size(); p++){
 
+                vector<int> matchedIDValue;//表示已经被匹配的ID点中具体的某个特征值，认为一个特征值只能参与一次匹配
                 ///单个已知点特征值遍历循环开始
                 for (size_t q = 0; q < dotFeature[ID].size(); q++){
+                    if (isBelongTo(q,matchedIDValue))
+                        continue;
                     float td = fabs(featureTemp[i][p] - dotFeature[ID][q]);
-                    if (td < tolerance)
+                    if (td < tolerance){
+                        matchedIDValue.push_back(q);
                         match++;
+                    }
                 }///循环结束
 
             }///循环结束
@@ -784,26 +790,47 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 
     }///未知点循环结束
 
+    ///-------------------------------------------------------------------------------------------------///
     /// 至此featureLib中存储了未知点所对应的可能匹配的已知点及其匹配度，下一步
-    /// 是遍历dotFeature各点，查找与各点具有最大匹配度的ID
+    /// 是遍历dotFeature各点，查找与各ID点具有最大匹配度的当前扫描序列点
+
+    vector<int> matched;//表示当前次扫描序列下已经找到对应ID的点
+    vector<int> matchedID;//表示已经与当前次扫描序列中的点匹配的ID点
 
     for (size_t ID = 0;ID < featureSize;ID++){
         int bestNum = -1;
-        int formatch = 0;
+        int forematch = 0;
+        if (isBelongTo(ID, matchedID))
+            continue;//如果ID已经被匹配，则直接考察下一个ID点
         for (size_t i = 0;i < featureLib.size();i++){
             for (size_t s = 0;s < featureLib[i].size();s++){
                 if (ID == featureLib[i][s].x){
-                    if (featureLib[i][s].y > formatch){
+                    if (featureLib[i][s].y > forematch){
                         bestNum = i;
-                        formatch = featureLib[i][s].y;
+                        forematch = featureLib[i][s].y;
                     }
                 }
             }
         }
-        if (bestNum >= 0 && formatch >= 2){//添加了等于2，进一步降低条件
-            correspondPoint.push_back(Point2i(ID,bestNum));
+        if (bestNum >= 0 && forematch >= 2 && !isBelongTo(bestNum,matched)){//添加了等于2，进一步降低条件
+            ///这里如果直接认为bestNum对应ID不妥，因为bestNum可能和其他ID也有较高的匹配度
+            /// 如果ID是和bestNum匹配度最高的，那么可以确定二者对应
+            int maxmatch = featureLib[bestNum][0].y;
+            size_t maxnum = 0;
+            for (size_t u = 0;u < featureLib[bestNum].size();u++){
+                if (featureLib[bestNum][u].y > maxmatch){
+                    maxmatch = featureLib[bestNum][u].y;
+                    maxnum = featureLib[bestNum][u].x;
+                }
+            }
+            if (maxnum == ID){
+                correspondPoint.push_back(Point2i(ID,bestNum));
+                matched.push_back(bestNum);//将bestNum放入已经匹配数组，使其不再参与匹配
+                matchedID.push_back(ID);
+            }
         }
     }
+    ///-----------------------------------------------------------------------------------------------------------///
 
     /// 邻域检查，目的是分辨检出的各点邻域情况是否符合已知，如不符合，则排除该点
     for (size_t i = 0;i < featureTemp.size();i++){//1、遍历featureTemp开始，标号i
@@ -838,7 +865,7 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 
                 /// 至此获得了i点与本次扫描获得的所有其余已知点按由近及远顺序的排列，同时i点也被认为对应已知点correspondPoint[c].x
                 bool pass = true;
-                //pass = checkNeighbor(neighborFeature[correspondPoint[c].x], neighborTemp);
+                //bool pass = checkNeighbor(neighborFeature[correspondPoint[c].x], neighborTemp);
                 if (pass){
                     if (scanSN%2 == 0)
                         correspondPointEven.push_back(correspondPoint[c]);
@@ -856,7 +883,7 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
     }
     else{
         QMessageBox::warning(NULL,tr("Dot Classify"),tr("Alignment can't continue due to unenough point."));
-        return false;
+        return true;//调试用：这里既是匹配点小于3，也为true，正常应为false
     }
 }
 
@@ -1299,6 +1326,90 @@ bool DotMatch::isBelongTo(size_t e, vector<int> C)
             return true;
     }
     return false;
+}
+
+
+Triangle::Triangle(int Vertex_0, int Vertex_1, int Vertex_2, float distance_12, float distance_02, float distance_01)
+{
+    ver_0 = Vertex_0;
+    ver_1 = Vertex_1;
+    ver_2 = Vertex_2;
+    dis_0 = distance_12;
+    dis_1 = distance_02;
+    dis_2 = distance_01;
+}
+
+bool Triangle::copmareTriangle(Triangle tri_known, Triangle tri_unknown, vector<Point2i> &corr, float &error)
+{
+    vector<float> dis_known;
+    vector<float> dis_unknown;
+    dis_known.push_back(tri_known.dis_0);
+    dis_known.push_back(tri_known.dis_1);
+    dis_known.push_back(tri_known.dis_2);
+    dis_unknown.push_back(tri_unknown.dis_0);
+    dis_unknown.push_back(tri_unknown.dis_1);
+    dis_unknown.push_back(tri_unknown.dis_2);
+
+    if (fabs(dis_unknown[0]-dis_unknown[1])<tolerance || fabs(dis_unknown[0]-dis_unknown[2])<tolerance ||
+            fabs(dis_unknown[2]-dis_unknown[1])<tolerance){
+        return false;
+    }
+    else{
+        float e1=fabs(dis_known[0]-dis_unknown[0])+fabs(dis_known[1]-dis_unknown[1])+fabs(dis_known[2]-dis_unknown[2]);
+        float e2=fabs(dis_known[0]-dis_unknown[1])+fabs(dis_known[1]-dis_unknown[0])+fabs(dis_known[2]-dis_unknown[2]);
+        float e3=fabs(dis_known[0]-dis_unknown[0])+fabs(dis_known[1]-dis_unknown[2])+fabs(dis_known[2]-dis_unknown[1]);
+        float e4=fabs(dis_known[0]-dis_unknown[2])+fabs(dis_known[1]-dis_unknown[0])+fabs(dis_known[2]-dis_unknown[1]);
+        float e5=fabs(dis_known[0]-dis_unknown[2])+fabs(dis_known[1]-dis_unknown[1])+fabs(dis_known[2]-dis_unknown[0]);
+        float e6=fabs(dis_known[0]-dis_unknown[1])+fabs(dis_known[1]-dis_unknown[2])+fabs(dis_known[2]-dis_unknown[0]);
+
+        float minerror[]={e1,e2,e3,e4,e5,e6};
+        float minvalue = minerror[0];
+        int best = 0;
+        for(size_t i=0;i<6;i++){
+            if (minerror[i]<minvalue){
+                minvalue = minerror[i];
+                best = i;
+            }
+        }
+        if (minvalue<tolerance){
+            error=minvalue;
+            switch (best){
+            case 0:
+                corr.push_back(Point2i(tri_known.ver_0,tri_unknown.ver_0));
+                corr.push_back(Point2i(tri_known.ver_1,tri_unknown.ver_1));
+                corr.push_back(Point2i(tri_known.ver_2,tri_unknown.ver_2));
+                break;
+            case 1:
+                corr.push_back(Point2i(tri_known.ver_0,tri_unknown.ver_1));
+                corr.push_back(Point2i(tri_known.ver_1,tri_unknown.ver_0));
+                corr.push_back(Point2i(tri_known.ver_2,tri_unknown.ver_2));
+                break;
+            case 2:
+                corr.push_back(Point2i(tri_known.ver_0,tri_unknown.ver_0));
+                corr.push_back(Point2i(tri_known.ver_1,tri_unknown.ver_2));
+                corr.push_back(Point2i(tri_known.ver_2,tri_unknown.ver_1));
+                break;
+            case 3:
+                corr.push_back(Point2i(tri_known.ver_0,tri_unknown.ver_2));
+                corr.push_back(Point2i(tri_known.ver_1,tri_unknown.ver_0));
+                corr.push_back(Point2i(tri_known.ver_2,tri_unknown.ver_1));
+                break;
+            case 4:
+                corr.push_back(Point2i(tri_known.ver_0,tri_unknown.ver_2));
+                corr.push_back(Point2i(tri_known.ver_1,tri_unknown.ver_1));
+                corr.push_back(Point2i(tri_known.ver_2,tri_unknown.ver_0));
+                break;
+            case 5:
+                corr.push_back(Point2i(tri_known.ver_0,tri_unknown.ver_1));
+                corr.push_back(Point2i(tri_known.ver_1,tri_unknown.ver_2));
+                corr.push_back(Point2i(tri_known.ver_2,tri_unknown.ver_0));
+                break;
+            }
+            return true;
+        }
+        else
+            return false;
+    }
 }
 
 

@@ -59,12 +59,21 @@ void ManualMatch::setImage()
             pt_2.drawText(dotInOrder[i][1].x,dotInOrder[i][1].y,QString::number(ID));
         }
         else{//若refinedPoint还未被赋予空间，根据correspond中的数据显示i点ID
+            bool idexist = false;
             for (size_t c = 0; c < correspond.size(); c++){
-                if (i == correspond[c].y)
+                if (i == correspond[c].y){
                     ID = correspond[c].x;
+                    idexist = true;//表示ID点的对应点存在，只关系到ID的显示状态
+                }
             }
-            pt_1.drawText(dotInOrder[i][0].x,dotInOrder[i][0].y,QString::number(ID));
-            pt_2.drawText(dotInOrder[i][1].x,dotInOrder[i][1].y,QString::number(ID));
+            if (idexist){
+                pt_1.drawText(dotInOrder[i][0].x,dotInOrder[i][0].y,QString::number(ID));
+                pt_2.drawText(dotInOrder[i][1].x,dotInOrder[i][1].y,QString::number(ID));
+            }
+            else{
+                pt_1.drawText(dotInOrder[i][0].x,dotInOrder[i][0].y,"?");
+                pt_2.drawText(dotInOrder[i][1].x,dotInOrder[i][1].y,"?");
+            }
         }
     }
 
@@ -110,9 +119,16 @@ void ManualMatch::confirmID()
 
 void ManualMatch::finish()
 {
-    for (size_t i = 0;i < refinedCorr.size(); i++){
-        if (!(refinedCorr[i].x >= 0))
-            QMessageBox::warning(NULL,"Manual Match",tr("Point ") + QString::number(i) + tr("hasn't been marked."));
+    if (refinedCorr.size() == 0){
+        for (size_t i = 0;i < correspond.size(); i++){
+            refinedCorr.push_back(correspond[i]);
+        }
+    }
+    else{
+        for (size_t i = 0;i < refinedCorr.size(); i++){
+            if (!(refinedCorr[i].x >= 0))
+                QMessageBox::warning(NULL,"Manual Match",tr("Point ") + QString::number(i) + tr("hasn't been marked."));
+        }
     }
     this->hide();
     emit outputdata();

@@ -296,6 +296,10 @@ public:
         actionChinese->setFont(font);
         actionBasler = new QAction(MainWindow);
         actionBasler->setObjectName(QStringLiteral("actionBasler"));
+        QIcon icon12;
+        icon12.addFile(QStringLiteral(":/switch.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionBasler->setIcon(icon12);
+        actionBasler->setFont(font);
         actionFocusAssistant = new QAction(MainWindow);
         actionFocusAssistant->setObjectName(QStringLiteral("actionFocusAssistant"));
         actionFocusAssistant->setEnabled(false);
@@ -1330,6 +1334,7 @@ public:
         toolBar->addAction(actionNew);
         toolBar->addSeparator();
         toolBar->addAction(actionOpenCamera);
+        toolBar->addAction(actionBasler);
         toolBar->addSeparator();
         toolBar->addAction(actionProjector);
         toolBar->addSeparator();
@@ -1343,7 +1348,6 @@ public:
         toolBar->addSeparator();
         toolBar->addAction(actionExit);
         toolBar->addSeparator();
-        toolBar->addAction(actionBasler);
 
         retranslateUi(MainWindow);
         QObject::connect(snapSpeedBox, SIGNAL(valueChanged(int)), spinBox, SLOT(setValue(int)));
@@ -1431,7 +1435,7 @@ public:
 #ifndef QT_NO_TOOLTIP
         actionChinese->setToolTip(QApplication::translate("MainWindow", "zh", 0));
 #endif // QT_NO_TOOLTIP
-        actionBasler->setText(QApplication::translate("MainWindow", "Basler", 0));
+        actionBasler->setText(QApplication::translate("MainWindow", "Switch Type", 0));
         actionFocusAssistant->setText(QApplication::translate("MainWindow", "Focus Assistant", 0));
         label->setText(QApplication::translate("MainWindow", "Point Size", 0));
         loadTest->setText(QApplication::translate("MainWindow", "Load Test", 0));

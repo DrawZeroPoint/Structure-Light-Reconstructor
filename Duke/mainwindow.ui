@@ -1363,6 +1363,7 @@ selection-background-color: rgb(255, 255, 255);</string>
    <addaction name="actionNew"/>
    <addaction name="separator"/>
    <addaction name="actionOpenCamera"/>
+   <addaction name="actionBasler"/>
    <addaction name="separator"/>
    <addaction name="actionProjector"/>
    <addaction name="separator"/>
@@ -1376,7 +1377,6 @@ selection-background-color: rgb(255, 255, 255);</string>
    <addaction name="separator"/>
    <addaction name="actionExit"/>
    <addaction name="separator"/>
-   <addaction name="actionBasler"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="minimumSize">
@@ -2519,8 +2519,19 @@ background-color: rgbrgb(111, 215, 253)</string>
    </property>
   </action>
   <action name="actionBasler">
+   <property name="icon">
+    <iconset resource="Resource/res.qrc">
+     <normaloff>:/switch.png</normaloff>:/switch.png</iconset>
+   </property>
    <property name="text">
-    <string>Basler</string>
+    <string>Switch Type</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Calibri</family>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
    </property>
   </action>
   <action name="actionFocusAssistant">
