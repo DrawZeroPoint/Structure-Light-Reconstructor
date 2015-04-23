@@ -78,6 +78,7 @@ private:
     bool triangleCalculate();
     cv::vector<cv::vector<float> > calFeature(cv::vector<Point3f> dotP);
     bool dotClassify(cv::vector<cv::vector<float> > featureTemp);
+    bool FTTM(cv::vector<Point2i> &correspondPoint, cv::vector<Point3f> dotPositionCurrent, cv::vector<Point3f> dotPositionFormer);
     void updateDot(cv::vector<Point2i> &correspondPoint, cv::vector<Point3f> &dotPositionCurrent, cv::vector<Point3f> dotPositionFormer);
     vector<int> calNeighbor(vector<vector<float> > input, int num);
     bool checkNeighbor(vector<int> referance, vector<int> needcheck);

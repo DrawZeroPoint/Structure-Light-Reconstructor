@@ -24,7 +24,8 @@ SOURCES += \
     dahengcamera.cpp \
     baslercamera.cpp \
     focusassistant.cpp \
-    manualmatch.cpp
+    manualmatch.cpp \
+    imageviewer.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -89,13 +90,15 @@ HEADERS += \
     dahengcamera.h \
     baslercamera.h \
     focusassistant.h \
-    manualmatch.h
+    manualmatch.h \
+    imageviewer.h
 
 FORMS += \
     mainwindow.ui \
     Set.ui \
     focusassistant.ui \
-    manualmatch.ui
+    manualmatch.ui \
+    imageviewer.ui
 
 TRANSLATIONS += en.ts zh.ts
 

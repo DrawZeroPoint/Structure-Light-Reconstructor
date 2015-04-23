@@ -31,6 +31,11 @@ DotMatch::~DotMatch()
 {
 }
 
+///_________________________________________________///
+/// \brief DotMatch::findDot
+/// \param image 需要从中寻找标记点的图像
+/// \return 标记点坐标，内层vector包含x、y两个float型
+///_________________________________________________///
 vector<vector<float>> DotMatch::findDot(Mat image)
 {
     vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
@@ -53,7 +58,7 @@ vector<vector<float>> DotMatch::findDot(Mat image)
 #endif
 
 #ifdef USE_FOUR_POINT
-    /****************四点匹配法*****************/
+    ///四点匹配法
     vector<vector<float>> alltemp;
 
     for (int i = 0; i < bimage.rows; i++)
@@ -534,16 +539,17 @@ void DotMatch::finishMatch()
 void DotMatch::updateDot(cv::vector<Point2i> &correspondPointCurrent, cv::vector<Point3f> &dotPositionCurrent, cv::vector<Point3f> dotPositionFormer)
 {
     ///对所有已知点分类进行处理
-    cv::vector<Point3f> updatedDotPosition;//用来暂存更新后的标记点绝对坐标
+    cv::vector<Point3f> updatedDotPosition;//用来暂存更新后的标记点绝对坐标，按照ID递增顺序排序
     ///暂时认为新增标记点个数不大于20，设置点初值为z=1000，作为是否后来被赋值的判别条件
     updatedDotPosition.resize(dotFeature.size()+20, Point3f(0,0,1000));
 
-    vector<int> pointKnown;//存储当前次扫描确认为已知的点
+    vector<int> pointKnown;//存储当前次扫描确认为已知的点id
 
     /// (1)检出的已知点，其唯一编号可根据correspondPointCurrent确定，坐标值可根据dotPosition确定
     /// 将两项写入updatedDotPosition中的对应位置
     for (size_t i = 0; i < correspondPointCurrent.size(); i++){
         updatedDotPosition[correspondPointCurrent[i].x] = dotPositionCurrent[correspondPointCurrent[i].y];
+        ///pointKnown中放入点的顺序完全由correspondPointCurrent中对应点的排列顺序决定
         pointKnown.push_back(correspondPointCurrent[i].y);
     }
 
@@ -589,22 +595,28 @@ void DotMatch::updateDot(cv::vector<Point2i> &correspondPointCurrent, cv::vector
                 double distance = pow((ixl - dotPositionCurrent[k].x), 2) + pow((iyl - dotPositionCurrent[k].y), 2) + pow((izl - dotPositionCurrent[k].z), 2);
                 distance = sqrt(distance);//求得的偏差为实际距离，单位mm
                 if (distance < 2*tolerance && distance < formerError){
-                    //初步认为k点可能为ID点，但还需要通过邻域检查
+                    ///初步认为k点可能为ID点，但还需要通过邻域检查
                     vector<vector<float>> currentFeature = calFeature(dotPositionCurrent);//计算当前次扫描各点的特征值
                     vector<int> neighborOfK = calNeighbor(currentFeature, k);//利用各点特征值得到k点临近点信息
                     vector<int> filteredNeighbor;//储存k点与所有已知点的远近信息
                     for (size_t z = 0; z < neighborOfK.size(); z++){
-                        //将不是已知的点过滤掉
-                        if (isBelongTo(neighborOfK[z], pointKnown))
-                            filteredNeighbor.push_back(neighborOfK[z]);
+                        ///将不是已知的点过滤掉
+                        if (isBelongTo(neighborOfK[z], pointKnown)){
+                            int IDofZ;//neighborOfK中第z个点对应的ID值，因为该点已经确认为已知，因此ID必然存在
+                            for (size_t d=0;d<correspondPointCurrent.size();d++){
+                                if (neighborOfK[z] == correspondPointCurrent[d].y)
+                                    IDofZ = correspondPointCurrent[d].x;
+                            }
+                            filteredNeighbor.push_back(IDofZ);
+                        }
                     }
                     if (checkNeighbor(neighborFeature[ID], filteredNeighbor)){
-                        //如果邻域检查返回值为真，说明k点邻域情况与ID点相同，表明k点更可能是ID点
+                        ///如果邻域检查返回值为真，说明k点邻域情况与ID点相同，表明k点更可能是ID点
                         updatedDotPosition[ID] = dotPositionCurrent[k];
                         formerError = distance;
                         matchNum = k;
                         match = true;//说明疑似点k即原ID点
-                        correspondPointCurrent.push_back(Point2i(ID,k));
+                        correspondPointCurrent.push_back(Point2i(ID,k));//将k点为已知点ID这一信息添加到对应点数据集
                     }
                 }
             }
@@ -613,7 +625,7 @@ void DotMatch::updateDot(cv::vector<Point2i> &correspondPointCurrent, cv::vector
                 pointKnown.push_back(matchNum);
             }
             else{
-                //说明i点与任意k点都不匹配，即i点在当前次扫描中未被看到
+                ///说明i点与任意k点都不匹配，即i点在当前次扫描中未被看到
                 updatedDotPosition[ID].x = ixl;
                 updatedDotPosition[ID].y = iyl;
                 updatedDotPosition[ID].z = izl;
@@ -626,7 +638,7 @@ void DotMatch::updateDot(cv::vector<Point2i> &correspondPointCurrent, cv::vector
     for (size_t m = 0; m < dotPositionCurrent.size(); m++){
         if (isBelongTo(m, pointKnown))
             continue;
-        //通过测试的点应为真正的全新点
+        ///通过测试的点应为真正的全新点
         updatedDotPosition[dotFeature.size() + offset] = dotPositionCurrent[m];
         offset++;
     }
@@ -741,9 +753,12 @@ cv::vector<cv::vector<float>> DotMatch::calFeature(cv::vector<Point3f> dotP)
 
 
 ////__________________________________________________________________////
+/// 方法1：
 /// 根据当前扫描获得的特征值查找其中的已有点并计算变换矩阵                         ////
 /// 并将新点加入dotFeature库                                                                       ////
 /// 注意featureTemp中元素的序号与dotPositionOdd 或dotPositionEven是对应的       ////
+/// 方法2：
+/// 三角匹配+1单点匹配
 ////__________________________________________________________________////
 bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 {
@@ -834,159 +849,13 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
     ///-----------------------------------------------------------------------------------------------------------///
     */
 
-    /// 采用三角模板匹配法的标记点识别
-    /// 直接根据dotPosition计算三角形边长
-    vector<Point2i> corr;//存储首次匹配的三角形顶点
     if (scanSN%2==0){
-        for (size_t u=0;u<dotPositionEven.size()-2;u++){
-            for (size_t v=u+1;v<dotPositionEven.size()-1;v++){
-                for (size_t w=v+1;w<dotPositionEven.size();w++){
-                    ///取出了u、v、w三个未知点，接下来计算各边长
-                    float vw = Triangle::calDistance(dotPositionEven[v],dotPositionEven[w]);
-                    float uw = Triangle::calDistance(dotPositionEven[w],dotPositionEven[u]);
-                    float uv = Triangle::calDistance(dotPositionEven[v],dotPositionEven[u]);
-                    ///生成该三角形的实例
-                    Triangle tri_unknown(u,v,w,vw,uw,uv);
-                    ///接下来生成已知三角形的实例
-                    for (size_t k=0;k<dotPositionOdd.size()-2;k++){
-                        for (size_t m=k+1;m<dotPositionOdd.size()-1;m++){
-                            for (size_t n=m+1;n<dotPositionOdd.size();n++){
-                                float mn = Triangle::calDistance(dotPositionOdd[m],dotPositionOdd[n]);
-                                float kn = Triangle::calDistance(dotPositionOdd[k],dotPositionOdd[n]);
-                                float km = Triangle::calDistance(dotPositionOdd[k],dotPositionOdd[m]);
-                                ///生成已知三角形实例
-                                Triangle tri_known(k,m,n,mn,kn,km);
-                                vector<Point2i> corrtemp;
-                                float error=0;
-                                bool same = Triangle::copmareTriangle(tri_known,tri_unknown,corrtemp,error);
-                                if (same){
-                                    for (size_t i=0;i<corrtemp.size();i++){
-                                        corr.push_back(corrtemp[i]);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        ///至此如果发现了全等三角形，则corr中至少存在3个对应点，或3的整数倍，取前三个对应点中的2个与其余未知点再组成一个三角形
-        if (corr.size()>=3){
-            vector<int> hasmatched;//保存已经匹配的已知点ID
-            vector<float> matcherror;//保存各已知点与未知点匹配的匹配误差（如果发生了匹配的话）
-            matcherror.resize(dotPositionOdd.size());
-            for (size_t x=0;x<dotPositionEven.size();x++){
-                if (x==corr[0].y||x==corr[1].y||x==corr[2].y)
-                    continue;
-                float ol = Triangle::calDistance(dotPositionEven[corr[0].y],dotPositionEven[corr[1].y]);
-                float xo = Triangle::calDistance(dotPositionEven[x],dotPositionEven[corr[0].y]);
-                float xl = Triangle::calDistance(dotPositionEven[x],dotPositionEven[corr[1].y]);
-                Triangle tri_unknown(x,corr[0].y,corr[1].y,ol,xo,xl);
-                for (size_t z=0;z<dotPositionOdd.size();z++){
-                    if (z==corr[0].x||z==corr[1].x||z==corr[2].x)
-                        continue;
-                    float lo = Triangle::calDistance(dotPositionOdd[corr[0].x],dotPositionOdd[corr[1].x]);
-                    float zo = Triangle::calDistance(dotPositionOdd[z],dotPositionOdd[corr[0].x]);
-                    float zl = Triangle::calDistance(dotPositionOdd[z],dotPositionOdd[corr[1].x]);
-                    Triangle tri_known(z,corr[0].x,corr[1].x,lo,zo,zl);
-                    vector<Point2i> corrtemp;
-                    float error = 0;
-                    bool same = Triangle::copmareTriangle(tri_known,tri_unknown,corrtemp,error);
-                    if (same){
-                        if (!isBelongTo(z,hasmatched)){//如果ID=z的已知点还没有被匹配
-                            correspondPoint.push_back(Point2i(x,z));
-                            hasmatched.push_back(z);
-                            matcherror[z]=error;
-                        }
-                        else{//z点已经被匹配，但有新的
-                            if (error < matcherror[z]){
-                                //correspondPoint.pop_back();
-                                //correspondPoint.push_back(Point2i(x,z));
-                                matcherror[z]=error;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        if (!FTTM(correspondPoint,dotPositionEven,dotPositionOdd))
+            return false;
     }
     else{
-        for (size_t u=0;u<dotPositionOdd.size()-2;u++){
-            for (size_t v=u+1;v<dotPositionOdd.size()-1;v++){
-                for (size_t w=v+1;w<dotPositionOdd.size();w++){
-                    ///取出了u、v、w三个未知点，接下来计算各边长
-                    float vw = Triangle::calDistance(dotPositionOdd[v],dotPositionOdd[w]);
-                    float uw = Triangle::calDistance(dotPositionOdd[w],dotPositionOdd[u]);
-                    float uv = Triangle::calDistance(dotPositionOdd[v],dotPositionOdd[u]);
-                    ///生成该三角形的实例
-                    Triangle tri_unknown(u,v,w,vw,uw,uv);
-                    ///接下来生成已知三角形的实例
-                    for (size_t k=0;k<dotPositionEven.size()-2;k++){
-                        for (size_t m=k+1;m<dotPositionEven.size()-1;m++){
-                            for (size_t n=m+1;n<dotPositionEven.size();n++){
-                                float mn = Triangle::calDistance(dotPositionEven[m],dotPositionEven[n]);
-                                float kn = Triangle::calDistance(dotPositionEven[k],dotPositionEven[n]);
-                                float km = Triangle::calDistance(dotPositionEven[k],dotPositionEven[m]);
-                                ///生成已知三角形实例
-                                Triangle tri_known(k,m,n,mn,kn,km);
-                                vector<Point2i> corrtemp;
-                                float error=0;
-                                bool same = Triangle::copmareTriangle(tri_known,tri_unknown,corrtemp,error);
-                                if (same){
-                                    for (size_t i=0;i<corrtemp.size();i++){
-                                        corr.push_back(corrtemp[i]);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        ///至此如果发现了全等三角形，则corr中至少存在3个对应点，或3的整数倍，取前三个对应点中的2个与其余未知点再组成一个三角形
-        if (corr.size()>=3){
-            vector<int> hasmatched;//保存已经匹配的已知点ID
-            vector<float> matcherror;//保存各已知点与未知点匹配的匹配误差（如果发生了匹配的话）
-            matcherror.resize(dotPositionEven.size());
-            for (size_t x=0;x<dotPositionOdd.size();x++){
-                if (x==corr[0].y||x==corr[1].y||x==corr[2].y)
-                    continue;
-                float ol = Triangle::calDistance(dotPositionOdd[corr[0].y],dotPositionOdd[corr[1].y]);
-                float xo = Triangle::calDistance(dotPositionOdd[x],dotPositionOdd[corr[0].y]);
-                float xl = Triangle::calDistance(dotPositionOdd[x],dotPositionOdd[corr[1].y]);
-                Triangle tri_unknown(x,corr[0].y,corr[1].y,ol,xo,xl);
-                for (size_t z=0;z<dotPositionEven.size();z++){
-                    if (z==corr[0].x||z==corr[1].x||z==corr[2].x)
-                        continue;
-                    float lo = Triangle::calDistance(dotPositionEven[corr[0].x],dotPositionEven[corr[1].x]);
-                    float zo = Triangle::calDistance(dotPositionEven[z],dotPositionEven[corr[0].x]);
-                    float zl = Triangle::calDistance(dotPositionEven[z],dotPositionEven[corr[1].x]);
-                    Triangle tri_known(z,corr[0].x,corr[1].x,lo,zo,zl);
-                    vector<Point2i> corrtemp;
-                    float error=0;
-                    bool same = Triangle::copmareTriangle(tri_known,tri_unknown,corrtemp,error);
-                    if (same){
-                        if (!isBelongTo(z,hasmatched)){//如果ID=z的已知点还没有被匹配
-                            correspondPoint.push_back(Point2i(x,z));
-                            hasmatched.push_back(z);
-                            matcherror[z]=error;
-                        }
-                        else{//z点已经被匹配，但有新的
-                            if (error < matcherror[z]){
-                                //correspondPoint.pop_back();
-                                //correspondPoint.push_back(Point2i(x,z));
-                                matcherror[z]=error;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    ///将corr中的已知点对存入correspondPoint，只存入前3个
-    /// 调试时可以在此设置断点，查看corr中具体有多少点，也可以查看correspondPoint已有多少点
-    for (size_t i=0;i<3;i++){
-        correspondPoint.push_back(corr[i]);
+        if (!FTTM(correspondPoint,dotPositionOdd,dotPositionEven))
+            return false;
     }
 
     /// 邻域检查，目的是分辨检出的各点邻域情况是否符合已知，如不符合，则排除该点
@@ -1044,6 +913,133 @@ bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
     }*/
 }
 
+///_______________________________________________________________________///
+/// \brief DotMatch::FTTM fast triangle template matching 快速三角模板匹配
+/// \param correspondPoint 输出量，表示已知点与未知点对应关系，x存储ID，y存储id
+/// \param dotPositionCurrent 当前检出的未知点坐标
+/// \param dotPositionFormer 已知点坐标
+/// \return 是否匹配成功（有4个及以上匹配点）
+///_______________________________________________________________________///
+bool DotMatch::FTTM(cv::vector<Point2i> &correspondPoint, cv::vector<Point3f> dotPositionCurrent, cv::vector<Point3f> dotPositionFormer)
+{
+    /// 采用三角模板匹配法的标记点识别
+    /// 直接根据dotPosition计算三角形边长
+    vector<Point2i> corr;//存储首次匹配的三角形顶点
+    float minerror = 20;//储存三角形匹配的最小误差，20为大于一般误差上限的初值
+    int bestMatchNum = 0;//表示匹配误差最小的一次匹配组序号，corr中连续三个对应点值构成一个匹配组
+    int countFinish = 0;//表示已经实现的匹配组数
+
+    for (size_t u=0;u<dotPositionCurrent.size()-2;u++){
+        for (size_t v=u+1;v<dotPositionCurrent.size()-1;v++){
+            for (size_t w=v+1;w<dotPositionCurrent.size();w++){
+                ///取出了u、v、w三个未知点，接下来计算各边长
+                float vw = Triangle::calDistance(dotPositionCurrent[v],dotPositionCurrent[w]);
+                float uw = Triangle::calDistance(dotPositionCurrent[w],dotPositionCurrent[u]);
+                float uv = Triangle::calDistance(dotPositionCurrent[v],dotPositionCurrent[u]);
+                ///生成该三角形的实例
+                Triangle tri_unknown(u,v,w,vw,uw,uv);
+                ///接下来生成已知三角形的实例
+                for (size_t k=0;k<dotPositionFormer.size()-2;k++){
+                    for (size_t m=k+1;m<dotPositionFormer.size()-1;m++){
+                        for (size_t n=m+1;n<dotPositionFormer.size();n++){
+                            float mn = Triangle::calDistance(dotPositionFormer[m],dotPositionFormer[n]);
+                            float kn = Triangle::calDistance(dotPositionFormer[k],dotPositionFormer[n]);
+                            float km = Triangle::calDistance(dotPositionFormer[k],dotPositionFormer[m]);
+                            ///生成已知三角形实例
+                            Triangle tri_known(k,m,n,mn,kn,km);
+                            vector<Point2i> corrtemp;
+                            float error=0;
+                            bool same = Triangle::copmareTriangle(tri_known,tri_unknown,corrtemp,error);
+                            if (same){
+                                countFinish++;
+                                for (size_t i=0;i<corrtemp.size();i++){
+                                    corr.push_back(corrtemp[i]);
+                                }
+                                if (error < minerror){
+                                    minerror = error;
+                                    bestMatchNum = countFinish - 1;//例如第一次满足条件，已完成的匹配数countFinish为1，最佳匹配序号为0（从0开始）
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ///至此如果发现了全等三角形，则corr中至少存在3个对应点，或3的整数倍，取前三个对应点中的2个与其余未知点再组成一个三角形
+    if (corr.size() >= 3){//说明至少已知一个三角形
+        vector<int> hasmatched;//保存已经匹配的已知点ID
+        vector<float> matcherror;//保存各已知点与未知点匹配的匹配误差（如果发生了匹配的话）
+        matcherror.resize(dotPositionFormer.size());
+
+        ///从未知点集中取出一点，与已知三角形中的两点组成新的三角形，由于该三角形可能是等腰或等边，因此已知三角形中的两点如不满足
+        /// 则更换两点，三点中取两点共有3种情况，由于事先已知三角形不是等边或等腰，因此一定有一条边使新三角形普通
+        int oa = 0, ob = 1;//表示已知点中取值相对3*bestMatchNum的偏移量
+
+        for (size_t x = 0;x < dotPositionCurrent.size();x++){
+            if (x==corr[3*bestMatchNum].y||x==corr[3*bestMatchNum+1].y||x==corr[3*bestMatchNum+2].y)
+                continue;
+            ///表示未知点x与已知三角形中的两点构成的三角形是否与任意已知三角形发生了匹配，如果一直未发生匹配
+            /// 可能性为1、确实没有任意已知三角形与未知三角形全等，2、未知三角形为等腰或等边三角形
+            /// 为排除可能性2，需要对未知三角形中的已知两点进行遍历
+            bool noMatch = true;
+
+            for (size_t sq = 0;sq < 3;sq++){//构建对已知三角形三边的遍历
+                oa = sq; ob = sq+1;
+                if (ob == 3) ob = 0;
+
+                float ol = Triangle::calDistance(dotPositionCurrent[corr[3*bestMatchNum+oa].y],dotPositionCurrent[corr[3*bestMatchNum+ob].y]);
+                float xo = Triangle::calDistance(dotPositionCurrent[x],dotPositionCurrent[corr[3*bestMatchNum+oa].y]);
+                float xl = Triangle::calDistance(dotPositionCurrent[x],dotPositionCurrent[corr[3*bestMatchNum+ob].y]);
+                Triangle tri_unknown(x,corr[3*bestMatchNum+oa].y,corr[3*bestMatchNum+ob].y,ol,xo,xl);//构建包含未知点x和两个已知点的三角形
+
+                for (size_t z = 0;z < dotPositionFormer.size();z++){
+                    if (z==corr[3*bestMatchNum].x||z==corr[3*bestMatchNum+1].x||z==corr[3*bestMatchNum+2].x)
+                        continue;
+                    float lo = Triangle::calDistance(dotPositionFormer[corr[3*bestMatchNum+oa].x],dotPositionFormer[corr[3*bestMatchNum+ob].x]);
+                    float zo = Triangle::calDistance(dotPositionFormer[z],dotPositionFormer[corr[3*bestMatchNum+oa].x]);
+                    float zl = Triangle::calDistance(dotPositionFormer[z],dotPositionFormer[corr[3*bestMatchNum+ob].x]);
+                    Triangle tri_known(z,corr[3*bestMatchNum+oa].x,corr[3*bestMatchNum+ob].x,lo,zo,zl);//构建已知点三角形
+
+                    vector<Point2i> corrtemp;
+                    float error = 0;
+                    bool same = Triangle::copmareTriangle(tri_known,tri_unknown,corrtemp,error);
+                    if (same){
+                        noMatch = false;//说明未知三角形普通（非等腰或等边）
+                        if (!isBelongTo(z,hasmatched)){//如果ID=z的已知点还没有被匹配
+                            correspondPoint.push_back(Point2i(z,x));
+                            hasmatched.push_back(z);
+                            matcherror[z]=error;
+                        }
+                        else{//z点已经被匹配，但有新的x点与z的匹配误差小于之前的匹配
+                            if (error < matcherror[z]){
+                                matcherror[z] = error;
+                                for (size_t c=0; c<correspondPoint.size();c++){//更新z的对应未知点序号x
+                                    if (correspondPoint[c].x = z)
+                                        correspondPoint[c] = Point2i(z,x);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!noMatch)//如果能够匹配，则不再考虑其他边
+                    break;
+            }//已知三角形三边遍历结束
+        }
+
+        ///将corr中的已知点对存入correspondPoint，只存入匹配误差最小的那个匹配组
+        /// 调试时可以在此设置断点，查看corr中具体有多少点，也可以查看correspondPoint已有多少点
+        for (size_t i = 3*bestMatchNum; i < 3+3*bestMatchNum; i++){
+            correspondPoint.push_back(corr[i]);
+        }
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
 
 ////__________________________________________________________________////
 /// 邻域计算函数，作用是根据标记点特征（即该点与其余点的距离）                   ////
@@ -1068,8 +1064,8 @@ vector<int> DotMatch::calNeighbor(vector<vector<float>> input, int num)
 
 ////____________________________________________________________////
 /// \brief DotMatch::checkNeighbor
-/// \param referance 作为参考的序列
-/// \param needcheck 被检查的序列
+/// \param referance 作为参考的ID序列
+/// \param needcheck 被检查的ID序列
 /// \return 是否通过检查
 ////____________________________________________________________////
 bool DotMatch::checkNeighbor(vector<int> referance, vector<int> needcheck)

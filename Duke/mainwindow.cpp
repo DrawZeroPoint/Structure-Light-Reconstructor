@@ -427,8 +427,7 @@ void MainWindow::paintPoints()
 
     for(int i = 0;i < dm->dotForMark.size();i++)
     {
-        if (dm->dotForMark[i][4] == 1)
-        {
+        if (dm->dotForMark[i][4] == 1){//表明是已知点
             pt_1.setPen(greencolor);
             pt_2.setPen(greencolor);
             pt_1.drawText(dm->dotForMark[i][0],dm->dotForMark[i][1],QString::number(dm->dotForMark[i][5]));
@@ -436,8 +435,7 @@ void MainWindow::paintPoints()
             drawCross(pt_1, dm->dotForMark[i][0] ,dm->dotForMark[i][1]);
             drawCross(pt_2, dm->dotForMark[i][2], dm->dotForMark[i][3]);
         }
-        else
-        {
+        else{//表明是未知点
             pt_1.setPen(orangecolor);
             pt_2.setPen(orangecolor);
             drawCross(pt_1, dm->dotForMark[i][0] ,dm->dotForMark[i][1]);
@@ -446,6 +444,12 @@ void MainWindow::paintPoints()
     }
     ui->leftCaptureLabel->setPixmap(pcopy_1);
     ui->rightCaptureLabel->setPixmap(pcopy_2);
+
+#ifdef DEBUG
+    ImageViewer *iv = new ImageViewer;
+    iv->showImage(pcopy_1);
+    iv->show();
+#endif
 }
 
 void MainWindow::startscan()

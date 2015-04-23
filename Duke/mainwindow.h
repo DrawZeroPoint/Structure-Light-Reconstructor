@@ -29,6 +29,10 @@
 #include "dahengcamera.h"
 #include "baslercamera.h"
 
+#include "imageviewer.h"
+
+#define DEBUG//用来观察标记点圆心定位精度
+
 #define WM_SNAP_CHANGE		(WM_USER + 100)
 
 #define CALIBIMGNUM 14
