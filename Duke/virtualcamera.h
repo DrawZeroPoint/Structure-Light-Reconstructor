@@ -22,7 +22,7 @@ public:
     void loadFundamentalMatrix(QString path);
     void loadHomoMatrix(QString path, int i);
 
-    int loadMatrix(cv::Mat &matrix, int s1, int s2 , std::string file);
+    int loadMatrix(cv::Mat &matrix, int rows, int cols, std::string file);
 
     cv::Mat distortion;
     cv::Mat rotationMatrix;

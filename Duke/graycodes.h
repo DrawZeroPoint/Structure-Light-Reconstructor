@@ -14,10 +14,11 @@ using std::ofstream;
 class GrayCodes
 {
 public:
-    GrayCodes(int scanW, int scanH);
+    GrayCodes(int scanW, int scanH, bool useepi);
     ~GrayCodes();
 
     cv::Mat grayCodes[GRAY_MAX_NUM];
+    bool useEpi;//是否应用极线校正
 
     int getNumOfImgs();
 

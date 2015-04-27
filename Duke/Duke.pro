@@ -25,7 +25,8 @@ SOURCES += \
     baslercamera.cpp \
     focusassistant.cpp \
     manualmatch.cpp \
-    imageviewer.cpp
+    imageviewer.cpp \
+    stereorect.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -91,7 +92,8 @@ HEADERS += \
     baslercamera.h \
     focusassistant.h \
     manualmatch.h \
-    imageviewer.h
+    imageviewer.h \
+    stereorect.h
 
 FORMS += \
     mainwindow.ui \

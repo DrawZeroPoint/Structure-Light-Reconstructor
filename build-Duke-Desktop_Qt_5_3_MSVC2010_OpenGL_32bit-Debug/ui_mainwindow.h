@@ -105,10 +105,6 @@ public:
     QLabel *label_15;
     QLabel *btvalue;
     QSlider *binarySlider;
-    QGroupBox *groupBox_4;
-    QGridLayout *gridLayout_14;
-    QRadioButton *useGray;
-    QRadioButton *useMultiFreq;
     QVBoxLayout *verticalLayout_5;
     QCheckBox *matchAssistant;
     QPushButton *manualWindow;
@@ -133,6 +129,10 @@ public:
     QFrame *line_15;
     QFrame *line_14;
     QFrame *line_16;
+    QGroupBox *groupBox_4;
+    QGridLayout *gridLayout_14;
+    QRadioButton *useGray;
+    QRadioButton *useMultiFreq;
     QWidget *tab_3;
     QWidget *layoutWidget;
     QVBoxLayout *verticalLayout_2;
@@ -664,25 +664,6 @@ public:
 
         gridLayout_15->addLayout(horizontalLayout_4, 0, 0, 1, 3);
 
-        groupBox_4 = new QGroupBox(tab_2);
-        groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
-        gridLayout_14 = new QGridLayout(groupBox_4);
-        gridLayout_14->setObjectName(QStringLiteral("gridLayout_14"));
-        useGray = new QRadioButton(groupBox_4);
-        useGray->setObjectName(QStringLiteral("useGray"));
-        useGray->setFont(font1);
-        useGray->setChecked(true);
-
-        gridLayout_14->addWidget(useGray, 0, 0, 1, 1);
-
-        useMultiFreq = new QRadioButton(groupBox_4);
-        useMultiFreq->setObjectName(QStringLiteral("useMultiFreq"));
-
-        gridLayout_14->addWidget(useMultiFreq, 1, 0, 1, 1);
-
-
-        gridLayout_15->addWidget(groupBox_4, 4, 0, 1, 3);
-
         verticalLayout_5 = new QVBoxLayout();
         verticalLayout_5->setSpacing(10);
         verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
@@ -840,6 +821,25 @@ public:
         line_16->setFrameShadow(QFrame::Sunken);
 
         gridLayout_15->addWidget(line_16, 0, 3, 1, 1);
+
+        groupBox_4 = new QGroupBox(tab_2);
+        groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
+        gridLayout_14 = new QGridLayout(groupBox_4);
+        gridLayout_14->setObjectName(QStringLiteral("gridLayout_14"));
+        useGray = new QRadioButton(groupBox_4);
+        useGray->setObjectName(QStringLiteral("useGray"));
+        useGray->setFont(font1);
+        useGray->setChecked(true);
+
+        gridLayout_14->addWidget(useGray, 0, 0, 1, 1);
+
+        useMultiFreq = new QRadioButton(groupBox_4);
+        useMultiFreq->setObjectName(QStringLiteral("useMultiFreq"));
+
+        gridLayout_14->addWidget(useMultiFreq, 1, 0, 1, 1);
+
+
+        gridLayout_15->addWidget(groupBox_4, 4, 0, 1, 3);
 
         tabWidget->addTab(tab_2, QString());
         tab_3 = new QWidget();
@@ -1355,7 +1355,7 @@ public:
         QObject::connect(manualReconstruction, SIGNAL(clicked(bool)), reconstructionCount, SLOT(setEnabled(bool)));
         QObject::connect(binarySlider, SIGNAL(valueChanged(int)), btvalue, SLOT(setNum(int)));
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -1459,9 +1459,6 @@ public:
         multiFreqTest->setText(QApplication::translate("MainWindow", "Test MultiFrequency", 0));
         label_15->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Adaptive Binary Threshold:</p></body></html>", 0));
         btvalue->setText(QApplication::translate("MainWindow", "41", 0));
-        groupBox_4->setTitle(QApplication::translate("MainWindow", "Pattern Mode", 0));
-        useGray->setText(QApplication::translate("MainWindow", "GrayCodes", 0));
-        useMultiFreq->setText(QApplication::translate("MainWindow", "MultiFrequency", 0));
         matchAssistant->setText(QApplication::translate("MainWindow", "Use manual match", 0));
         manualWindow->setText(QApplication::translate("MainWindow", "Show/Hide Manual Window", 0));
         label_3->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Already scaned count: </p></body></html>", 0));
@@ -1469,6 +1466,9 @@ public:
         findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
         reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));
         startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
+        groupBox_4->setTitle(QApplication::translate("MainWindow", "Pattern Mode", 0));
+        useGray->setText(QApplication::translate("MainWindow", "GrayCodes", 0));
+        useMultiFreq->setText(QApplication::translate("MainWindow", "MultiFrequency", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Scan", 0));
         manualReconstruction->setText(QApplication::translate("MainWindow", "Manual reconstruction", 0));
         label_4->setText(QApplication::translate("MainWindow", "Set current reconstruction count to:", 0));

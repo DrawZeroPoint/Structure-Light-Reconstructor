@@ -16,7 +16,7 @@ DotMatch::DotMatch(QObject *parent, QString projectPath, bool useManual) :
     firstFind = true;//第一次查找标志点默认为基准点
     scanSN = 0;//表示扫描的次数，0表示第一次扫描
 
-    rc = new Reconstruct;
+    rc = new Reconstruct(false);
     rc->calibFolder = new QString[2];
     rc->savePath_ = projectPath;
     rc->setCalibPath(projectPath +"/calib/left/", 0);

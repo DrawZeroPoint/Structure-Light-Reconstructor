@@ -7,10 +7,12 @@
 #include <QLabel> 
 #include <QImage>
 #include <QTimer>
+
 //openCV
 #include <opencv/highgui.h>
 #include <opencv/cv.h>
 
+//SLR
 #include "blobdetector.h"
 #include "cameracalibration.h"
 #include "dotmatch.h"
@@ -30,6 +32,8 @@
 #include "baslercamera.h"
 
 #include "imageviewer.h"
+
+#include "stereorect.h"
 
 #define DEBUG//用来观察标记点圆心定位精度
 
@@ -82,8 +86,12 @@ private:
 
     DaHengCamera *DHC;
     BaslerCamera *BC;
-    bool usebc;
-    bool showFocus;
+    bool usebc;//是否使用Basler相机
+    bool showFocus;//是否显示对焦辅助窗口
+
+    ///表示编码及解码重建方法，依次为：经典横竖条纹格雷编码，竖条纹格雷码+极线校正，多频外差条纹+极线校正
+    enum codePattern{GRAY_ONLY, GRAY_EPI, MULTIFREQ_EPI};
+    codePattern codePatternUsed;
 
     void createConnections();
     void createCentralWindow(QWidget *parent);
@@ -150,6 +158,7 @@ private slots:
     void finishmanualmatch();
     void startscan();
     void testmulitfreq();
+    void test();
 
     void reconstruct();
     void startreconstruct();

@@ -88,6 +88,11 @@ public:
     QSpacerItem *horizontalSpacer_3;
     QGroupBox *groupBox_6;
     QGridLayout *gridLayout_12;
+    QGroupBox *groupBox_8;
+    QGridLayout *gridLayout_14;
+    QRadioButton *GrayOnly;
+    QRadioButton *grayEpi;
+    QRadioButton *MulitFreqEsp;
     QVBoxLayout *verticalLayout;
     QCheckBox *autoContrastCheck;
     QCheckBox *raySamplingCheck;
@@ -383,6 +388,30 @@ public:
         groupBox_6->setSizePolicy(sizePolicy1);
         gridLayout_12 = new QGridLayout(groupBox_6);
         gridLayout_12->setObjectName(QStringLiteral("gridLayout_12"));
+        groupBox_8 = new QGroupBox(groupBox_6);
+        groupBox_8->setObjectName(QStringLiteral("groupBox_8"));
+        gridLayout_14 = new QGridLayout(groupBox_8);
+        gridLayout_14->setObjectName(QStringLiteral("gridLayout_14"));
+        GrayOnly = new QRadioButton(groupBox_8);
+        GrayOnly->setObjectName(QStringLiteral("GrayOnly"));
+        GrayOnly->setChecked(false);
+
+        gridLayout_14->addWidget(GrayOnly, 0, 0, 1, 1);
+
+        grayEpi = new QRadioButton(groupBox_8);
+        grayEpi->setObjectName(QStringLiteral("grayEpi"));
+        grayEpi->setChecked(true);
+
+        gridLayout_14->addWidget(grayEpi, 1, 0, 1, 1);
+
+        MulitFreqEsp = new QRadioButton(groupBox_8);
+        MulitFreqEsp->setObjectName(QStringLiteral("MulitFreqEsp"));
+
+        gridLayout_14->addWidget(MulitFreqEsp, 2, 0, 1, 1);
+
+
+        gridLayout_12->addWidget(groupBox_8, 0, 0, 1, 1);
+
         verticalLayout = new QVBoxLayout();
         verticalLayout->setSpacing(10);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
@@ -410,11 +439,11 @@ public:
         verticalLayout->addWidget(exportPlyCheck);
 
 
-        gridLayout_12->addLayout(verticalLayout, 0, 0, 1, 1);
+        gridLayout_12->addLayout(verticalLayout, 0, 1, 1, 1);
 
         horizontalSpacer_4 = new QSpacerItem(221, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        gridLayout_12->addItem(horizontalSpacer_4, 0, 1, 1, 1);
+        gridLayout_12->addItem(horizontalSpacer_4, 0, 2, 1, 1);
 
 
         gridLayout_13->addWidget(groupBox_6, 1, 0, 1, 1);
@@ -428,7 +457,7 @@ public:
         QObject::connect(buttonBox, SIGNAL(accepted()), SetDialog, SLOT(accept()));
         QObject::connect(buttonBox, SIGNAL(rejected()), SetDialog, SLOT(reject()));
 
-        tabWidget->setCurrentIndex(2);
+        tabWidget->setCurrentIndex(3);
 
 
         QMetaObject::connectSlotsByName(SetDialog);
@@ -460,6 +489,10 @@ public:
         label_11->setText(QApplication::translate("SetDialog", "Black Threshold", 0));
         label_12->setText(QApplication::translate("SetDialog", "White Threshold", 0));
         groupBox_6->setTitle(QString());
+        groupBox_8->setTitle(QApplication::translate("SetDialog", "Code Pattern", 0));
+        GrayOnly->setText(QApplication::translate("SetDialog", "Use Gray", 0));
+        grayEpi->setText(QApplication::translate("SetDialog", "Use Gray with epipolar rectify", 0));
+        MulitFreqEsp->setText(QApplication::translate("SetDialog", "Use MultiFrequency", 0));
         autoContrastCheck->setText(QApplication::translate("SetDialog", "Auto Contrast", 0));
         raySamplingCheck->setText(QApplication::translate("SetDialog", "Ray Sampling", 0));
         exportObjCheck->setText(QApplication::translate("SetDialog", "Export Obj", 0));

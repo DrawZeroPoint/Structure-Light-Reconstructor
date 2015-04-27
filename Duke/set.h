@@ -40,6 +40,7 @@ public:
     bool raySampling;
     int exportObj;
     int exportPly;
+    int usedPattern;
 
     void switchLang();
 

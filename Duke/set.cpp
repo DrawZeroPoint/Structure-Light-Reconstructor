@@ -44,22 +44,28 @@ void Set::createConfigurationFile()//如果是槽函数，那么void声明不可
     cell_h = set->cellHeight->value();
     black_threshold = set->blackThresholdEdit->value();
     white_threshold = set->whiteThresholdEdit->value();
-    if(set->autoContrastCheck->isChecked() == true)
+    if(set->autoContrastCheck->isChecked())
         autoContrast = true;
     else
         autoContrast = false;
-    if(set->raySamplingCheck->isChecked() == true)
+    if(set->raySamplingCheck->isChecked())
         raySampling = true;
     else
         raySampling = false;
-    if(set->exportObjCheck->isChecked() == true)
+    if(set->exportObjCheck->isChecked())
         exportObj = 1;
     else
         exportObj = 0;
-    if(set->exportPlyCheck->isChecked() == true)
+    if(set->exportPlyCheck->isChecked())
         exportPly = 1;
     else
         exportPly = 0;
+    if (set->GrayOnly->isChecked())
+        usedPattern = 0;
+    else if (set->grayEpi->isChecked())
+        usedPattern = 1;
+    else
+        usedPattern = 2;
     //createSetFile();
 }
 
