@@ -164,11 +164,11 @@ bool Reconstruct::loadCamImgs(QString folder, QString prefix, QString suffix)//l
         if (EPI){
             if (processleft){//第一次调用loadImg时认为是加载左图像
                 sr->doStereoRectify(tmp,true);
-                cv::imwrite(path.toStdString(),tmp);
+                //cv::imwrite(path.toStdString(),tmp);是否保存校正后的图像
             }
             else{
                 sr->doStereoRectify(tmp,false);
-                cv::imwrite(path.toStdString(),tmp);
+                //cv::imwrite(path.toStdString(),tmp);
             }
         }
 
@@ -451,12 +451,14 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 
                     if(!ok)
                         continue;
+                    /*
                     float X = interPoint.x;
                     float Y = interPoint.y;
                     float Z = interPoint.z;
                     interPoint.z = -Z;
                     interPoint.x = -Y;
                     interPoint.y = -X;
+                    */
 
                     ///以下判断为多次重建得到的点云拼接做准备
                     if (scanSN > 0){
@@ -523,12 +525,6 @@ void Reconstruct::triangulation_ge(cv::vector<int> *cam1Pixels, VirtualCamera ca
 
                     if(!ok)
                         continue;
-                    float X = interPoint.x;
-                    float Y = interPoint.y;
-                    float Z = interPoint.z;
-                    interPoint.z = -Z;
-                    interPoint.x = -Y;
-                    interPoint.y = -X;
 
                     ///以下判断为多次重建得到的点云拼接做准备
                     if (scanSN > 0){
@@ -543,6 +539,7 @@ void Reconstruct::triangulation_ge(cv::vector<int> *cam1Pixels, VirtualCamera ca
                     else
                         refinedPoint = interPoint;
                     points3DProjView->addPoint(i, j, refinedPoint);
+                    break;//若左图像某点与右图像点已发生了匹配，则不再检索右图像其余点
                 }
                 else
                     continue;

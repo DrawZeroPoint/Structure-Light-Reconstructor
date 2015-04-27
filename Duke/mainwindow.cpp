@@ -596,7 +596,7 @@ void MainWindow::startreconstruct()
     progressPop(15);
 
     ///至此准备工作完成，下面根据采用编码及解码方式的不同分别进行解相及重建
-    if (codePatternUsed = GRAY_ONLY){
+    if (codePatternUsed == GRAY_ONLY){
         bool runSucess = reconstructor->runReconstruction();
         if(!runSucess){
             ui->progressBar->reset();
@@ -605,7 +605,7 @@ void MainWindow::startreconstruct()
         }
         progressPop(50);
     }
-    else if (codePatternUsed = GRAY_EPI){
+    else if (codePatternUsed == GRAY_EPI){//再次注意：条件判断用双等号！！
         bool runSucess = reconstructor->runReconstruction_GE();
         if(!runSucess){
             ui->progressBar->reset();

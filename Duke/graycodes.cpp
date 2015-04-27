@@ -9,9 +9,9 @@ GrayCodes::GrayCodes(int scanW, int scanH, bool useepi)
     height = scanH;
     width = scanW;
     imgsLoaded = false;
+    useEpi = useepi;//注意该赋值必须放在calNumOfImgs之前
     calNumOfImgs();//calculate the number of the vertical and horizontal stripe images
     currentImgNum = 0;
-    useEpi = useepi;
 }
 
 GrayCodes::~GrayCodes()
