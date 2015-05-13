@@ -46,7 +46,7 @@ public:
 
     ManualMatch *mm;
 
-    vector<vector<float>> findDot(Mat image);
+    vector<vector<float>> findDot(Mat image, bool isleft);
     bool matchDot(Mat limage, Mat rimage);
     void setUpManual(Mat LImage, Mat RImage);//初始化手工标记窗口
     void activeManual();//启动手工标记窗口

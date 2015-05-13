@@ -66,6 +66,7 @@ void Set::createConfigurationFile()//如果是槽函数，那么void声明不可
         usedPattern = 1;
     else
         usedPattern = 2;
+    haveColor = (set->haveColorCheck->isChecked())?(true):(false);
     //createSetFile();
 }
 

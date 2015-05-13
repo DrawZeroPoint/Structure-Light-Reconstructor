@@ -98,6 +98,7 @@ public:
     QCheckBox *raySamplingCheck;
     QCheckBox *exportObjCheck;
     QCheckBox *exportPlyCheck;
+    QCheckBox *haveColorCheck;
     QSpacerItem *horizontalSpacer_4;
 
     void setupUi(QDialog *SetDialog)
@@ -406,6 +407,7 @@ public:
 
         MulitFreqEsp = new QRadioButton(groupBox_8);
         MulitFreqEsp->setObjectName(QStringLiteral("MulitFreqEsp"));
+        MulitFreqEsp->setChecked(false);
 
         gridLayout_14->addWidget(MulitFreqEsp, 2, 0, 1, 1);
 
@@ -437,6 +439,12 @@ public:
         exportPlyCheck->setChecked(true);
 
         verticalLayout->addWidget(exportPlyCheck);
+
+        haveColorCheck = new QCheckBox(groupBox_6);
+        haveColorCheck->setObjectName(QStringLiteral("haveColorCheck"));
+        haveColorCheck->setChecked(true);
+
+        verticalLayout->addWidget(haveColorCheck);
 
 
         gridLayout_12->addLayout(verticalLayout, 0, 1, 1, 1);
@@ -497,6 +505,7 @@ public:
         raySamplingCheck->setText(QApplication::translate("SetDialog", "Ray Sampling", 0));
         exportObjCheck->setText(QApplication::translate("SetDialog", "Export Obj", 0));
         exportPlyCheck->setText(QApplication::translate("SetDialog", "Export Ply", 0));
+        haveColorCheck->setText(QApplication::translate("SetDialog", "Display Color", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("SetDialog", "Reconstruction", 0));
     } // retranslateUi
 

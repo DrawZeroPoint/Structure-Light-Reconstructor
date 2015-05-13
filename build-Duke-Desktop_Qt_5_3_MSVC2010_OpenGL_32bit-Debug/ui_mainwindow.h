@@ -26,7 +26,6 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
@@ -97,17 +96,12 @@ public:
     QWidget *tab_2;
     QGridLayout *gridLayout_15;
     QFrame *line_3;
-    QFrame *line_2;
     QFrame *line_4;
     QSpacerItem *horizontalSpacer_13;
-    QPushButton *multiFreqTest;
     QHBoxLayout *horizontalLayout_4;
     QLabel *label_15;
     QLabel *btvalue;
     QSlider *binarySlider;
-    QVBoxLayout *verticalLayout_5;
-    QCheckBox *matchAssistant;
-    QPushButton *manualWindow;
     QHBoxLayout *horizontalLayout;
     QLabel *label_3;
     QLabel *scanSNLabel;
@@ -116,23 +110,18 @@ public:
     QPushButton *findPointButton;
     QPushButton *reFindButton;
     QFrame *line_6;
-    QFrame *line;
     QFrame *line_7;
-    QPushButton *startScanButton;
     QSpacerItem *horizontalSpacer_14;
-    QFrame *line_9;
     QFrame *line_8;
-    QFrame *line_10;
-    QFrame *line_11;
-    QFrame *line_12;
     QFrame *line_13;
     QFrame *line_15;
-    QFrame *line_14;
     QFrame *line_16;
-    QGroupBox *groupBox_4;
-    QGridLayout *gridLayout_14;
-    QRadioButton *useGray;
-    QRadioButton *useMultiFreq;
+    QVBoxLayout *verticalLayout_5;
+    QCheckBox *matchAssistant;
+    QPushButton *manualWindow;
+    QPushButton *startScanButton;
+    QFrame *line;
+    QFrame *line_2;
     QWidget *tab_3;
     QWidget *layoutWidget;
     QVBoxLayout *verticalLayout_2;
@@ -603,13 +592,6 @@ public:
 
         gridLayout_15->addWidget(line_3, 2, 1, 1, 1);
 
-        line_2 = new QFrame(tab_2);
-        line_2->setObjectName(QStringLiteral("line_2"));
-        line_2->setFrameShape(QFrame::HLine);
-        line_2->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_2, 3, 2, 1, 1);
-
         line_4 = new QFrame(tab_2);
         line_4->setObjectName(QStringLiteral("line_4"));
         line_4->setFrameShape(QFrame::HLine);
@@ -620,13 +602,6 @@ public:
         horizontalSpacer_13 = new QSpacerItem(134, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         gridLayout_15->addItem(horizontalSpacer_13, 0, 4, 1, 1);
-
-        multiFreqTest = new QPushButton(tab_2);
-        multiFreqTest->setObjectName(QStringLiteral("multiFreqTest"));
-        sizePolicy4.setHeightForWidth(multiFreqTest->sizePolicy().hasHeightForWidth());
-        multiFreqTest->setSizePolicy(sizePolicy4);
-
-        gridLayout_15->addWidget(multiFreqTest, 6, 0, 1, 1);
 
         horizontalLayout_4 = new QHBoxLayout();
         horizontalLayout_4->setSpacing(15);
@@ -663,24 +638,6 @@ public:
 
 
         gridLayout_15->addLayout(horizontalLayout_4, 0, 0, 1, 3);
-
-        verticalLayout_5 = new QVBoxLayout();
-        verticalLayout_5->setSpacing(10);
-        verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
-        matchAssistant = new QCheckBox(tab_2);
-        matchAssistant->setObjectName(QStringLiteral("matchAssistant"));
-        matchAssistant->setChecked(true);
-
-        verticalLayout_5->addWidget(matchAssistant);
-
-        manualWindow = new QPushButton(tab_2);
-        manualWindow->setObjectName(QStringLiteral("manualWindow"));
-        manualWindow->setEnabled(false);
-
-        verticalLayout_5->addWidget(manualWindow);
-
-
-        gridLayout_15->addLayout(verticalLayout_5, 2, 0, 1, 1);
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
@@ -733,13 +690,6 @@ public:
 
         gridLayout_15->addWidget(line_6, 1, 0, 1, 1);
 
-        line = new QFrame(tab_2);
-        line->setObjectName(QStringLiteral("line"));
-        line->setFrameShape(QFrame::HLine);
-        line->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line, 3, 0, 1, 1);
-
         line_7 = new QFrame(tab_2);
         line_7->setObjectName(QStringLiteral("line_7"));
         line_7->setFrameShape(QFrame::HLine);
@@ -747,24 +697,9 @@ public:
 
         gridLayout_15->addWidget(line_7, 1, 4, 1, 1);
 
-        startScanButton = new QPushButton(tab_2);
-        startScanButton->setObjectName(QStringLiteral("startScanButton"));
-        startScanButton->setEnabled(false);
-        sizePolicy4.setHeightForWidth(startScanButton->sizePolicy().hasHeightForWidth());
-        startScanButton->setSizePolicy(sizePolicy4);
-
-        gridLayout_15->addWidget(startScanButton, 4, 4, 1, 1);
-
         horizontalSpacer_14 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         gridLayout_15->addItem(horizontalSpacer_14, 2, 6, 1, 1);
-
-        line_9 = new QFrame(tab_2);
-        line_9->setObjectName(QStringLiteral("line_9"));
-        line_9->setFrameShape(QFrame::VLine);
-        line_9->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_9, 4, 3, 1, 1);
 
         line_8 = new QFrame(tab_2);
         line_8->setObjectName(QStringLiteral("line_8"));
@@ -772,27 +707,6 @@ public:
         line_8->setFrameShadow(QFrame::Sunken);
 
         gridLayout_15->addWidget(line_8, 2, 3, 1, 1);
-
-        line_10 = new QFrame(tab_2);
-        line_10->setObjectName(QStringLiteral("line_10"));
-        line_10->setFrameShape(QFrame::HLine);
-        line_10->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_10, 5, 4, 1, 1);
-
-        line_11 = new QFrame(tab_2);
-        line_11->setObjectName(QStringLiteral("line_11"));
-        line_11->setFrameShape(QFrame::HLine);
-        line_11->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_11, 5, 2, 1, 1);
-
-        line_12 = new QFrame(tab_2);
-        line_12->setObjectName(QStringLiteral("line_12"));
-        line_12->setFrameShape(QFrame::HLine);
-        line_12->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_12, 5, 0, 1, 1);
 
         line_13 = new QFrame(tab_2);
         line_13->setObjectName(QStringLiteral("line_13"));
@@ -808,13 +722,6 @@ public:
 
         gridLayout_15->addWidget(line_15, 2, 5, 1, 1);
 
-        line_14 = new QFrame(tab_2);
-        line_14->setObjectName(QStringLiteral("line_14"));
-        line_14->setFrameShape(QFrame::VLine);
-        line_14->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_14, 4, 5, 1, 1);
-
         line_16 = new QFrame(tab_2);
         line_16->setObjectName(QStringLiteral("line_16"));
         line_16->setFrameShape(QFrame::VLine);
@@ -822,24 +729,45 @@ public:
 
         gridLayout_15->addWidget(line_16, 0, 3, 1, 1);
 
-        groupBox_4 = new QGroupBox(tab_2);
-        groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
-        gridLayout_14 = new QGridLayout(groupBox_4);
-        gridLayout_14->setObjectName(QStringLiteral("gridLayout_14"));
-        useGray = new QRadioButton(groupBox_4);
-        useGray->setObjectName(QStringLiteral("useGray"));
-        useGray->setFont(font1);
-        useGray->setChecked(true);
+        verticalLayout_5 = new QVBoxLayout();
+        verticalLayout_5->setSpacing(10);
+        verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
+        matchAssistant = new QCheckBox(tab_2);
+        matchAssistant->setObjectName(QStringLiteral("matchAssistant"));
+        matchAssistant->setChecked(true);
 
-        gridLayout_14->addWidget(useGray, 0, 0, 1, 1);
+        verticalLayout_5->addWidget(matchAssistant);
 
-        useMultiFreq = new QRadioButton(groupBox_4);
-        useMultiFreq->setObjectName(QStringLiteral("useMultiFreq"));
+        manualWindow = new QPushButton(tab_2);
+        manualWindow->setObjectName(QStringLiteral("manualWindow"));
+        manualWindow->setEnabled(false);
 
-        gridLayout_14->addWidget(useMultiFreq, 1, 0, 1, 1);
+        verticalLayout_5->addWidget(manualWindow);
 
 
-        gridLayout_15->addWidget(groupBox_4, 4, 0, 1, 3);
+        gridLayout_15->addLayout(verticalLayout_5, 2, 0, 1, 1);
+
+        startScanButton = new QPushButton(tab_2);
+        startScanButton->setObjectName(QStringLiteral("startScanButton"));
+        startScanButton->setEnabled(false);
+        sizePolicy4.setHeightForWidth(startScanButton->sizePolicy().hasHeightForWidth());
+        startScanButton->setSizePolicy(sizePolicy4);
+
+        gridLayout_15->addWidget(startScanButton, 4, 0, 1, 1);
+
+        line = new QFrame(tab_2);
+        line->setObjectName(QStringLiteral("line"));
+        line->setFrameShape(QFrame::HLine);
+        line->setFrameShadow(QFrame::Sunken);
+
+        gridLayout_15->addWidget(line, 3, 0, 1, 1);
+
+        line_2 = new QFrame(tab_2);
+        line_2->setObjectName(QStringLiteral("line_2"));
+        line_2->setFrameShape(QFrame::HLine);
+        line_2->setFrameShadow(QFrame::Sunken);
+
+        gridLayout_15->addWidget(line_2, 3, 2, 1, 1);
 
         tabWidget->addTab(tab_2, QString());
         tab_3 = new QWidget();
@@ -1456,19 +1384,15 @@ public:
         label_14->setText(QApplication::translate("MainWindow", "Stereo Camera", 0));
         StereoRMS->setText(QApplication::translate("MainWindow", "0", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Calibrate", 0));
-        multiFreqTest->setText(QApplication::translate("MainWindow", "Test MultiFrequency", 0));
         label_15->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Adaptive Binary Threshold:</p></body></html>", 0));
         btvalue->setText(QApplication::translate("MainWindow", "41", 0));
-        matchAssistant->setText(QApplication::translate("MainWindow", "Use manual match", 0));
-        manualWindow->setText(QApplication::translate("MainWindow", "Show/Hide Manual Window", 0));
         label_3->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Already scaned count: </p></body></html>", 0));
         scanSNLabel->setText(QApplication::translate("MainWindow", "0", 0));
         findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
         reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));
+        matchAssistant->setText(QApplication::translate("MainWindow", "Use manual match", 0));
+        manualWindow->setText(QApplication::translate("MainWindow", "Show/Hide Manual Window", 0));
         startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
-        groupBox_4->setTitle(QApplication::translate("MainWindow", "Pattern Mode", 0));
-        useGray->setText(QApplication::translate("MainWindow", "GrayCodes", 0));
-        useMultiFreq->setText(QApplication::translate("MainWindow", "MultiFrequency", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Scan", 0));
         manualReconstruction->setText(QApplication::translate("MainWindow", "Manual reconstruction", 0));
         label_4->setText(QApplication::translate("MainWindow", "Set current reconstruction count to:", 0));

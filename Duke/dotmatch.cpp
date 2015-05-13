@@ -34,9 +34,11 @@ DotMatch::~DotMatch()
 ///_________________________________________________///
 /// \brief DotMatch::findDot
 /// \param image 需要从中寻找标记点的图像
+/// \param isleft 表示当前处理的图像是左图像还是右图像，
+///  根据图像左右对找出的标记点坐标进行去畸变处理
 /// \return 标记点坐标，内层vector包含x、y两个float型
 ///_________________________________________________///
-vector<vector<float>> DotMatch::findDot(Mat image)
+vector<vector<float>> DotMatch::findDot(Mat image, bool isleft)
 {
     vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
     Mat bimage = Mat::zeros(image.size(), CV_8UC1);//二值化后的图像
@@ -139,11 +141,16 @@ vector<vector<float>> DotMatch::findDot(Mat image)
     cvWaitKey();
 #endif
     
-    for (int i = out.size() - 1; i > -1; i--)
-    {
+    for (int i = out.size() - 1; i > -1; i--){
+        ///在进行极线约束验证前，对找到的标记点坐标进行去畸变处理
+        cv::Point2f outUD;
+        if (isleft)
+            outUD = Utilities::undistortPoints(out[i],rc->cameras[0]);//若当前处理左图像，则利用cameras[0]的参数对其进行矫正
+        else
+            outUD = Utilities::undistortPoints(out[i],rc->cameras[1]);
         vector<float> point;
-        point.push_back(out[i].x);
-        point.push_back(out[i].y);
+        point.push_back(outUD.x);
+        point.push_back(outUD.y);
         dotOutput.push_back(point);
     }
 #else
@@ -224,16 +231,16 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
     if (!cameraLoaded){
         cameraLoaded =  rc->loadCameras();
         if (cameraLoaded){
-            rc->cameras[0].position = cv::Point3f(0,0,0);//findProjectorCenter();
-            rc->cam2WorldSpace(rc->cameras[0], rc->cameras[0].position);
+            rc->cameras[0].position = cv::Point3f(0,0,0);//获取相机光心在三维空间中的坐标，为后续求解标记点三维坐标做准备
+            rc->cam2WorldSpace(rc->cameras[0], rc->cameras[0].position);  
             rc->cameras[1].position = cv::Point3f(0,0,0);
             rc->cam2WorldSpace(rc->cameras[1], rc->cameras[1].position);
-            fundMat = rc->cameras[0].fundamentalMatrix;
+            fundMat = rc->cameras[0].fundamentalMatrix; 
         }
     }
-    ////找出左右图像中的标志点
-    vector<vector<float>> dotLeft = findDot(leftImage);
-    vector<vector<float>> dotRight = findDot(rightImage);
+    ///找出左右图像中的标志点
+    vector<vector<float>> dotLeft = findDot(leftImage,true);
+    vector<vector<float>> dotRight = findDot(rightImage,false);
 
 #ifdef TEST_SURF
     vector<KeyPoint> leftkeypoints;

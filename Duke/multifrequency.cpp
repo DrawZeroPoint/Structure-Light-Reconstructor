@@ -13,36 +13,27 @@ MultiFrequency::MultiFrequency(QObject *parent, int projwidth, int projheight) :
 
 void MultiFrequency::generateMutiFreq()
 {
-    for (size_t i = 0; i < MULTI_MAX_NUM; i++)
+    MultiFreqImages[0] = cv::Mat(projH,projW,CV_8U,cvScalar(255));
+    MultiFreqImages[1] = cv::Mat(projH,projW,CV_8U,cvScalar(0));
+    for (size_t i = 2; i < MULTI_NUM + 2; i++)//+2表示全白全黑图像
     {
-        MultiFreqImages[i] = cv::Mat(projH, projW, CV_32F);
+        MultiFreqImages[i] = cv::Mat(projH, projW, CV_8U);
     }
-    for (size_t f = 0; f < 3; f++)
-    {
-        for (size_t phi = 0; phi < 4; phi++)
-        {
-            cv::Mat temp(projH,projW,CV_32F);
-            for (size_t w = 0; w < projW; w++)
-            {
-                for (size_t h = 0; h < projH; h++)
-                {
-                    temp.at<float>(h,w) = 0.502+0.498*sin(float(PI*2*w*frequency[f]/projW+PI*phi/2));
+    for (size_t f = 0; f < 3; f++){
+        for (size_t phi = 0; phi < 4; phi++){
+            cv::Mat temp(projH,projW,CV_8U);
+            for (size_t w = 0; w < projW; w++){
+                for (size_t h = 0; h < projH; h++){
+                    temp.at<uchar>(h,w) = 135+79*cos(float(PI*2*w*frequency[f]/projW+PI*phi/2));
                 }
             }
-            MultiFreqImages[4*f+phi] = temp;
+            MultiFreqImages[4*f + phi + 2] = temp;
         }
     }
 }
 
-cv::Mat MultiFrequency::getNextMultiFreq()
-{
-    testCount++;
-    if (testCount == 13)
-        testCount = 1;
-    return MultiFreqImages[testCount-1];
-}
 
 int MultiFrequency::getNumOfImgs()
 {
-    return 12;
+    return 14;
 }

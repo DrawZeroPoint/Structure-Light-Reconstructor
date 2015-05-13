@@ -454,8 +454,7 @@ void MainWindow::paintPoints()
 
 void MainWindow::startscan()
 {
-    if (scanSN < 0)
-    {
+    if (scanSN < 0){
         if (QMessageBox::warning(this,tr("Mark Point Need to be Found"), tr("Scan result can't be aligned,continue?")
                                  ,QMessageBox::Yes,QMessageBox::No) == QMessageBox::No)
             return;
@@ -482,7 +481,7 @@ void MainWindow::startscan()
     else{
         mf = new MultiFrequency(this, scanWidth, scanHeight);
         mf->generateMutiFreq();
-        pj->showMatImg(mf->getNextMultiFreq());
+        pj->showMatImg(mf->MultiFreqImages[0]);
     }
     progressPop(6);
 
@@ -521,7 +520,7 @@ void MainWindow::startscan()
         else{
             if(imgCount == mf->getNumOfImgs())
                 break;
-            pj->showMatImg(mf->getNextMultiFreq());
+            pj->showMatImg(mf->MultiFreqImages[imgCount]);
             progressPop(7);
         }
     }
@@ -533,15 +532,6 @@ void MainWindow::startscan()
     ui->progressBar->setValue(100);
 }
 
-void MainWindow::testmulitfreq()
-{
-    pj->displaySwitch(false);
-    pj->opencvWindow();
-    MultiFrequency *mf = new MultiFrequency(this, scanWidth, scanHeight);
-    mf->generateMutiFreq();
-    cv::Mat play = mf->getNextMultiFreq();
-    pj->showMatImg(play);
-}
 
 ///-----------------重建-------------------///
 void MainWindow::reconstruct()
@@ -571,13 +561,21 @@ void MainWindow::startreconstruct()
         reconstructor = new Reconstruct(false);
     else if (codePatternUsed == GRAY_EPI)
         reconstructor = new Reconstruct(true);
+    else
+        mfr = new MFReconstruct();
 
-    reconstructor->scanSN = (ui->manualReconstruction->isChecked())?(ui->reconstructionCount->value()):(scanSN);
-    reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, isAutoContrast, projectPath);
-
-    reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
-    reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
-    bool loaded = reconstructor->loadCameras();//load camera matrix
+    bool loaded;
+    int sn = (ui->manualReconstruction->isChecked())?(ui->reconstructionCount->value()):(scanSN);;//赋给reconstruction的scanSN
+    if (codePatternUsed == GRAY_ONLY || codePatternUsed == GRAY_EPI){
+        reconstructor->scanSN = sn;
+        reconstructor->getParameters(scanWidth, scanHeight, cameraWidth, cameraHeight, isAutoContrast, haveColor, projectPath);
+        reconstructor->setCalibPath(projectPath+"/calib/left/", 0);
+        reconstructor->setCalibPath(projectPath+"/calib/right/", 1);
+        loaded = reconstructor->loadCameras();//load camera matrix
+    }
+    else{
+        mfr->getParameters(sn,scanWidth,scanHeight,cameraWidth,cameraHeight,black_,white_,projectPath);
+    }
 
     if(!loaded){
         ui->progressBar->reset();
@@ -586,47 +584,47 @@ void MainWindow::startreconstruct()
     }
     progressPop(5);
 
-    reconstructor->setBlackThreshold(black_);
-    reconstructor->setWhiteThreshold(white_);
-
-    if(isRaySampling)
-        reconstructor->enableRaySampling();
-    else
-        reconstructor->disableRaySampling();
-    progressPop(15);
+    if (codePatternUsed == GRAY_ONLY || codePatternUsed == GRAY_EPI){
+        reconstructor->setBlackThreshold(black_);
+        reconstructor->setWhiteThreshold(white_);
+        if(isRaySampling)
+            reconstructor->enableRaySampling();
+        else
+            reconstructor->disableRaySampling();
+        progressPop(15);
+    }
 
     ///至此准备工作完成，下面根据采用编码及解码方式的不同分别进行解相及重建
+    bool runSucess;
     if (codePatternUsed == GRAY_ONLY){
-        bool runSucess = reconstructor->runReconstruction();
-        if(!runSucess){
-            ui->progressBar->reset();
-            nowProgress = 0;
-            return;
-        }
-        progressPop(50);
+        runSucess = reconstructor->runReconstruction();
     }
     else if (codePatternUsed == GRAY_EPI){//再次注意：条件判断用双等号！！
-        bool runSucess = reconstructor->runReconstruction_GE();
-        if(!runSucess){
-            ui->progressBar->reset();
-            nowProgress = 0;
-            return;
-        }
-        progressPop(50);
+        runSucess = reconstructor->runReconstruction_GE();
     }
-    else{
-        ///多频外差解相
+    else{//多频外差解相
+        runSucess = mfr->runReconstruction();
     }
+    if(!runSucess){
+        ui->progressBar->reset();
+        nowProgress = 0;
+        return;
+    }
+    progressPop(50);
 
-
-    MeshCreator *meshCreator=new MeshCreator(reconstructor->points3DProjView);//Export mesh
+    MeshCreator *meshCreator;
+    if (codePatternUsed == GRAY_ONLY || codePatternUsed == GRAY_EPI){
+        meshCreator = new MeshCreator(reconstructor->points3DProjView);//Export mesh
+    }
+    else
+        meshCreator = new MeshCreator(mfr->points3DProjView);
     progressPop(10);
 
     if(isExportObj)
-        meshCreator->exportObjMesh(projChildPath + QString::number(reconstructor->scanSN) + ".obj");
+        meshCreator->exportObjMesh(projChildPath + QString::number(sn) + ".obj");
 
     if(isExportPly || !(isExportObj || isExportPly)){
-        QString outPlyPath = projChildPath + QString::number(reconstructor->scanSN) + ".ply";
+        QString outPlyPath = projChildPath + QString::number(sn) + ".ply";
         meshCreator->exportPlyMesh(outPlyPath);
         displayModel->LoadModel(outPlyPath);
     }
@@ -659,6 +657,7 @@ void MainWindow::getSetInfo()
     isRaySampling = setDialog->raySampling;
     isExportObj = setDialog->exportObj;
     isExportPly = setDialog->exportPly;
+    haveColor = setDialog->haveColor;
     switch (setDialog->usedPattern){
         case 0:
         codePatternUsed = GRAY_ONLY;
@@ -697,7 +696,6 @@ void MainWindow::createConnections()
     connect(ui->findPointButton,SIGNAL(clicked()),this,SLOT(pointmatch()));
     connect(ui->reFindButton,SIGNAL(clicked()),this,SLOT(refindmatch()));
     connect(ui->startScanButton, SIGNAL(clicked()), this, SLOT(startscan()));
-    connect(ui->multiFreqTest, SIGNAL(clicked()), this, SLOT(testmulitfreq()));
     //connect(ui->testR, SIGNAL(clicked()), this, SLOT(test()));//用于测试功能的暂时按键
 
     connect(ui->actionReconstruct,SIGNAL(triggered()),this,SLOT(reconstruct()));
@@ -826,11 +824,13 @@ void MainWindow::drawCross(QPainter &p, int x, int y)
 
 void MainWindow::test()
 {
+    /*
     stereoRect *sr = new stereoRect(projectPath);
     QString path1 = projectPath + "/scan/left/0/L0.png";
     QString path2 = projectPath + "/scan/right/0/R0.png";
     cv::Mat img1 = imread(path1.toStdString());
     cv::Mat img2 = imread(path2.toStdString());
     sr->getParameters();
-    //sr->doStereoRectify(img1,img2);
+    sr->doStereoRectify(img1,img2);
+    */
 }

@@ -38,6 +38,7 @@ public:
     int projectorWinPos_y;
     bool autoContrast;
     bool raySampling;
+    bool haveColor;//是否使点云显示原色
     int exportObj;
     int exportPly;
     int usedPattern;

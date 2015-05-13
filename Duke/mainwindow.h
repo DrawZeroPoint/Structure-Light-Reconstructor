@@ -20,6 +20,7 @@
 
 #include "projector.h"
 #include "reconstruct.h"
+#include "mfreconstruct.h"
 #include "meshcreator.h"
 
 #include "set.h"
@@ -83,6 +84,7 @@ private:
     MultiFrequency *mf;
     Projector *pj;
     Reconstruct *reconstructor;
+    MFReconstruct *mfr;
 
     DaHengCamera *DHC;
     BaslerCamera *BC;
@@ -129,6 +131,7 @@ private:
     bool isRaySampling;
     bool isExportObj;
     bool isExportPly;
+    bool haveColor;
 
 private slots:
     void newproject();
@@ -157,7 +160,6 @@ private slots:
     void showhidemanual();
     void finishmanualmatch();
     void startscan();
-    void testmulitfreq();
     void test();
 
     void reconstruct();

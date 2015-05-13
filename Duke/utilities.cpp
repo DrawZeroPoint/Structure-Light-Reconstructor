@@ -55,7 +55,7 @@ cv::Point3f Utilities::pixelToImageSpace(cv::Point2f p,  VirtualCamera cam)
     return point;
 }
 
-cv::Point2f Utilities::undistortPoints( cv::Point2f p,  VirtualCamera cam)
+cv::Point2f Utilities::undistortPoints(cv::Point2f p,  VirtualCamera cam)
 {
     double  k[5]={0,0,0,0,0}, fx, fy, ifx, ify, cx, cy;
     int iters = 1;

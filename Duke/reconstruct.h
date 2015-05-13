@@ -37,7 +37,7 @@ public:
 
     void cam2WorldSpace(VirtualCamera cam, cv::Point3f &p);
 
-    void getParameters(int scanw, int scanh,  int camw, int camh, bool autocontrast, QString savePath);
+    void getParameters(int scanw, int scanh,  int camw, int camh, bool autocontrast, bool havecolor, QString savePath);
     QString savePath_;//same as projectPath
     int scanSN;//表示当前重建的扫描数据序列号，也是输出模型的序列号
 
@@ -77,13 +77,16 @@ private:
     int whiteThreshold;
 
     cv::vector<cv::Mat> camImgs;//用来存放条纹图像序列，不同编码方式通用
+    cv::vector<cv::Mat> colorImgs;
 
     cv::Mat mask;//matrix with vals 0 and 1 , CV_8U , uchar
+    cv::Mat color;
     cv::Mat decRows;
     cv::Mat decCols;
     bool pathSet;
     bool autoContrast_;
     bool raySampling_;
+    bool haveColor;
     int cameraWidth;
     int cameraHeight;
 

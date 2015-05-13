@@ -503,6 +503,9 @@
                <property name="text">
                 <string>Use MultiFrequency</string>
                </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
               </widget>
              </item>
             </layout>
@@ -544,6 +547,16 @@
              <widget class="QCheckBox" name="exportPlyCheck">
               <property name="text">
                <string>Export Ply</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="haveColorCheck">
+              <property name="text">
+               <string>Display Color</string>
               </property>
               <property name="checked">
                <bool>true</bool>

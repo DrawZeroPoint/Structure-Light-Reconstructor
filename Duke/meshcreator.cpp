@@ -22,13 +22,10 @@ void MeshCreator::exportObjMesh(QString path)
     std::string cstr = path.toStdString();
     out1.open(cstr);
 
-    for(int i = 0; i<w;i++)
-    {
-        for(int j = 0; j<h; j++)
-        {
+    for(int i = 0; i<w;i++){
+        for(int j = 0; j<h; j++){
             return_val = cloud -> getPoint(i, j, point);
-            if(return_val)
-            {
+            if(return_val){
                 pixelNum[access(i, j)]=count;
                 out1<<"v "<< point.x<< " "<< point.y<< " "<<point.z<< "\n";
                 count++;
@@ -38,10 +35,8 @@ void MeshCreator::exportObjMesh(QString path)
         }
     }
 
-    for(int i = 0; i < w;i++)
-    {
-        for(int j = 0; j < h; j++)
-        {
+    for(int i = 0; i < w;i++){
+        for(int j = 0; j < h; j++){
             int v1 = pixelNum[access(i, j)],v2,v3;
 
             if(i < w - 1)
@@ -72,19 +67,15 @@ void MeshCreator::exportObjMesh(QString path)
 void MeshCreator::exportPlyMesh(QString path)
 {
     bool return_val;
-
     cv::Point3f point;
-    cv::Vec3f color;
+    cv::Vec3i color;//f改为i，配合pointcloudimage
     std::ofstream out1;
 
     out1.open(path.toStdString());
     int vertexCount = 0;//顶点数目
-    for(int i=0; i < w; i++)
-    {
-        for(int j=0; j < h; j++)
-        {
-            if(cloud->getPoint(i, j, point))
-            {
+    for(int i=0; i < w; i++){
+        for(int j=0; j < h; j++){
+            if(cloud->getPoint(i, j, point)){
                 pixelNum[access(i, j)] = vertexCount;
                 vertexCount++;
             }
@@ -93,10 +84,8 @@ void MeshCreator::exportPlyMesh(QString path)
         }
     }
     int facesCount = 0;//find faces num
-    for(int i=0; i<w;i++)
-    {
-        for(int j=0; j<h; j++)
-        {
+    for(int i=0; i<w;i++){
+        for(int j=0; j<h; j++){
             int v1 = pixelNum[access(i,j)],v2,v3;
             if(i < w - 1)
                 v2 = pixelNum[access(i+1,j)];
@@ -135,15 +124,11 @@ void MeshCreator::exportPlyMesh(QString path)
     out1<<"property list uchar int vertex_indices\n";
     out1<<"end_header\n";
 
-    for(int i=0; i<w;i++)
-    {
-        for(int j=0; j<h; j++)
-        {
-            return_val = cloud->getPoint(i, j, point);
-            if(return_val)
-            {
-                out1<< point.x << " " << point.y << " " << point.z << " "<< 128 << " " << 128 << " " << 128 << "\n";
-                //这里去掉了表示颜色的项，统一赋值为128
+    for(int i=0; i<w;i++){
+        for(int j=0; j<h; j++){
+            return_val = cloud->getPoint(i, j, point, color);
+            if(return_val){
+                out1<< point.x << " " << point.y << " " << point.z << " "<< color[2] << " " << color[1] << " " << color[0] << "\n";
                 //out1<< point.x << " " << point.y << " " << point.z << " "<< (int) color[2] << " " << (int) color[1] << " " << (int) color[0] << "\n";
             }
             else
@@ -151,10 +136,8 @@ void MeshCreator::exportPlyMesh(QString path)
         }
     }
 
-    for(int i = 0; i < w;i++)
-    {
-        for(int j = 0; j < h; j++)
-        {
+    for(int i = 0; i < w;i++){
+        for(int j = 0; j < h; j++){
             int v1 = pixelNum[access(i, j)], v2, v3;
 
             if(i < w - 1)

@@ -11,13 +11,13 @@ public:
     PointCloudImage(int imageW,int imageH, bool color);
     ~PointCloudImage(void);
 
-    bool setPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3f colorBGR);
+    bool setPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3i colorgray);//灰度，改cv::Vec3f colorBGR，下同，vec3b表示3维uchar向量
     bool setPoint(int i_w, int j_h, cv::Point3f point);
 
     bool getPoint(int i_w, int j_h, cv::Point3f &pointOut);
-    bool getPoint(int i_w, int j_h, cv::Point3f &pointOut, cv::Vec3f &colorOut);
+    bool getPoint(int i_w, int j_h, cv::Point3f &pointOut, cv::Vec3i &colorgray);
 
-    bool addPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3f color);
+    bool addPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3i colorgray);
     bool addPoint(int i_w, int j_h, cv::Point3f point);
 
     void exportNumOfPointsPerPixelImg(char path[]);

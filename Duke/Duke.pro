@@ -26,7 +26,8 @@ SOURCES += \
     focusassistant.cpp \
     manualmatch.cpp \
     imageviewer.cpp \
-    stereorect.cpp
+    stereorect.cpp \
+    mfreconstruct.cpp
 
 RESOURCES += \
     Resource/res.qrc
@@ -93,7 +94,8 @@ HEADERS += \
     focusassistant.h \
     manualmatch.h \
     imageviewer.h \
-    stereorect.h
+    stereorect.h \
+    mfreconstruct.h
 
 FORMS += \
     mainwindow.ui \

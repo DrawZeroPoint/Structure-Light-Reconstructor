@@ -6,9 +6,7 @@ PointCloudImage::PointCloudImage(int imageW,int imageH, bool colorFlag)
     h = imageH;
     points = cv::Mat(h, w, CV_32FC3);
     if(colorFlag == true)
-    {
-        color = cv::Mat(h, w, CV_32FC3,cv::Scalar(0));
-    }
+        color = cv::Mat(h, w, CV_8UC3,cv::Scalar(0));//由于相机所摄为灰度图像，因此将32FC3改为8UC3
     else
         color = NULL;
     numOfPointsForPixel =  cv::Mat(h, w, CV_8U, cv::Scalar(0));
@@ -18,18 +16,18 @@ PointCloudImage::~PointCloudImage(void)
 {
 }
 
-bool PointCloudImage::setPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3f colorBGR)
+bool PointCloudImage::setPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3i colorgray)
 {
-    if(i_w>w || j_h>h)
+    if(i_w>=w || j_h>=h)
         return false;
     setPoint(i_w,j_h,point);
-    //Utilities::matSet3D(color,i_w,j_h,colorBGR);//这里暂时注释掉
+    Utilities::matSet3D(color,i_w,j_h,colorgray);
     return true;
 }
 
 bool PointCloudImage::setPoint(int i_w, int j_h, cv::Point3f point)
 {
-    if(i_w>w || j_h>h)
+    if(i_w>=w || j_h>=h)
         return false;
 
     Utilities::matSet3D(points, i_w, j_h, (cv::Vec3f)point);
@@ -38,69 +36,56 @@ bool PointCloudImage::setPoint(int i_w, int j_h, cv::Point3f point)
     return true;
 }
 
-bool PointCloudImage::getPoint(int i_w, int j_h, cv::Point3f &pointOut, cv::Vec3f &colorOut)
+bool PointCloudImage::getPoint(int i_w, int j_h, cv::Point3f &pointOut, cv::Vec3i &colorOut)
 {
-    if(i_w>w || j_h>h)
+    if(i_w>=w || j_h>=h)
         return false;
     uchar num = numOfPointsForPixel.at<uchar>(j_h,i_w);
-    if(num > 0)
-    {
+    if(num > 0){
         pointOut = (cv::Point3f) (Utilities::matGet3D(points,i_w,j_h) / (float) num);
         if(!color.empty())
-        {
-            colorOut = (cv::Point3f) (Utilities::matGet3D(color,i_w,j_h) / (float) num);
-        }
+            colorOut = (cv::Point3i) (Utilities::matGet3D(color,i_w,j_h) / (float) num);
         else
-        {
-            return false;
-        }
+            colorOut = (cv::Point3i) (100,100,100);//如果color为空，则人为赋一个值
         return true;
     }
     else
-    {
         return false;
-    }
 }
 
 bool PointCloudImage::getPoint(int i_w, int j_h, cv::Point3f &pointOut)
 {
-    if(i_w>w || j_h>h)
+    if(i_w>=w || j_h>=h)
         return false;
     uchar num = numOfPointsForPixel.at<uchar>(j_h,i_w);
-    if(num > 0)
-    {
+    if(num > 0){
         pointOut = (cv::Point3f) (Utilities::matGet3D(points, i_w, j_h) / (float) num);
         return true;
     }
     else
-    {
         return false;
-    }
 }
 
-bool PointCloudImage::addPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3f colorBGR)
+bool PointCloudImage::addPoint(int i_w, int j_h, cv::Point3f point, cv::Vec3i colorgray)
 {
-    if(i_w > w || j_h > h)
+    if(i_w >= w || j_h >= h)//由于i_w为[0,w)取值,因此其不可能等于w，若出现等于，直接判定false
         return false;
     uchar num = numOfPointsForPixel.at<uchar>(j_h, i_w);
     if(num == 0)
-        return setPoint(i_w, j_h, point, colorBGR);
+        return setPoint(i_w, j_h, point, colorgray);
     addPoint(i_w, j_h, point);
-    if(!color.empty())
-    {
-        cv::Vec3f c = Utilities::matGet3D(color, i_w, j_h);
-        Utilities::matSet3D(color, i_w, j_h, colorBGR + c);
+    if(!color.empty()){
+        cv::Vec3i c = Utilities::matGet3D(color, i_w, j_h);
+        Utilities::matSet3D(color, i_w, j_h, colorgray + c);
     }
     else
-    {
         return false;
-    }
     return true;
 }
 
 bool PointCloudImage::addPoint(int i_w, int j_h, cv::Point3f point)
 {
-    if(i_w>w || j_h>h)
+    if(i_w>=w || j_h>=h)
         return false;
     uchar num = numOfPointsForPixel.at<uchar>(j_h,i_w);
     if(num == 0)
@@ -115,31 +100,23 @@ void PointCloudImage::exportXYZ(char path[], bool exportOffPixels, bool colorFla
 {
     std::ofstream out;
     out.open(path);
-    int load;
     cv::Point3f p;
-    cv::Vec3f c;
-    for(int i = 0; i<w; i++)
-    {
-        for(int j = 0; j<h; j++)
-        {
+    cv::Vec3i c;
+    for(int i = 0; i<w; i++){
+        for(int j = 0; j<h; j++){
             uchar num = numOfPointsForPixel.at<uchar>(j,i);
             if(!exportOffPixels && num == 0)
                 continue;
             getPoint(i,j,p,c);
-            if(exportOffPixels && num == 0)
-            {
+            if(exportOffPixels && num == 0){
                 p = cv::Point3f(0,0,0);
-                c = cv::Point3f(0,0,0);
+                c = cv::Point3i(0,0,0);
             }
             out<<p.x<<" "<<p.y<<" "<<p.z;
             if(colorFlag && !color.empty())
-            {
                 out<<" "<<c[2]<<" "<<c[1]<<" "<<c[0]<<"\n";
-            }
             else
-            {
                 out<<"\n";
-            }
         }
     }
     out.close();
@@ -150,13 +127,10 @@ void PointCloudImage::exportNumOfPointsPerPixelImg(char path[])
     cv::Mat projToCamRays(cvSize(w, h), CV_8U);
     float max=0;
     int maxX,maxY;
-    for(int i=0; i<w; i++)
-    {
-        for(int j=0; j<h; j++)
-        {
+    for(int i=0; i<w; i++){
+        for(int j=0; j<h; j++){
             uchar num = numOfPointsForPixel.at<uchar>(j,i);
-            if(num > max)
-            {
+            if(num > max){
                 max = num;
                 maxX=i;
                 maxY=j;
@@ -164,10 +138,8 @@ void PointCloudImage::exportNumOfPointsPerPixelImg(char path[])
         }
     }
 
-    for(int i=0; i<w; i++)
-    {
-        for(int j=0; j<h; j++)
-        {
+    for(int i=0; i<w; i++){
+        for(int j=0; j<h; j++){
             uchar num = numOfPointsForPixel.at<uchar>(j,i);
             Utilities::matSet2D(projToCamRays, j, i, num/(float)(max * 255.0));
         }

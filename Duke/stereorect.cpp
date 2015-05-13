@@ -1,8 +1,9 @@
 #include "stereorect.h"
 
-stereoRect::stereoRect(QString projectPath)
+stereoRect::stereoRect(QString projectPath, cv::Size size)
 {
     ppath = projectPath;
+    img_size = size;
 }
 
 void stereoRect::getParameters()
@@ -24,29 +25,23 @@ void stereoRect::getParameters()
 
 void stereoRect::doStereoRectify(cv::Mat &img, bool isleft)
 {
-    cv::Size img_size = img.size();
-    cv::Mat R1, P1, R2, P2, Q;
-
-    ///该矫正函数在使用时注意两点：
-    /// 1、flag不要设为CV_CALIB_ZERO_DISPARITY，而是设为0
-    /// 2、所有输入矩阵都采用CV_64F格式，否则出现类型不匹配错误
-    cv::stereoRectify(M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, 0, -1);
-
-    cv::Mat map11, map12, map21, map22;
-    if (isleft)
-        cv::initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
-    else
-        cv::initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
-
     cv::Mat imgr;
     if (isleft)
         cv::remap(img, imgr, map11, map12, cv::INTER_LINEAR);
     else
         cv::remap(img, imgr, map21, map22, cv::INTER_LINEAR);
-
     img = imgr;
 }
 
+void stereoRect::calParameters()
+{
+    ///该矫正函数在使用时注意两点：
+    /// 1、flag不要设为CV_CALIB_ZERO_DISPARITY，而是设为0
+    /// 2、所有输入矩阵都采用CV_64F格式，否则出现类型不匹配错误
+    cv::stereoRectify(M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, 0, -1);
+    cv::initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
+    cv::initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
+}
 
 void stereoRect::loadMatrix(cv::Mat &matrix, int rows, int cols, QString file)
 {
