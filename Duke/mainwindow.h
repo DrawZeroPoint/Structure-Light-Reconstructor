@@ -114,6 +114,8 @@ private:
     QTimer *timer;
     QImage image_1;
     QImage image_2;
+    cv::Mat matShow_1;
+    cv::Mat matShow_2;
     QPixmap pimage_1;//由图像指针得到的.png格式图像
     QPixmap pimage_2;
 

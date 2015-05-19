@@ -442,7 +442,7 @@ public:
 
         haveColorCheck = new QCheckBox(groupBox_6);
         haveColorCheck->setObjectName(QStringLiteral("haveColorCheck"));
-        haveColorCheck->setChecked(true);
+        haveColorCheck->setChecked(false);
 
         verticalLayout->addWidget(haveColorCheck);
 

@@ -11,7 +11,7 @@ Utilities::~Utilities(void)
 bool Utilities::XOR(bool val1, bool val2)
 {
     if(val1==val2)
-        return 0;
+         return 0;
     else
         return 1;
 }

@@ -29,6 +29,7 @@
 #include "utilities.h"
 #include "blobdetector.h"
 #include "manualmatch.h"
+#include "stereorect.h"
 
 // MRPT
 #include <mrpt/scanmatching.h>
@@ -41,13 +42,13 @@ class DotMatch : public QObject
     Q_OBJECT
 public:
 
-    DotMatch(QObject *parent = 0, QString projectPath = NULL, bool useManual = true);
+    DotMatch(QObject *parent = 0, QString projectPath = NULL, bool useManual = true, bool useepi = true);
     ~DotMatch();
 
     ManualMatch *mm;
 
-    vector<vector<float>> findDot(Mat image, bool isleft);
-    bool matchDot(Mat limage, Mat rimage);
+    vector<vector<float>> findDot(Mat &image, bool isleft);
+    bool matchDot(Mat &limage, Mat &rimage);
     void setUpManual(Mat LImage, Mat RImage);//初始化手工标记窗口
     void activeManual();//启动手工标记窗口
     void finishMatch();
@@ -74,6 +75,8 @@ public:
 private:
     QString path;
     bool useManualMatch;
+    bool useEpi;//表示是否采用极线校正，若采用，计算标记点坐标采用Q矩阵法
+    stereoRect *sr;
 
     bool triangleCalculate();
     cv::vector<cv::vector<float> > calFeature(cv::vector<Point3f> dotP);

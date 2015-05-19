@@ -460,14 +460,6 @@ void Reconstruct::triangulation(cv::vector<cv::Point> *cam1Pixels, VirtualCamera
 
                     if(!ok)
                         continue;
-                    /*
-                    float X = interPoint.x;
-                    float Y = interPoint.y;
-                    float Z = interPoint.z;
-                    interPoint.z = -Z;
-                    interPoint.x = -Y;
-                    interPoint.y = -X;
-                    */
 
                     ///以下判断为多次重建得到的点云拼接做准备
                     if (scanSN > 0){

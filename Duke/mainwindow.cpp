@@ -13,6 +13,7 @@
 #include <QFont>
 
 bool inEnglish = true;
+bool dotmatchact = false;
 int nowProgress = 0;//进度条初始化
 
 QFont textf("Calibri",50);
@@ -88,8 +89,6 @@ void MainWindow::newproject()
         for(int i = 0;i<3;i++){
             generatePath(i);
         }
-        dm = new DotMatch(this, projectPath, ui->matchAssistant->isChecked());
-        connect(dm,SIGNAL(receivedmanualmatch()),this,SLOT(finishmanualmatch()));
     }
 }
 
@@ -356,6 +355,15 @@ void MainWindow::scan()
     ui->reFindButton->setEnabled(true);
     ui->startScanButton->setEnabled(true);
     pj->setCrossVisable(false);
+
+    if (!dotmatchact){//如果还没有生成dm，则生成，并保证不再生成
+        bool useepi = false;
+        if(codePatternUsed == GRAY_EPI)
+            useepi = true;
+        dm = new DotMatch(this, projectPath, ui->matchAssistant->isChecked(), useepi);
+        connect(dm,SIGNAL(receivedmanualmatch()),this,SLOT(finishmanualmatch()));
+        dotmatchact = true;
+    }
 }
 
 void MainWindow::pointmatch()
@@ -382,6 +390,10 @@ void MainWindow::findPoint()
     //imshow("d",mat_1);
     //cvWaitKey(10);
     bool success = dm->matchDot(mat_1,mat_2);//在这一步生成了mm
+    if (codePatternUsed == GRAY_EPI){
+        matShow_1 = mat_1.clone();
+        matShow_2 = mat_2.clone();
+    }
     if (success){
         ///保证运行activeManual时mm已经生成
         if (dm->scanSN != 0){
@@ -402,7 +414,7 @@ void MainWindow::findPoint()
 
 void MainWindow::finishmanualmatch()
 {
-    scanSN = dm->scanSN;//这里不能放在finishMatch后面
+    scanSN = dm->scanSN;//不能放在finishMatch后面
     ui->scanSNLabel->setText(QString::number(scanSN+1));//表示已经进行了的扫描次数（实际是查找点次数）
     dm->finishMatch();
     paintPoints();
@@ -418,15 +430,24 @@ void MainWindow::showhidemanual()
 
 void MainWindow::paintPoints()
 {
-    QPixmap pcopy_1 = pimage_1;
-    QPixmap pcopy_2 = pimage_2;
+    QPixmap pcopy_1;
+    QPixmap pcopy_2;
+    if (codePatternUsed == GRAY_EPI){
+        QImage pshow_1 = QImage(matShow_1.data,matShow_1.cols,matShow_1.rows,QImage::Format_Indexed8);
+        QImage pshow_2 = QImage(matShow_2.data,matShow_2.cols,matShow_2.rows,QImage::Format_Indexed8);
+        pcopy_1 =  QPixmap::fromImage(pshow_1);
+        pcopy_2 = QPixmap::fromImage(pshow_2);
+    }
+    else{
+        pcopy_1 = pimage_1;
+        pcopy_2 = pimage_2;
+    }
     QPainter pt_1(&pcopy_1);
     QPainter pt_2(&pcopy_2);
     pt_1.setFont(textf);
     pt_2.setFont(textf);
 
-    for(int i = 0;i < dm->dotForMark.size();i++)
-    {
+    for(int i = 0;i < dm->dotForMark.size();i++){
         if (dm->dotForMark[i][4] == 1){//表明是已知点
             pt_1.setPen(greencolor);
             pt_2.setPen(greencolor);

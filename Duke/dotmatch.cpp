@@ -2,7 +2,7 @@
 #include "QMessageBox"
 
 bool cameraLoaded = false;
-int YDISTANCE = 15;//两相机标志点Y向距离小于该值认为是同一点
+int YDISTANCE = 4;//两相机标志点Y向距离小于该值认为是同一点
 int EDGEUP = 10;//水平方向上标志点边缘黑色宽度上限
 int EDGEDOWN = 0;
 int MIDDOWN = 8;
@@ -10,7 +10,7 @@ int MIDUP = 40;
 float EPIPOLARERROR = 0.1;//特征点匹配时极线误差上界
 float tolerance = 2;//判断特征值是否相等时的误差
 
-DotMatch::DotMatch(QObject *parent, QString projectPath, bool useManual) :
+DotMatch::DotMatch(QObject *parent, QString projectPath, bool useManual, bool useepi) :
     QObject(parent)
 {
     firstFind = true;//第一次查找标志点默认为基准点
@@ -25,10 +25,18 @@ DotMatch::DotMatch(QObject *parent, QString projectPath, bool useManual) :
 
     path = projectPath;
     useManualMatch = useManual;
+    useEpi = useepi;
+    if (useepi){
+        sr = new stereoRect(projectPath, cv::Size(1280,1024));//此处直接赋值应改为间接
+        sr->getParameters();
+        sr->calParameters();
+    }
 }
 
 DotMatch::~DotMatch()
 {
+    if (useEpi)
+        delete sr;
 }
 
 ///_________________________________________________///
@@ -38,8 +46,12 @@ DotMatch::~DotMatch()
 ///  根据图像左右对找出的标记点坐标进行去畸变处理
 /// \return 标记点坐标，内层vector包含x、y两个float型
 ///_________________________________________________///
-vector<vector<float>> DotMatch::findDot(Mat image, bool isleft)
+vector<vector<float>> DotMatch::findDot(Mat &image, bool isleft)
 {
+    ///若使用Q矩阵，则先对图像进行校正
+    if (useEpi){
+        sr->doStereoRectify(image,isleft);
+    }
     vector<vector<float>> dotOutput;//用来存储得到的标志点坐标
     Mat bimage = Mat::zeros(image.size(), CV_8UC1);//二值化后的图像
 
@@ -63,12 +75,10 @@ vector<vector<float>> DotMatch::findDot(Mat image, bool isleft)
     ///四点匹配法
     vector<vector<float>> alltemp;
 
-    for (int i = 0; i < bimage.rows; i++)
-    {
+    for (int i = 0; i < bimage.rows; i++){
         vector<int> ptemp;
         ptemp.push_back(i);//表示对第i行进行处理
-        for (int j = 0; j < bimage.cols - 1; j++)
-        {
+        for (int j = 0; j < bimage.cols - 1; j++){
             if ((bimage.at<uchar>(i, j + 1) - bimage.at<uchar>(i, j)) > 0){
                 ptemp.push_back(j);
             }//说明发生了状态跳变0->255
@@ -96,8 +106,7 @@ vector<vector<float>> DotMatch::findDot(Mat image, bool isleft)
                         for (int q = 0; q < pointCount; q++){
                             int dy = localtemp[0] - alltemp[q][0];
                             int dx = abs(localtemp[2] - alltemp[q][2]);
-                            if (dy < 10 && dx < 4)
-                            {
+                            if (dy < 10 && dx < 4){
                                 match = q;//说明alltemp中第q点与当前localtemp中的点来自同一个标记点
                                 break;//找到q跳出循环，未找到match=-1
                             }
@@ -143,11 +152,17 @@ vector<vector<float>> DotMatch::findDot(Mat image, bool isleft)
     
     for (int i = out.size() - 1; i > -1; i--){
         ///在进行极线约束验证前，对找到的标记点坐标进行去畸变处理
+        /// 如果采用了极线校正，则跳过该步骤
         cv::Point2f outUD;
-        if (isleft)
-            outUD = Utilities::undistortPoints(out[i],rc->cameras[0]);//若当前处理左图像，则利用cameras[0]的参数对其进行矫正
-        else
-            outUD = Utilities::undistortPoints(out[i],rc->cameras[1]);
+        if (useEpi){
+            outUD = out[i];
+        }
+        else{
+            if (isleft)
+                outUD = Utilities::undistortPoints(out[i],rc->cameras[0]);//若当前处理左图像，则利用cameras[0]的参数对其进行矫正
+            else
+                outUD = Utilities::undistortPoints(out[i],rc->cameras[1]);
+        }
         vector<float> point;
         point.push_back(outUD.x);
         point.push_back(outUD.y);
@@ -215,7 +230,7 @@ vector<vector<float>> DotMatch::findDot(Mat image, bool isleft)
 /// 由MainWindow外部调用函数，对左右图像标记点进行匹配
 /// 输入为8位灰度图像，返回是否成功匹配图像
 ////____________________________________________________________////
-bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
+bool DotMatch::matchDot(Mat &leftImage, Mat &rightImage)
 {
     dotInOrder.clear();
     Mat Lcopy = leftImage;
@@ -342,27 +357,34 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
     ////判断两相机所摄标志点的对应关系
     int k = 0;//dotInOrder中现存点个数
     vector<int> rightmatched;//存储每次匹配点后右图像中被匹配点的序号
-    for(size_t i = 0; i < dotLeft.size(); i++)
-    {
-        float error = 2*EPIPOLARERROR;
+    for(size_t i = 0; i < dotLeft.size(); i++){
+        float error = 2 * EPIPOLARERROR;
+        float diser = 2 * YDISTANCE;
         int bestJ = -1;//与i点最为符合的j点
-        for(size_t j = 0; j < dotRight.size();j++)
-        {
+        for(size_t j = 0; j < dotRight.size();j++){
             if (isBelongTo(j, rightmatched))
                 continue;
-
-            float pleft[] = {dotLeft[i][0], dotLeft[i][1], 1.0};//齐次坐标
-            float pright[] = {dotRight[j][0], dotRight[j][1], 1.0};
-            cv::Mat plmat(1, 3, CV_32F, pleft);
-            cv::Mat prmat(1, 3, CV_32F, pright);
-
-            cv::Mat ltor = prmat * fundMat * plmat.t();//cv::Mat rtol = ld * fundMat.t() * rd.t();
-            float zlr = ltor.at<float>(0,0);//float zrl = rtol.at<float>(0,0);
-            //if (fabs(dotLeft[i][1] - dotRight[j][1]) > YDISTANCE)
-                //continue;
-            if(fabs(zlr) < EPIPOLARERROR && fabs(zlr) < error){
+            bool bingo = false;
+            float zlr;
+            if(useEpi){
+                if (fabs(dotLeft[i][1] - dotRight[j][1]) < YDISTANCE && fabs(dotLeft[i][1] - dotRight[j][1]) < diser){
+                    zlr = fabs(dotLeft[i][1] - dotRight[j][1]);
+                    bingo = true;
+                }
+            }
+            else{
+                float pleft[] = {dotLeft[i][0], dotLeft[i][1], 1.0};//齐次坐标
+                float pright[] = {dotRight[j][0], dotRight[j][1], 1.0};
+                cv::Mat plmat(1, 3, CV_32F, pleft);
+                cv::Mat prmat(1, 3, CV_32F, pright);
+                cv::Mat ltor = prmat * fundMat * plmat.t();//cv::Mat rtol = ld * fundMat.t() * rd.t();
+                zlr = fabs(ltor.at<float>(0,0));//float zrl = rtol.at<float>(0,0);
+                if(zlr < EPIPOLARERROR && zlr < error)
+                    bingo = true;
+            }
+            if(bingo){
                 //判断当前点相对于上一点X坐标的正负，如正负不同，则不是对应点
-                if (k != 0){
+                if (k != 0){//表示不是首次发现标记点
                     bool isbreak = false;
                     for (int p = 0;p < k;p++){
                         int checkLefft = dotLeft[i][0] - dotInOrder[p][0];
@@ -374,13 +396,15 @@ bool DotMatch::matchDot(Mat leftImage,Mat rightImage)
                     }
                     if (!isbreak){
                         bestJ = j;
-                        error = fabs(zlr);
                     }
                 }
                 else{
                     bestJ = j;
-                    error = fabs(zlr);
                 }
+                if (useEpi)
+                    diser = zlr;
+                else
+                    error = zlr;
             }
         }
         if (bestJ >= 0){
@@ -674,29 +698,48 @@ bool DotMatch::triangleCalculate()
     cv::Point2f dotLeft;
     cv::Point2f dotRight;
     dotRemove.clear();
+    if (dotInOrder.size() < 4){
+        QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Less than 4 point in dotInOrder."));
+    }
     for (size_t i = 0; i < dotInOrder.size(); i++){
         dotLeft.x = dotInOrder[i][0];
         dotLeft.y = dotInOrder[i][1];
         dotRight.x = dotInOrder[i][2];
         dotRight.y = dotInOrder[i][3];
-
-        cv::Point3f cam1Point = Utilities::pixelToImageSpace(dotLeft, rc->cameras[0]); //convert camera pixel to image space
-        rc->cam2WorldSpace(rc->cameras[0], cam1Point);
-        cv::Vec3f ray1Vector = (cv::Vec3f) (rc->cameras[0].position - cam1Point); //compute ray vector
-        Utilities::normalize(ray1Vector);
-
-        cv::Point3f cam2Point = Utilities::pixelToImageSpace(dotRight, rc->cameras[1]); //convert camera pixel to image space
-        rc->cam2WorldSpace(rc->cameras[1], cam2Point);
-        cv::Vec3f ray2Vector = (cv::Vec3f) (rc->cameras[1].position - cam2Point); //compute ray vector
-        Utilities::normalize(ray2Vector);
-
         cv::Point3f interPoint;
-        bool ok = Utilities::line_lineIntersection(rc->cameras[0].position, ray1Vector,rc->cameras[1].position, ray2Vector, interPoint);
 
-        if(!ok){
-            dotRemove.push_back(i);
-            QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point ") + QString::number(i) + tr(" calculation failed."));
-            continue;
+        if (useEpi){
+            double point2D[] = {dotLeft.x, dotLeft.y, dotLeft.x - dotRight.x, 1};//二维坐标
+            cv::Mat p2D = cv::Mat(4,1,CV_64F,point2D);//构建坐标矩阵
+            cv::Mat p3D;
+            p3D = sr->Q * p2D;
+            double x = p3D.at<double>(0,0);
+            double y = p3D.at<double>(1,0);
+            double z = p3D.at<double>(2,0);
+            double w = p3D.at<double>(3,0);
+            double ax = x/w;
+            double ay = y/w;
+            double az = z/w;
+            interPoint = cv::Point3f(ax,ay,az);
+        }
+        else{
+            cv::Point3f cam1Point = Utilities::pixelToImageSpace(dotLeft, rc->cameras[0]); //convert camera pixel to image space
+            rc->cam2WorldSpace(rc->cameras[0], cam1Point);
+            cv::Vec3f ray1Vector = (cv::Vec3f) (rc->cameras[0].position - cam1Point); //compute ray vector
+            Utilities::normalize(ray1Vector);
+
+            cv::Point3f cam2Point = Utilities::pixelToImageSpace(dotRight, rc->cameras[1]); //convert camera pixel to image space
+            rc->cam2WorldSpace(rc->cameras[1], cam2Point);
+            cv::Vec3f ray2Vector = (cv::Vec3f) (rc->cameras[1].position - cam2Point); //compute ray vector
+            Utilities::normalize(ray2Vector);
+
+            bool ok = Utilities::line_lineIntersection(rc->cameras[0].position, ray1Vector,rc->cameras[1].position, ray2Vector, interPoint);
+
+            if(!ok){
+                dotRemove.push_back(i);
+                QMessageBox::warning(NULL, tr("Trangel Calculate"), tr("Point ") + QString::number(i) + tr(" calculation failed."));
+                continue;
+            }
         }
         //能到达这里的dotInOrder[i]都是通过了三角计算的，因此由其计算得到的interPoint可以存入dotPosition
         //需要注意的是，如果真的出现了i点不能计算交叉点的情况，那么将导致dotPosition中点的序号与点的对应关系与dotInOrder中不同
@@ -740,10 +783,8 @@ cv::vector<cv::vector<float>> DotMatch::calFeature(cv::vector<Point3f> dotP)
 {
     cv::vector<cv::vector<float>> featureTemp;
     featureTemp.resize(dotP.size());
-    for (size_t i = 0; i < dotP.size() - 1; i++)
-    {
-        for (size_t j = i + 1; j < dotP.size(); j++)
-        {
+    for (size_t i = 0; i < dotP.size() - 1; i++){
+        for (size_t j = i + 1; j < dotP.size(); j++){
             float xd = dotP[i].x - dotP[j].x;
             float yd = dotP[i].y - dotP[j].y;
             float zd = dotP[i].z - dotP[j].z;
@@ -770,7 +811,7 @@ cv::vector<cv::vector<float>> DotMatch::calFeature(cv::vector<Point3f> dotP)
 bool DotMatch::dotClassify(cv::vector<cv::vector<float> > featureTemp)
 {
     vector<Point2i> correspondPoint;
-    /*
+    /* 效果不好的方法，可删除
     int match = 0;//表示匹配的特征值个数
     int validpoint = 0;//表示找到的一致点个数，小于4则不能生成变换矩阵，则应重新获取
     size_t featureSize = dotFeature.size();
@@ -1423,36 +1464,27 @@ int DotMatch::OSTU_Region(cv::Mat& image)
     uchar* data = image.ptr<uchar>(0);
 
     //count every pixel number in whole image
-    for(i = y; i < height; i++)
-    {
+    for(i = y; i < height; i++){
         for(j = x;j <width;j++)
-        {
             pixelCount[data[i * image.step + j]]++;
-        }
     }
 
     //count every pixel's radio in whole image pixel
     for(i = 0; i < 256; i++)
-    {
         pixelPro[i] = (float)(pixelCount[i]) / (float)(pixelSum);
-    }
 
     // segmentation of the foreground and background
     // To traversal grayscale [0,255],and calculates the variance maximum grayscale values ​​for the best threshold value
     float w0, w1, u0tmp, u1tmp, u0, u1, u,deltaTmp, deltaMax = 0;
-    for(i = 0; i < 256; i++)
-    {
+    for(i = 0; i < 256; i++){
         w0 = w1 = u0tmp = u1tmp = u0 = u1 = u = deltaTmp = 0;
 
-        for(j = 0; j < 256; j++)
-        {
-            if(j <= i) 	//background
-            {
+        for(j = 0; j < 256; j++){
+            if(j <= i){ 	//background
                 w0 += pixelPro[j];
                 u0tmp += j * pixelPro[j];
             }
-            else 		//foreground
-            {
+            else{ 		//foreground
                 w1 += pixelPro[j];
                 u1tmp += j * pixelPro[j];
             }
@@ -1463,13 +1495,11 @@ int DotMatch::OSTU_Region(cv::Mat& image)
         u = u0tmp + u1tmp;
         //Calculating the variance
         deltaTmp = w0 * (u0 - u)*(u0 - u) + w1 * (u1 - u)*(u1 - u);
-        if(deltaTmp > deltaMax)
-        {
+        if(deltaTmp > deltaMax){
             deltaMax = deltaTmp;
             threshold = i;
         }
     }
-    //return the best threshold;
     return threshold;
 }
 
