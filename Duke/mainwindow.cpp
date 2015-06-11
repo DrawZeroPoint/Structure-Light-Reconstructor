@@ -24,20 +24,20 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
-    /*****生成主窗口UI*****/
+    ///---------生成主窗口UI----------/
     ui->setupUi(this);
 
-    /*****声明全局变量*****/
+    ///--------声明全局变量-----------/
     saveCount = 1;//Save calib images start with 1
     scanSN = -1;
     isConfigured = false;
     isProjectorOpened = true;
 
-    /****生成计时器并连接*****/
+    ///-----------------生成计时器并连接--------------------/
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(readframe()));
 
-    /****声明相机****/
+    ///---------声明相机-----------/
     usebc = false;
     DHC = new DaHengCamera(this);
 
@@ -49,9 +49,10 @@ MainWindow::MainWindow(QWidget *parent)
     displayModel = new GLWidget(ui->displayWidget);
     ui->displayLayout->addWidget(displayModel);
 
-    /*****生成设置窗口并输出默认设置*****/
+    ///------生成设置窗口并输出默认设置----------/
     setDialog = new Set(this);//Initialize the set dialog
     getSetInfo();
+
 
     /*****获取屏幕尺寸信息*****/
     getScreenGeometry();//Get mian screen and projector screen geometry
@@ -60,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     int xOffSet = (projRect.width() - scanWidth)/2 + screenWidth;
     int yOffSet = (projRect.height() - scanHeight)/2;
 
-    /*****初始化投影窗口*****/
+    ///----------------------------------------------初始化投影窗口-----------------------------------------------/
     pj = new Projector(NULL, scanWidth, scanHeight, projectorWidth, projectorHeight, xOffSet, yOffSet);//Initialize the projector
     pj->move(screenWidth,0);//make the window displayed by the projector
     pj->showFullScreen();
@@ -335,7 +336,7 @@ void MainWindow::calibration()
     ui->progressBar->setValue(100);
 }
 
-///-----------------------扫描---------------------------///
+///------------------------------扫描---------------------------///
 void MainWindow::scan()
 {
     ui->progressBar->reset();
@@ -368,7 +369,7 @@ void MainWindow::scan()
 
 void MainWindow::pointmatch()
 {
-    dm->blocksize = ui->binarySlider->value();
+    dm->blocksize = 41;
     findPoint();
 }
 
@@ -382,9 +383,7 @@ void MainWindow::refindmatch()
 void MainWindow::findPoint()
 {
     if (dm->dotForMark.size() != 0)
-    {
         dm->dotForMark.clear();
-    }
     cv::Mat mat_1 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, DHC->m_pRawBuffer_1);//直接从内存缓冲区获得图像数据是可行的
     cv::Mat mat_2 = cv::Mat(cameraHeight, cameraWidth, CV_8UC1, DHC->m_pRawBuffer_2);
     //imshow("d",mat_1);
@@ -401,6 +400,9 @@ void MainWindow::findPoint()
                 dm->activeManual();
                 ui->manualWindow->setEnabled(true);
                 connect(ui->manualWindow,SIGNAL(clicked()),this,SLOT(showhidemanual()));
+            }
+            else {
+                finishmanualmatch();
             }
         }
         else{
@@ -487,21 +489,15 @@ void MainWindow::startscan()
 
     DHC->closeCamera();
     timer->stop();
-    pj->displaySwitch(false);
     pj->opencvWindow();
+
     if (codePatternUsed == GRAY_ONLY){
-        grayCode = new GrayCodes(scanWidth,scanHeight,false);
-        grayCode->generateGrays();
         pj->showMatImg(grayCode->grayCodes[0]);
     }
     else if (codePatternUsed == GRAY_EPI){
-        grayCode = new GrayCodes(scanWidth,scanHeight,true);
-        grayCode->generateGrays();
         pj->showMatImg(grayCode->grayCodes[0]);
     }
     else{
-        mf = new MultiFrequency(this, scanWidth, scanHeight);
-        mf->generateMutiFreq();
         pj->showMatImg(mf->MultiFreqImages[0]);
     }
     progressPop(6);
@@ -682,12 +678,18 @@ void MainWindow::getSetInfo()
     switch (setDialog->usedPattern){
         case 0:
         codePatternUsed = GRAY_ONLY;
+        grayCode = new GrayCodes(scanWidth,scanHeight,false);
+        grayCode->generateGrays();
         break;
         case 1:
         codePatternUsed = GRAY_EPI;
+        grayCode = new GrayCodes(scanWidth,scanHeight,true);
+        grayCode->generateGrays();
         break;
         case 2:
         codePatternUsed = MULTIFREQ_EPI;
+        mf = new MultiFrequency(this, scanWidth, scanHeight);
+        mf->generateMutiFreq();
     }
 }
 
@@ -726,7 +728,6 @@ void MainWindow::createConnections()
     connect(ui->actionChinese, SIGNAL(triggered()), this, SLOT(switchlanguage()));
     connect(ui->actionEnglish, SIGNAL(triggered()), this, SLOT(switchlanguage()));
     connect(ui->pSizeValue, SIGNAL(valueChanged(int)), this, SLOT(changePointSize(int)));
-    connect(ui->loadTest, SIGNAL(clicked()), this, SLOT(loadTestModel()));
 
     connect(ui->actionExit, SIGNAL(triggered()), pj, SLOT(close()));//解决投影窗口不能关掉的问题
     connect(ui->actionExit, SIGNAL(triggered()), fa, SLOT(close()));

@@ -109,6 +109,8 @@ void GrayCodes::generateGrays()
             }
         }
     }
+    ///保存格雷码
+    //saveGray();
 }
 
 int GrayCodes::grayToDec(cv::vector<bool> gray)//convert a gray code sequence to a decimal number
@@ -123,4 +125,14 @@ int GrayCodes::grayToDec(cv::vector<bool> gray)//convert a gray code sequence to
             dec+= (int) pow((float)2,int (gray.size() - i - 1) );
     }
     return dec;
+}
+
+void GrayCodes::saveGray()
+{
+    if (useEpi){
+        for (size_t i = 0; i<2+2*numOfColImgs;i++){
+            QString f = projectPath + "/" + QString::number(i) + ".png";
+            cv::imwrite(f.toStdString(),grayCodes[i]);
+        }
+    }
 }

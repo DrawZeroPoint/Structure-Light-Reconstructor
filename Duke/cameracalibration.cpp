@@ -263,10 +263,8 @@ int CameraCalibration::calibrateCamera()
     cv::vector<cv::Mat> camRotationVectors;
     cv::vector<cv::Mat> camTranslationVectors;
 
-    rms = cv::calibrateCamera(objBoardCornersCam, imgBoardCornersCam, camImageSize, camMatrix, distortion, camRotationVectors,camTranslationVectors,0,
-        cv::TermCriteria( (cv::TermCriteria::COUNT)+(cv::TermCriteria::EPS), 30, DBL_EPSILON) );
-    //rms = cv::calibrateCamera(objBoardCornersCam, imgBoardCornersCam, camImageSize, camMatrix,
-                                     //distortion, camRotationVectors, camTranslationVectors, CV_CALIB_FIX_K4|CV_CALIB_FIX_K5);
+    rms = cv::calibrateCamera(objBoardCornersCam, imgBoardCornersCam, camImageSize, camMatrix, distortion, camRotationVectors,camTranslationVectors,0);
+    //rms = cv::calibrateCamera(objBoardCornersCam, imgBoardCornersCam, camImageSize, camMatrix,distortion, camRotationVectors, camTranslationVectors, CV_CALIB_FIX_K4|CV_CALIB_FIX_K5);
     if(isleft){
         undistortCameraImgPoints(findFunLeft,findFunLeft);
         camMatrixL = camMatrix;

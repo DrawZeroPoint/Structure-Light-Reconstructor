@@ -16,6 +16,10 @@ Projector::Projector(QWidget *parent, int scanW, int scanH, int projW, int projH
     xoffset = xos;
     yoffset = yos;
     crossVisible = true;
+    label = new QLabel;
+    QHBoxLayout *lo = new QHBoxLayout;
+    lo->addWidget(label);
+    //setLayout(lo);
 }
 
 Projector::~Projector()
@@ -33,23 +37,35 @@ void Projector::paintEvent(QPaintEvent *event)
         painter.drawLine(proj_w/2 - 60, proj_h/2, proj_w/2 + 60, proj_h/2);
         painter.drawLine(proj_w/2, proj_h/2 - 60, proj_w/2, proj_h/2 + 60);
     }
+    if(imageAva){
+        painter.drawImage(0,0,pshow);
+    }
 }
 
 void Projector::opencvWindow()
 {
-    cvNamedWindow("Projector Window",CV_WINDOW_AUTOSIZE|CV_WINDOW_KEEPRATIO|CV_GUI_NORMAL);
-    cvResizeWindow("Projector Window",width,height);
-    cvMoveWindow("Projector Window", xoffset, yoffset);
+    cv::namedWindow("w");
+    //cvResizeWindow("w",width,height);
+    cv::moveWindow("w", xoffset, yoffset);
 }
 
 void Projector::showMatImg(cv::Mat img)
 {
-    cv::imshow("Projector Window", img);
+    cv::imshow("w", img);
+}
+
+void Projector::showImg(cv::Mat img)
+{
+    pshow = QImage(img.data,img.cols,img.rows,QImage::Format_Indexed8);
+    imageAva = true;
+    this->update();
+    //QPixmap p = QPixmap::fromImage(pshow);
+    //label->setPixmap(p);
 }
 
 void Projector::destoryWindow()
 {
-    cvDestroyWindow("Projector Window");
+    cvDestroyWindow("w");
 }
 
 void Projector::displaySwitch(bool isWhite)

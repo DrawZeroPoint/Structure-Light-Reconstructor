@@ -20,6 +20,7 @@ ManualMatch::ManualMatch(QWidget *parent) :
     connect(ui->finishButton,SIGNAL(clicked()),this,SLOT(finish()));
     connect(ui->cancelButton,SIGNAL(clicked()),this,SLOT(hide()));
     connect(ui->resetButton,SIGNAL(clicked()),this,SLOT(reset()));
+    connect(ui->deleteButton,SIGNAL(clicked()),this,SLOT(deletepoint()));
     //connect(ui->idEdit,SIGNAL(textEdited(QString)),ui->confirmButton,SLOT(setEnabled(bool)));
 
     onMark = 0;
@@ -41,8 +42,7 @@ void ManualMatch::setImage()
     pt_1.setFont(textfont);
     pt_2.setFont(textfont);
 
-    for(size_t i = 0;i < dotInOrder.size();i++)
-    {
+    for(size_t i = 0;i < dotInOrder.size();i++){
         pt_1.setPen(gcolor);
         pt_2.setPen(gcolor);
 
@@ -50,7 +50,7 @@ void ManualMatch::setImage()
         drawCross(pt_2, dotInOrder[i][1].x, dotInOrder[i][1].y);
 
         int ID;
-        if (refinedCorr.size()){//根据refinedCorr中的数据（如果有）显示i点ID
+        if (refinedCorr.size()>i){//根据refinedCorr中的数据（如果有）显示i点ID
             for (size_t r = 0; r < refinedCorr.size(); r++){
                 if (i == refinedCorr[r].y)
                     ID = refinedCorr[r].x;
@@ -59,11 +59,11 @@ void ManualMatch::setImage()
             pt_2.drawText(dotInOrder[i][1].x,dotInOrder[i][1].y,QString::number(ID));
         }
         else{//若refinedPoint还未被赋予空间，根据correspond中的数据显示i点ID
-            bool idexist = false;
+            bool idexist = false;//表示ID点的对应点存在，只关系到ID的显示状态
             for (size_t c = 0; c < correspond.size(); c++){
                 if (i == correspond[c].y){
                     ID = correspond[c].x;
-                    idexist = true;//表示ID点的对应点存在，只关系到ID的显示状态
+                    idexist = true;
                 }
             }
             if (idexist){
@@ -108,13 +108,28 @@ void ManualMatch::confirmID()
     corr.y = onMark;
     refinedCorr.at(onMark) = corr;
 
-    if (onMark == dotInOrder.size()-1)
+    if (onMark == dotInOrder.size() - 1)
         onMark = 0;
     else
         onMark++;
     ui->current->setText(QString::number(onMark));
 
     setImage();//根据新的信息重绘图像
+}
+
+void ManualMatch::deletepoint()
+{
+    if (onMark < dotInOrder.size() - 1){
+        dotInOrder.erase(dotInOrder.begin() + onMark);
+        correspond.erase(correspond.begin() + onMark);
+        //refinedCorr.erase(refinedCorr.begin() + onMark);
+    }
+    else{
+        dotInOrder.erase(dotInOrder.end() - 1);
+        correspond.erase(correspond.end() - 1);
+        //refinedCorr.erase(refinedCorr.end());
+    }
+    setImage();
 }
 
 void ManualMatch::finish()
@@ -126,8 +141,8 @@ void ManualMatch::finish()
     }
     else{
         for (size_t i = 0;i < refinedCorr.size(); i++){
-            if (!(refinedCorr[i].x >= 0))
-                QMessageBox::warning(NULL,"Manual Match",tr("Point ") + QString::number(i) + tr("hasn't been marked."));
+            if (refinedCorr[i].x < 0)
+                QMessageBox::warning(NULL,"Manual Match",tr("Point ") + QString::number(i) + tr(" hasn't been marked."));
         }
     }
     this->hide();
@@ -145,6 +160,8 @@ void ManualMatch::keyPressEvent(QKeyEvent *e)
 {
     if (e->key() == Qt::Key_Enter)
         confirmID();
+    else if (e->key() == Qt::Key_Delete)
+        deletepoint();
 }
 
 void ManualMatch::drawCross(QPainter &p, int x, int y)

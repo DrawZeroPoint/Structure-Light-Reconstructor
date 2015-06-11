@@ -5,8 +5,8 @@ bool cameraLoaded = false;
 int YDISTANCE = 4;//两相机标志点Y向距离小于该值认为是同一点
 int EDGEUP = 10;//水平方向上标志点边缘黑色宽度上限
 int EDGEDOWN = 0;
-int MIDDOWN = 8;
-int MIDUP = 40;
+int MIDDOWN = 2;
+int MIDUP = 30;
 float EPIPOLARERROR = 0.1;//特征点匹配时极线误差上界
 float tolerance = 2;//判断特征值是否相等时的误差
 
@@ -59,8 +59,36 @@ vector<vector<float>> DotMatch::findDot(Mat &image, bool isleft)
     adaptiveThreshold(image,bimage,255,ADAPTIVE_THRESH_MEAN_C,THRESH_BINARY,blocksize,60);
     //blocksize较大可以使处理效果趋向二值化，较小则趋向边缘提取；C值的作用在于抑制噪声
 #else
-    bwThreshold = OSTU_Region(image);
-    bimage = image >= bwThreshold;
+    Mat temp = Mat::zeros(image.size(),CV_8U);
+    Mat mask = Mat::zeros(image.size(),CV_8U);
+    int T1 = OSTU_Region(image);
+    for (size_t i = 0; i < image.rows; i++){
+        uchar *data = image.ptr<uchar>(i);
+        for (int j = 0;j < image.cols;j++){
+            if (data[j] >= T1){
+                bimage.at<uchar>(i,j)=255;
+                temp.at<uchar>(i,j) = T1;
+            }
+            else{
+                temp.at<uchar>(i,j)=data[j];
+                mask.at<uchar>(i,j)=255;
+            }
+        }
+    }
+    Mat element = getStructuringElement(MORPH_ELLIPSE, Size(11, 11));
+    morphologyEx(mask,mask,MORPH_OPEN,element);
+    //cvNamedWindow("1",WINDOW_NORMAL);
+    //imshow("1", mask);
+    int T2 = OSTU_Region(temp);
+    for (size_t i = 0; i < temp.rows; i++){
+        uchar *data = temp.ptr<uchar>(i);
+        for (int j = 0;j < temp.cols;j++){
+            if (data[j] >= T2){
+                if (mask.at<uchar>(i,j)>0)
+                    bimage.at<uchar>(i,j)=255;
+            }
+        }
+    }
 #endif
 
 #ifdef DEBUG
@@ -138,7 +166,7 @@ vector<vector<float>> DotMatch::findDot(Mat &image, bool isleft)
     cvWaitKey();
 #endif
 
-    vector<Point2f> out = subPixel(bimage, alltemp);//将初步得到的圆心坐标进一步精确
+    vector<Point2f> out = subPixel(bimage, alltemp);//make the coordinate of circle center more accurate
 
 #ifdef DEBUG
     for (size_t i=0; i <out.size();i++)
@@ -1397,27 +1425,71 @@ vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
     for (size_t i = 0; i < vec.size(); i++){
         p.x = (int)(vec[i][1] + vec[i][2])/2;
         p.y = (int)vec[i][0];
+
+        ///Till now, the center coordinate has been calculated, the next step select an ROI around the center and perform a
+        /// ellipse fitting using OpenCV
+        Mat square = img(Rect(p.x-MIDUP,p.y-MIDUP,2*MIDUP,2*MIDUP));
+        /*
+        ///If the amount of black pixels in square beyond threshold, continue
+        int black = 0;
+        for (int r=0;r<square.rows;r++){
+            uchar* pix = square.ptr<uchar>(r);
+            for (int c=0;c<square.cols;c++){
+                if (pix[c] == 0)
+                    black++;
+            }
+        }
+        if (black>450)//half of the square area
+            continue;
+        */
+        vector<Point2f> centers;
+        vector<vector<Point> > contours;
+        findContours(square, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+        if (contours.size() > 4)
+            continue;
+        for(size_t i = 0; i < contours.size()-1; i=i+2){
+            size_t count = contours[i].size();
+            if( count < 16 )//如果该轮廓中所包含的点不足16个，则忽略
+                continue;
+            Mat pointsf;
+            Mat(contours[i]).convertTo(pointsf, CV_32F);
+            RotatedRect box = fitEllipse(pointsf);
+            if( MAX(box.size.width, box.size.height) > MIN(box.size.width, box.size.height)*5 )
+                continue;
+            if(box.size.width <= 2 || box.size.height <= 2)
+                continue;
+            if(box.size.width > MIDUP || box.size.height > MIDUP)
+                continue;
+            box.center.x = box.center.x+p.x-MIDUP;
+            box.center.y = box.center.y+p.y-MIDUP;
+            centers.push_back(box.center);
+        }
+        if (!centers.empty()){
+            p.x = centers[0].x;
+            p.y = centers[0].y;
+        }
+
         int xl = 0;
         int xr = 0;
         int yu = 0;
         int yd = 0;
-        if (img.at<uchar>(p.y, p.x) != 0){
-            while (img.at<uchar>(p.y, (p.x - xl)) > 0){
+        if (img.at<uchar>((int)p.y, (int)p.x) != 0){
+            while (img.at<uchar>((int)p.y, ((int)p.x - xl)) > 0){
                 xl++;
                 if (xl > MIDUP || (p.x - xl) <= 0)
                     break;
             }
-            while (img.at<uchar>(p.y, (p.x + xr)) > 0){
+            while (img.at<uchar>((int)p.y, ((int)p.x + xr)) > 0){
                 xr++;
                 if (xr > MIDUP || (p.x + xr) >= img.cols)
                     break;
             }
-            while (img.at<uchar>((p.y + yu), p.x) > 0){
+            while (img.at<uchar>(((int)p.y + yu), (int)p.x) > 0){
                 yu++;
                 if (yu > MIDUP || (p.y + yu) >= img.rows)
                     break;
             }
-            while (img.at<uchar>((p.y - yd), p.x) > 0){
+            while (img.at<uchar>(((int)p.y - yd), (int)p.x) > 0){
                 yd++;
                 if (yd > MIDUP || (p.y - yd) <= 0)
                     break;
@@ -1431,6 +1503,7 @@ vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
                 continue;
             }
             else{
+                /*
                 if (yu >= yd)
                     p.y = p.y + (yu-yd)/2;
                 else
@@ -1439,7 +1512,8 @@ vector<Point2f> DotMatch::subPixel(Mat img, vector<vector<float>> vec)
                     p.x  = p.x - (xl-xr)/2;
                 else
                     p.x = p.x + (xr - xl)/2;
-            out.push_back(p);
+                */
+                out.push_back(p);
             }
         }
     }

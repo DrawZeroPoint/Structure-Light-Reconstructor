@@ -24,7 +24,7 @@ public:
     cv::Mat rightImage;
     cv::vector<cv::Point2i> correspond;
     cv::vector<cv::Point2i> refinedCorr;//x表示点ID，y值表示序号
-    cv::vector<cv::vector<cv::Point2f>> dotInOrder;
+    cv::vector<cv::vector<cv::Point2f>> dotInOrder;//向量<向量<左图像标记点坐标，右图像标记点坐标>>
 
     void setImage();
 
@@ -40,6 +40,7 @@ protected:
 
 private slots:
     void confirmID();
+    void deletepoint();//delete mismatched point
     void finish();//点击完成标记按钮触发的动作
     void reset();//点击重置标记按钮触发的动作
 signals:

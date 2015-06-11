@@ -3,7 +3,7 @@
 
 //调试用宏定义
 //#define DEBUG
-#define USE_ADAPTIVE_THRESHOLD
+//#define USE_ADAPTIVE_THRESHOLD
 #define USE_FOUR_POINT
 //#define TEST_SURF
 

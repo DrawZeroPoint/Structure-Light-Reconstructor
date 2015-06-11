@@ -38,6 +38,7 @@ public:
     QLabel *label;
     QLineEdit *idEdit;
     QPushButton *confirmButton;
+    QPushButton *deleteButton;
     QSpacerItem *horizontalSpacer;
     QHBoxLayout *horizontalLayout_3;
     QPushButton *finishButton;
@@ -140,6 +141,11 @@ public:
 
         horizontalLayout_2->addWidget(confirmButton);
 
+        deleteButton = new QPushButton(ManualMatch);
+        deleteButton->setObjectName(QStringLiteral("deleteButton"));
+
+        horizontalLayout_2->addWidget(deleteButton);
+
 
         horizontalLayout_4->addLayout(horizontalLayout_2);
 
@@ -186,6 +192,7 @@ public:
         current->setText(QApplication::translate("ManualMatch", "0", 0));
         label->setText(QApplication::translate("ManualMatch", "Set ID", 0));
         confirmButton->setText(QApplication::translate("ManualMatch", "Confirm", 0));
+        deleteButton->setText(QApplication::translate("ManualMatch", "Delete", 0));
         finishButton->setText(QApplication::translate("ManualMatch", "Finish", 0));
         resetButton->setText(QApplication::translate("ManualMatch", "Reset", 0));
         cancelButton->setText(QApplication::translate("ManualMatch", "Cancel", 0));

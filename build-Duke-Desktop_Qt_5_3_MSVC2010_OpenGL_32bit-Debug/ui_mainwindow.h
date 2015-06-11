@@ -62,10 +62,9 @@ public:
     QGridLayout *gridLayout_13;
     QGroupBox *groupBox_3;
     QGridLayout *gridLayout_12;
-    QLabel *label;
-    QSpinBox *pSizeValue;
-    QPushButton *loadTest;
     QSpacerItem *verticalSpacer_15;
+    QSpinBox *pSizeValue;
+    QLabel *label;
     QHBoxLayout *displayLayout;
     QHBoxLayout *horizontalLayout_2;
     QLabel *label_2;
@@ -95,33 +94,27 @@ public:
     QLabel *StereoRMS;
     QWidget *tab_2;
     QGridLayout *gridLayout_15;
-    QFrame *line_3;
-    QFrame *line_4;
-    QSpacerItem *horizontalSpacer_13;
-    QHBoxLayout *horizontalLayout_4;
-    QLabel *label_15;
-    QLabel *btvalue;
-    QSlider *binarySlider;
-    QHBoxLayout *horizontalLayout;
-    QLabel *label_3;
-    QLabel *scanSNLabel;
-    QFrame *line_5;
-    QVBoxLayout *verticalLayout;
-    QPushButton *findPointButton;
-    QPushButton *reFindButton;
-    QFrame *line_6;
-    QFrame *line_7;
-    QSpacerItem *horizontalSpacer_14;
-    QFrame *line_8;
+    QPushButton *startScanButton;
+    QFrame *line_2;
     QFrame *line_13;
-    QFrame *line_15;
-    QFrame *line_16;
     QVBoxLayout *verticalLayout_5;
     QCheckBox *matchAssistant;
     QPushButton *manualWindow;
-    QPushButton *startScanButton;
     QFrame *line;
-    QFrame *line_2;
+    QFrame *line_15;
+    QFrame *line_7;
+    QFrame *line_6;
+    QFrame *line_4;
+    QFrame *line_8;
+    QFrame *line_3;
+    QSpacerItem *horizontalSpacer_14;
+    QVBoxLayout *verticalLayout;
+    QPushButton *findPointButton;
+    QPushButton *reFindButton;
+    QFrame *line_5;
+    QHBoxLayout *horizontalLayout;
+    QLabel *label_3;
+    QLabel *scanSNLabel;
     QWidget *tab_3;
     QWidget *layoutWidget;
     QVBoxLayout *verticalLayout_2;
@@ -343,10 +336,9 @@ public:
         groupBox_3->setTitle(QStringLiteral(""));
         gridLayout_12 = new QGridLayout(groupBox_3);
         gridLayout_12->setObjectName(QStringLiteral("gridLayout_12"));
-        label = new QLabel(groupBox_3);
-        label->setObjectName(QStringLiteral("label"));
+        verticalSpacer_15 = new QSpacerItem(20, 227, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-        gridLayout_12->addWidget(label, 0, 0, 1, 1);
+        gridLayout_12->addItem(verticalSpacer_15, 2, 0, 1, 1);
 
         pSizeValue = new QSpinBox(groupBox_3);
         pSizeValue->setObjectName(QStringLiteral("pSizeValue"));
@@ -363,14 +355,10 @@ public:
 
         gridLayout_12->addWidget(pSizeValue, 1, 0, 1, 1);
 
-        loadTest = new QPushButton(groupBox_3);
-        loadTest->setObjectName(QStringLiteral("loadTest"));
+        label = new QLabel(groupBox_3);
+        label->setObjectName(QStringLiteral("label"));
 
-        gridLayout_12->addWidget(loadTest, 2, 0, 1, 1);
-
-        verticalSpacer_15 = new QSpacerItem(20, 227, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-        gridLayout_12->addItem(verticalSpacer_15, 3, 0, 1, 1);
+        gridLayout_12->addWidget(label, 0, 0, 1, 1);
 
 
         gridLayout_13->addWidget(groupBox_3, 0, 0, 1, 1);
@@ -585,81 +573,98 @@ public:
         gridLayout_15->setObjectName(QStringLiteral("gridLayout_15"));
         gridLayout_15->setHorizontalSpacing(15);
         gridLayout_15->setVerticalSpacing(10);
-        line_3 = new QFrame(tab_2);
-        line_3->setObjectName(QStringLiteral("line_3"));
-        line_3->setFrameShape(QFrame::VLine);
-        line_3->setFrameShadow(QFrame::Sunken);
+        startScanButton = new QPushButton(tab_2);
+        startScanButton->setObjectName(QStringLiteral("startScanButton"));
+        startScanButton->setEnabled(false);
+        sizePolicy4.setHeightForWidth(startScanButton->sizePolicy().hasHeightForWidth());
+        startScanButton->setSizePolicy(sizePolicy4);
 
-        gridLayout_15->addWidget(line_3, 2, 1, 1, 1);
+        gridLayout_15->addWidget(startScanButton, 3, 0, 1, 1);
+
+        line_2 = new QFrame(tab_2);
+        line_2->setObjectName(QStringLiteral("line_2"));
+        line_2->setFrameShape(QFrame::HLine);
+        line_2->setFrameShadow(QFrame::Sunken);
+
+        gridLayout_15->addWidget(line_2, 2, 2, 1, 1);
+
+        line_13 = new QFrame(tab_2);
+        line_13->setObjectName(QStringLiteral("line_13"));
+        line_13->setFrameShape(QFrame::HLine);
+        line_13->setFrameShadow(QFrame::Sunken);
+
+        gridLayout_15->addWidget(line_13, 4, 1, 1, 1);
+
+        verticalLayout_5 = new QVBoxLayout();
+        verticalLayout_5->setSpacing(10);
+        verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
+        matchAssistant = new QCheckBox(tab_2);
+        matchAssistant->setObjectName(QStringLiteral("matchAssistant"));
+        matchAssistant->setChecked(true);
+
+        verticalLayout_5->addWidget(matchAssistant);
+
+        manualWindow = new QPushButton(tab_2);
+        manualWindow->setObjectName(QStringLiteral("manualWindow"));
+        manualWindow->setEnabled(false);
+
+        verticalLayout_5->addWidget(manualWindow);
+
+
+        gridLayout_15->addLayout(verticalLayout_5, 1, 0, 1, 1);
+
+        line = new QFrame(tab_2);
+        line->setObjectName(QStringLiteral("line"));
+        line->setFrameShape(QFrame::HLine);
+        line->setFrameShadow(QFrame::Sunken);
+
+        gridLayout_15->addWidget(line, 2, 0, 1, 1);
+
+        line_15 = new QFrame(tab_2);
+        line_15->setObjectName(QStringLiteral("line_15"));
+        line_15->setFrameShape(QFrame::VLine);
+        line_15->setFrameShadow(QFrame::Sunken);
+
+        gridLayout_15->addWidget(line_15, 1, 5, 1, 1);
+
+        line_7 = new QFrame(tab_2);
+        line_7->setObjectName(QStringLiteral("line_7"));
+        line_7->setFrameShape(QFrame::HLine);
+        line_7->setFrameShadow(QFrame::Sunken);
+
+        gridLayout_15->addWidget(line_7, 0, 4, 1, 1);
+
+        line_6 = new QFrame(tab_2);
+        line_6->setObjectName(QStringLiteral("line_6"));
+        line_6->setFrameShape(QFrame::HLine);
+        line_6->setFrameShadow(QFrame::Sunken);
+
+        gridLayout_15->addWidget(line_6, 0, 0, 1, 1);
 
         line_4 = new QFrame(tab_2);
         line_4->setObjectName(QStringLiteral("line_4"));
         line_4->setFrameShape(QFrame::HLine);
         line_4->setFrameShadow(QFrame::Sunken);
 
-        gridLayout_15->addWidget(line_4, 3, 4, 1, 1);
+        gridLayout_15->addWidget(line_4, 2, 4, 1, 1);
 
-        horizontalSpacer_13 = new QSpacerItem(134, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        line_8 = new QFrame(tab_2);
+        line_8->setObjectName(QStringLiteral("line_8"));
+        line_8->setFrameShape(QFrame::VLine);
+        line_8->setFrameShadow(QFrame::Sunken);
 
-        gridLayout_15->addItem(horizontalSpacer_13, 0, 4, 1, 1);
+        gridLayout_15->addWidget(line_8, 1, 3, 1, 1);
 
-        horizontalLayout_4 = new QHBoxLayout();
-        horizontalLayout_4->setSpacing(15);
-        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
-        label_15 = new QLabel(tab_2);
-        label_15->setObjectName(QStringLiteral("label_15"));
+        line_3 = new QFrame(tab_2);
+        line_3->setObjectName(QStringLiteral("line_3"));
+        line_3->setFrameShape(QFrame::VLine);
+        line_3->setFrameShadow(QFrame::Sunken);
 
-        horizontalLayout_4->addWidget(label_15);
+        gridLayout_15->addWidget(line_3, 1, 1, 1, 1);
 
-        btvalue = new QLabel(tab_2);
-        btvalue->setObjectName(QStringLiteral("btvalue"));
-        QSizePolicy sizePolicy9(QSizePolicy::Fixed, QSizePolicy::Preferred);
-        sizePolicy9.setHorizontalStretch(0);
-        sizePolicy9.setVerticalStretch(0);
-        sizePolicy9.setHeightForWidth(btvalue->sizePolicy().hasHeightForWidth());
-        btvalue->setSizePolicy(sizePolicy9);
-        btvalue->setAlignment(Qt::AlignCenter);
+        horizontalSpacer_14 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        horizontalLayout_4->addWidget(btvalue);
-
-        binarySlider = new QSlider(tab_2);
-        binarySlider->setObjectName(QStringLiteral("binarySlider"));
-        sizePolicy4.setHeightForWidth(binarySlider->sizePolicy().hasHeightForWidth());
-        binarySlider->setSizePolicy(sizePolicy4);
-        binarySlider->setMinimum(21);
-        binarySlider->setMaximum(91);
-        binarySlider->setSingleStep(10);
-        binarySlider->setSliderPosition(41);
-        binarySlider->setTracking(false);
-        binarySlider->setOrientation(Qt::Horizontal);
-        binarySlider->setTickPosition(QSlider::TicksBelow);
-
-        horizontalLayout_4->addWidget(binarySlider);
-
-
-        gridLayout_15->addLayout(horizontalLayout_4, 0, 0, 1, 3);
-
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-        label_3 = new QLabel(tab_2);
-        label_3->setObjectName(QStringLiteral("label_3"));
-
-        horizontalLayout->addWidget(label_3);
-
-        scanSNLabel = new QLabel(tab_2);
-        scanSNLabel->setObjectName(QStringLiteral("scanSNLabel"));
-
-        horizontalLayout->addWidget(scanSNLabel);
-
-
-        gridLayout_15->addLayout(horizontalLayout, 2, 4, 1, 1);
-
-        line_5 = new QFrame(tab_2);
-        line_5->setObjectName(QStringLiteral("line_5"));
-        line_5->setFrameShape(QFrame::HLine);
-        line_5->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_5, 1, 2, 1, 1);
+        gridLayout_15->addItem(horizontalSpacer_14, 1, 6, 1, 1);
 
         verticalLayout = new QVBoxLayout();
         verticalLayout->setSpacing(10);
@@ -681,105 +686,42 @@ public:
         verticalLayout->addWidget(reFindButton);
 
 
-        gridLayout_15->addLayout(verticalLayout, 2, 2, 1, 1);
+        gridLayout_15->addLayout(verticalLayout, 1, 2, 1, 1);
 
-        line_6 = new QFrame(tab_2);
-        line_6->setObjectName(QStringLiteral("line_6"));
-        line_6->setFrameShape(QFrame::HLine);
-        line_6->setFrameShadow(QFrame::Sunken);
+        line_5 = new QFrame(tab_2);
+        line_5->setObjectName(QStringLiteral("line_5"));
+        line_5->setFrameShape(QFrame::HLine);
+        line_5->setFrameShadow(QFrame::Sunken);
 
-        gridLayout_15->addWidget(line_6, 1, 0, 1, 1);
+        gridLayout_15->addWidget(line_5, 0, 2, 1, 1);
 
-        line_7 = new QFrame(tab_2);
-        line_7->setObjectName(QStringLiteral("line_7"));
-        line_7->setFrameShape(QFrame::HLine);
-        line_7->setFrameShadow(QFrame::Sunken);
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        label_3 = new QLabel(tab_2);
+        label_3->setObjectName(QStringLiteral("label_3"));
 
-        gridLayout_15->addWidget(line_7, 1, 4, 1, 1);
+        horizontalLayout->addWidget(label_3);
 
-        horizontalSpacer_14 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        scanSNLabel = new QLabel(tab_2);
+        scanSNLabel->setObjectName(QStringLiteral("scanSNLabel"));
 
-        gridLayout_15->addItem(horizontalSpacer_14, 2, 6, 1, 1);
-
-        line_8 = new QFrame(tab_2);
-        line_8->setObjectName(QStringLiteral("line_8"));
-        line_8->setFrameShape(QFrame::VLine);
-        line_8->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_8, 2, 3, 1, 1);
-
-        line_13 = new QFrame(tab_2);
-        line_13->setObjectName(QStringLiteral("line_13"));
-        line_13->setFrameShape(QFrame::HLine);
-        line_13->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_13, 5, 1, 1, 1);
-
-        line_15 = new QFrame(tab_2);
-        line_15->setObjectName(QStringLiteral("line_15"));
-        line_15->setFrameShape(QFrame::VLine);
-        line_15->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_15, 2, 5, 1, 1);
-
-        line_16 = new QFrame(tab_2);
-        line_16->setObjectName(QStringLiteral("line_16"));
-        line_16->setFrameShape(QFrame::VLine);
-        line_16->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_16, 0, 3, 1, 1);
-
-        verticalLayout_5 = new QVBoxLayout();
-        verticalLayout_5->setSpacing(10);
-        verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
-        matchAssistant = new QCheckBox(tab_2);
-        matchAssistant->setObjectName(QStringLiteral("matchAssistant"));
-        matchAssistant->setChecked(true);
-
-        verticalLayout_5->addWidget(matchAssistant);
-
-        manualWindow = new QPushButton(tab_2);
-        manualWindow->setObjectName(QStringLiteral("manualWindow"));
-        manualWindow->setEnabled(false);
-
-        verticalLayout_5->addWidget(manualWindow);
+        horizontalLayout->addWidget(scanSNLabel);
 
 
-        gridLayout_15->addLayout(verticalLayout_5, 2, 0, 1, 1);
-
-        startScanButton = new QPushButton(tab_2);
-        startScanButton->setObjectName(QStringLiteral("startScanButton"));
-        startScanButton->setEnabled(false);
-        sizePolicy4.setHeightForWidth(startScanButton->sizePolicy().hasHeightForWidth());
-        startScanButton->setSizePolicy(sizePolicy4);
-
-        gridLayout_15->addWidget(startScanButton, 4, 0, 1, 1);
-
-        line = new QFrame(tab_2);
-        line->setObjectName(QStringLiteral("line"));
-        line->setFrameShape(QFrame::HLine);
-        line->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line, 3, 0, 1, 1);
-
-        line_2 = new QFrame(tab_2);
-        line_2->setObjectName(QStringLiteral("line_2"));
-        line_2->setFrameShape(QFrame::HLine);
-        line_2->setFrameShadow(QFrame::Sunken);
-
-        gridLayout_15->addWidget(line_2, 3, 2, 1, 1);
+        gridLayout_15->addLayout(horizontalLayout, 1, 4, 1, 1);
 
         tabWidget->addTab(tab_2, QString());
         tab_3 = new QWidget();
         tab_3->setObjectName(QStringLiteral("tab_3"));
         layoutWidget = new QWidget(tab_3);
         layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
-        layoutWidget->setGeometry(QRect(10, 20, 329, 51));
+        layoutWidget->setGeometry(QRect(10, 20, 343, 51));
         verticalLayout_2 = new QVBoxLayout(layoutWidget);
         verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
         verticalLayout_2->setContentsMargins(0, 0, 0, 0);
         manualReconstruction = new QCheckBox(layoutWidget);
         manualReconstruction->setObjectName(QStringLiteral("manualReconstruction"));
+        manualReconstruction->setChecked(true);
 
         verticalLayout_2->addWidget(manualReconstruction);
 
@@ -946,11 +888,11 @@ public:
         gridLayout_7->setContentsMargins(0, 0, 0, 0);
         widget_3 = new QWidget(dockWidgetContents);
         widget_3->setObjectName(QStringLiteral("widget_3"));
-        QSizePolicy sizePolicy10(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        sizePolicy10.setHorizontalStretch(0);
-        sizePolicy10.setVerticalStretch(0);
-        sizePolicy10.setHeightForWidth(widget_3->sizePolicy().hasHeightForWidth());
-        widget_3->setSizePolicy(sizePolicy10);
+        QSizePolicy sizePolicy9(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        sizePolicy9.setHorizontalStretch(0);
+        sizePolicy9.setVerticalStretch(0);
+        sizePolicy9.setHeightForWidth(widget_3->sizePolicy().hasHeightForWidth());
+        widget_3->setSizePolicy(sizePolicy9);
         gridLayout_3 = new QGridLayout(widget_3);
         gridLayout_3->setSpacing(0);
         gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
@@ -988,8 +930,8 @@ public:
 
         widget_4 = new QWidget(dockWidgetContents);
         widget_4->setObjectName(QStringLiteral("widget_4"));
-        sizePolicy10.setHeightForWidth(widget_4->sizePolicy().hasHeightForWidth());
-        widget_4->setSizePolicy(sizePolicy10);
+        sizePolicy9.setHeightForWidth(widget_4->sizePolicy().hasHeightForWidth());
+        widget_4->setSizePolicy(sizePolicy9);
         gridLayout_4 = new QGridLayout(widget_4);
         gridLayout_4->setSpacing(0);
         gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
@@ -1026,8 +968,8 @@ public:
 
         groupBox = new QGroupBox(dockWidgetContents);
         groupBox->setObjectName(QStringLiteral("groupBox"));
-        sizePolicy10.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
-        groupBox->setSizePolicy(sizePolicy10);
+        sizePolicy9.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
+        groupBox->setSizePolicy(sizePolicy9);
         groupBox->setMaximumSize(QSize(111111, 70));
         groupBox->setStyleSheet(QLatin1String("font: 9pt \"Calibri\";\n"
 "background-color: rgbrgb(111, 215, 253)"));
@@ -1142,8 +1084,8 @@ public:
 
         groupBox_2 = new QGroupBox(dockWidgetContents_3);
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
-        sizePolicy10.setHeightForWidth(groupBox_2->sizePolicy().hasHeightForWidth());
-        groupBox_2->setSizePolicy(sizePolicy10);
+        sizePolicy9.setHeightForWidth(groupBox_2->sizePolicy().hasHeightForWidth());
+        groupBox_2->setSizePolicy(sizePolicy9);
         groupBox_2->setMaximumSize(QSize(111111, 70));
         groupBox_2->setStyleSheet(QLatin1String("font: 9pt \"Calibri\";\n"
 "background-color: rgbrgb(111, 215, 253)"));
@@ -1200,11 +1142,11 @@ public:
 
         widget_5 = new QWidget(dockWidgetContents_3);
         widget_5->setObjectName(QStringLiteral("widget_5"));
-        QSizePolicy sizePolicy11(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
-        sizePolicy11.setHorizontalStretch(0);
-        sizePolicy11.setVerticalStretch(0);
-        sizePolicy11.setHeightForWidth(widget_5->sizePolicy().hasHeightForWidth());
-        widget_5->setSizePolicy(sizePolicy11);
+        QSizePolicy sizePolicy10(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
+        sizePolicy10.setHorizontalStretch(0);
+        sizePolicy10.setVerticalStretch(0);
+        sizePolicy10.setHeightForWidth(widget_5->sizePolicy().hasHeightForWidth());
+        widget_5->setSizePolicy(sizePolicy10);
         gridLayout_6 = new QGridLayout(widget_5);
         gridLayout_6->setSpacing(0);
         gridLayout_6->setObjectName(QStringLiteral("gridLayout_6"));
@@ -1281,7 +1223,6 @@ public:
         QObject::connect(snapSpeedBox, SIGNAL(valueChanged(int)), spinBox, SLOT(setValue(int)));
         QObject::connect(spinBox, SIGNAL(valueChanged(int)), snapSpeedBox, SLOT(setValue(int)));
         QObject::connect(manualReconstruction, SIGNAL(clicked(bool)), reconstructionCount, SLOT(setEnabled(bool)));
-        QObject::connect(binarySlider, SIGNAL(valueChanged(int)), btvalue, SLOT(setNum(int)));
 
         tabWidget->setCurrentIndex(1);
 
@@ -1366,7 +1307,6 @@ public:
         actionBasler->setText(QApplication::translate("MainWindow", "Switch Type", 0));
         actionFocusAssistant->setText(QApplication::translate("MainWindow", "Focus Assistant", 0));
         label->setText(QApplication::translate("MainWindow", "Point Size", 0));
-        loadTest->setText(QApplication::translate("MainWindow", "Load Test", 0));
         label_2->setText(QApplication::translate("MainWindow", "Current Operation Processed:", 0));
         label_9->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Capture images as displayed:</p></body></html>", 0));
         currentPhotoLabel->setText(QApplication::translate("MainWindow", "0", 0));
@@ -1384,18 +1324,16 @@ public:
         label_14->setText(QApplication::translate("MainWindow", "Stereo Camera", 0));
         StereoRMS->setText(QApplication::translate("MainWindow", "0", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Calibrate", 0));
-        label_15->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Adaptive Binary Threshold:</p></body></html>", 0));
-        btvalue->setText(QApplication::translate("MainWindow", "41", 0));
-        label_3->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Already scaned count: </p></body></html>", 0));
-        scanSNLabel->setText(QApplication::translate("MainWindow", "0", 0));
-        findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
-        reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));
+        startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
         matchAssistant->setText(QApplication::translate("MainWindow", "Use manual match", 0));
         manualWindow->setText(QApplication::translate("MainWindow", "Show/Hide Manual Window", 0));
-        startScanButton->setText(QApplication::translate("MainWindow", "Start Scan", 0));
+        findPointButton->setText(QApplication::translate("MainWindow", "Find Point", 0));
+        reFindButton->setText(QApplication::translate("MainWindow", "Redo Find", 0));
+        label_3->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Already scaned count: </p></body></html>", 0));
+        scanSNLabel->setText(QApplication::translate("MainWindow", "0", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Scan", 0));
-        manualReconstruction->setText(QApplication::translate("MainWindow", "Manual reconstruction", 0));
-        label_4->setText(QApplication::translate("MainWindow", "Set current reconstruction count to:", 0));
+        manualReconstruction->setText(QApplication::translate("MainWindow", "Select reconstruction number", 0));
+        label_4->setText(QApplication::translate("MainWindow", "<html><head/><body><p>Set current reconstruction number as:</p></body></html>", 0));
         reconstructionButton->setText(QApplication::translate("MainWindow", "Reconstruction", 0));
         tabWidget->setTabText(tabWidget->indexOf(tab_3), QApplication::translate("MainWindow", "Reconstruct", 0));
         menuFile->setTitle(QApplication::translate("MainWindow", "Project", 0));

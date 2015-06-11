@@ -18,6 +18,7 @@ public:
     ~GrayCodes();
 
     cv::Mat grayCodes[GRAY_MAX_NUM];
+    QString projectPath;
     bool useEpi;//是否应用极线校正
 
     int getNumOfImgs();
@@ -32,6 +33,7 @@ protected:
 
     void calNumOfImgs();
     void allocMemForImgs();
+    void saveGray();
 
     bool imgsLoaded;
     int numOfImgs;
